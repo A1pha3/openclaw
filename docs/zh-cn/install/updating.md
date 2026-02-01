@@ -1,13 +1,13 @@
-# 硬件升级
+# 软件升级
 
 本文档介绍如何升级 Moltbot 到最新版本。
 
-## 检查新版本
+## 查看新版本
 
 使用以下命令检查新版本：
 
 ```bash
-moltbot update
+moltbot --version
 ```
 
 查看当前版本：
@@ -33,7 +33,7 @@ pnpm install -g moltbot@next
 2. **渠道状态**：更新后检查所有渠道连接
 3. **兼容性**：新版本可能包含破坏性变更
 
-## 更新版本号说明
+## 新版本号说明
 
 Moltbot 使用日历版本号格式：
 
@@ -52,8 +52,8 @@ YYYY.M.D[-beta.N]
 新版本可能引入新的环境变量：
 
 ```bash
-export MOLTBOT_CONFIG=~/.clawdbot/moltbot.json
-export CLAWDBOT_GWATWAY_TOKEN=...
+export CLAWDBOT_CONFIG=~/.clawdbot/moltbot.json
+export CLAWDBOT_GATWAY_TOKEN=...
 ```
 
 ### 配置文件变更
@@ -85,9 +85,9 @@ moltbot doctor
 - [配置参考](/zh-cn/config/reference)
 - [故障排除](/zh-cn/operations/troubleshooting)
 - [配置示例](/zh-cn/config/examples)
+```
 
-## 下一步
-
-- 查看版本变更：`git log` 或 [变更日志](https://github.com/moltbot/moltbot/commits/main)
+## 下一步- 查看版本变更：`git log` 或 [变更日志](https://github.com/moltbot/moltbot/commits/main)
 
 - 选择合适的升级时机：非紧急更新建议选择稳定版本
+</think>
