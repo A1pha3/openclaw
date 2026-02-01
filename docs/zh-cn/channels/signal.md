@@ -1,6 +1,6 @@
 # Signal 配置
 
-Signal 是一个以隐私和安全为核心的通信应用，Moltbot 通过 `signal-cli` 工具支持 Signal 渠道。
+Signal 是一个以隐私和安全为核心的通信应用，OpenClaw 通过 `signal-cli` 工具支持 Signal 渠道。
 
 ## 概述
 
@@ -35,7 +35,7 @@ sudo ln -s /opt/signal-cli/bin/signal-cli /usr/local/bin/signal-cli
 
 ```bash
 # 生成链接二维码
-signal-cli link -n "Moltbot"
+signal-cli link -n "OpenClaw"
 
 # 用 Signal 应用扫描二维码完成链接
 ```
@@ -59,7 +59,7 @@ signal-cli link -n "Moltbot"
 ### 启动网关
 
 ```bash
-moltbot gateway run
+openclaw gateway run
 ```
 
 ## 号码模型
@@ -110,10 +110,10 @@ Signal 渠道的工作原理：
 
 ```bash
 # 查看待审批的配对请求
-moltbot pairing list signal
+openclaw pairing list signal
 
 # 审批配对
-moltbot pairing approve signal <CODE>
+openclaw pairing approve signal <CODE>
 ```
 
 ### 群组策略
@@ -161,7 +161,7 @@ Signal 使用 UUID 作为用户唯一标识。仅有 UUID 的发送者（来自 
 signal-cli daemon --socket --no-receive-stdout
 ```
 
-配置 Moltbot 连接外部守护进程：
+配置 OpenClaw 连接外部守护进程：
 
 ```json5
 {
@@ -254,7 +254,7 @@ signal-cli daemon --socket --no-receive-stdout
 
 ### 输入指示
 
-Moltbot 在回复生成期间发送输入指示，并持续刷新直到回复完成。
+OpenClaw 在回复生成期间发送输入指示，并持续刷新直到回复完成。
 
 ### 已读回执
 
@@ -327,8 +327,8 @@ message action=react channel=signal target=signal:group:<groupId> targetAuthor=u
 
 ```bash
 # 发送消息示例
-moltbot message send --to "signal:+15551234567" --message "你好"
-moltbot message send --to "signal:group:abc123" --message "群组消息"
+openclaw message send --to "signal:+15551234567" --message "你好"
+openclaw message send --to "signal:group:abc123" --message "群组消息"
 ```
 
 ## 多账号配置
@@ -463,7 +463,7 @@ Signal App ← signal-cli daemon ← JSON-RPC ←─┘
 
 1. 确认设备已链接
 2. 检查 allowFrom 配置
-3. 验证配对状态：`moltbot pairing list signal`
+3. 验证配对状态：`openclaw pairing list signal`
 
 ### 发送失败
 

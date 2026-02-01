@@ -1,13 +1,13 @@
 # WhatsApp 配置
 
-WhatsApp 是 Moltbot 最常用的消息渠道之一，通过 Baileys 库实现 WhatsApp Web 协议。
+WhatsApp 是 OpenClaw 最常用的消息渠道之一，通过 Baileys 库实现 WhatsApp Web 协议。
 
 ## 工作原理
 
-Moltbot 使用 WhatsApp Web 协议连接，就像在浏览器中使用 WhatsApp Web 一样：
+OpenClaw 使用 WhatsApp Web 协议连接，就像在浏览器中使用 WhatsApp Web 一样：
 
 ```
-手机 WhatsApp ←→ WhatsApp 服务器 ←→ Moltbot (Baileys)
+手机 WhatsApp ←→ WhatsApp 服务器 ←→ OpenClaw (Baileys)
 ```
 
 > **注意**: 这是基于 WhatsApp Web 的实现，需要手机保持在线。
@@ -17,7 +17,7 @@ Moltbot 使用 WhatsApp Web 协议连接，就像在浏览器中使用 WhatsApp 
 ### 1. 扫码登录
 
 ```bash
-moltbot channels login
+openclaw channels login
 ```
 
 终端会显示二维码，使用手机扫描：
@@ -30,7 +30,7 @@ moltbot channels login
 ### 2. 验证连接
 
 ```bash
-moltbot channels status whatsapp
+openclaw channels status whatsapp
 ```
 
 应该显示 `connected` 状态。
@@ -38,7 +38,7 @@ moltbot channels status whatsapp
 ### 3. 发送测试消息
 
 ```bash
-moltbot message send --channel whatsapp --target +15555550123 --message "测试消息"
+openclaw message send --channel whatsapp --target +15555550123 --message "测试消息"
 ```
 
 ## 基础配置
@@ -111,13 +111,13 @@ moltbot message send --channel whatsapp --target +15555550123 --message "测试�
 
 ```bash
 # 查看待审批的配对
-moltbot pairing list whatsapp
+openclaw pairing list whatsapp
 
 # 审批配对
-moltbot pairing approve whatsapp ABC123
+openclaw pairing approve whatsapp ABC123
 
 # 拒绝配对
-moltbot pairing reject whatsapp ABC123
+openclaw pairing reject whatsapp ABC123
 ```
 
 ## 群组配置
@@ -219,10 +219,10 @@ moltbot pairing reject whatsapp ABC123
 
 ```bash
 # 登录默认账号
-moltbot channels login --account default
+openclaw channels login --account default
 
 # 登录其他账号
-moltbot channels login --account business
+openclaw channels login --account business
 ```
 
 ## 消息设置
@@ -272,30 +272,30 @@ moltbot channels login --account business
 
 ```bash
 # 查看连接状态
-moltbot channels status whatsapp
+openclaw channels status whatsapp
 
 # 带探测的深度检查
-moltbot channels status whatsapp --probe
+openclaw channels status whatsapp --probe
 ```
 
 ### 重新登录
 
 ```bash
 # 注销当前会话
-moltbot channels logout whatsapp
+openclaw channels logout whatsapp
 
 # 重新登录
-moltbot channels login
+openclaw channels login
 ```
 
 ### 发送消息
 
 ```bash
 # 发送文本
-moltbot message send --channel whatsapp --target +15555550123 --message "你好"
+openclaw message send --channel whatsapp --target +15555550123 --message "你好"
 
 # 发送到群组
-moltbot message send --channel whatsapp --target "120363403215116621@g.us" --message "群消息"
+openclaw message send --channel whatsapp --target "120363403215116621@g.us" --message "群消息"
 ```
 
 ## 故障排除
@@ -310,7 +310,7 @@ moltbot message send --channel whatsapp --target "120363403215116621@g.us" --mes
 
 - 检查网络稳定性
 - 确保手机 WhatsApp 在线
-- 查看日志：`moltbot logs --tail 100`
+- 查看日志：`openclaw logs --tail 100`
 
 ### 收不到消息
 
@@ -324,8 +324,8 @@ moltbot message send --channel whatsapp --target "120363403215116621@g.us" --mes
 WhatsApp 会话可能过期，需要重新登录：
 
 ```bash
-moltbot channels logout whatsapp
-moltbot channels login
+openclaw channels logout whatsapp
+openclaw channels login
 ```
 
 ## 最佳实践

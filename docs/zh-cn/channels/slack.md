@@ -6,7 +6,7 @@
 
 1. 创建 Slack 应用并启用 **Socket Mode**。
 2. 创建 **App Token**（`xapp-...`）和 **Bot Token**（`xoxb-...`）。
-3. 为 Moltbot 设置 Token 并启动网关。
+3. 为 OpenClaw 设置 Token 并启动网关。
 
 最小配置：
 
@@ -41,7 +41,7 @@
 
 多账号支持：使用 `channels.slack.accounts` 配置每个账号的 Token 和可选的 `name`。详见 [网关配置](/zh-cn/config/reference)。
 
-### Moltbot 配置（最小）
+### OpenClaw 配置（最小）
 
 通过环境变量设置 Token（推荐）：
 
@@ -66,7 +66,7 @@ SLACK_BOT_TOKEN=xoxb-...
 
 ### 用户 Token（可选）
 
-Moltbot 可以使用 Slack 用户 Token（`xoxp-...`）进行读取操作（历史、置顶、反应、表情、成员信息）。默认保持只读：读取优先使用用户 Token（如果存在），写入仍使用 Bot Token，除非你显式选择。
+OpenClaw 可以使用 Slack 用户 Token（`xoxp-...`）进行读取操作（历史、置顶、反应、表情、成员信息）。默认保持只读：读取优先使用用户 Token（如果存在），写入仍使用 Bot Token，除非你显式选择。
 
 用户 Token 在配置文件中配置（不支持环境变量）。对于多账号，设置 `channels.slack.accounts.<id>.userToken`。
 
@@ -103,7 +103,7 @@ Moltbot 可以使用 Slack 用户 Token（`xoxp-...`）进行读取操作（历�
 5. **Interactivity & Shortcuts** → 启用并设置相同的 **Request URL**。
 6. **Slash Commands** → 为你的命令设置相同的 **Request URL**。
 
-### Moltbot 配置（HTTP 模式）
+### OpenClaw 配置（HTTP 模式）
 
 ```json5
 {
@@ -126,12 +126,12 @@ Moltbot 可以使用 Slack 用户 Token（`xoxp-...`）进行读取操作（历�
 ```json
 {
   "display_information": {
-    "name": "Moltbot",
-    "description": "Moltbot 的 Slack 连接器"
+    "name": "OpenClaw",
+    "description": "OpenClaw 的 Slack 连接器"
   },
   "features": {
     "bot_user": {
-      "display_name": "Moltbot",
+      "display_name": "OpenClaw",
       "always_online": false
     },
     "app_home": {
@@ -141,7 +141,7 @@ Moltbot 可以使用 Slack 用户 Token（`xoxp-...`）进行读取操作（历�
     "slash_commands": [
       {
         "command": "/clawd",
-        "description": "发送消息给 Moltbot",
+        "description": "发送消息给 OpenClaw",
         "should_escape": false
       }
     ]
@@ -294,7 +294,7 @@ Moltbot 可以使用 Slack 用户 Token（`xoxp-...`）进行读取操作（历�
 
 ## 回复线程
 
-默认情况下，Moltbot 在主频道回复。使用 `channels.slack.replyToMode` 控制自动线程：
+默认情况下，OpenClaw 在主频道回复。使用 `channels.slack.replyToMode` 控制自动线程：
 
 | 模式 | 行为 |
 |------|------|
@@ -340,7 +340,7 @@ Moltbot 可以使用 Slack 用户 Token（`xoxp-...`）进行读取操作（历�
 ## 私信安全（配对）
 
 - 默认：`channels.slack.dm.policy="pairing"` — 未知私信发送者收到配对码（1小时后过期）。
-- 审批：`moltbot pairing approve slack <code>`。
+- 审批：`openclaw pairing approve slack <code>`。
 - 允许任何人：设置 `channels.slack.dm.policy="open"` 和 `channels.slack.dm.allowFrom=["*"]`。
 - `channels.slack.dm.allowFrom` 接受用户 ID、@handle 或电子邮件。
 

@@ -1,6 +1,6 @@
 # 开发者手册
 
-欢迎来到 Moltbot 开发者手册。本文档帮助您了解如何为 Moltbot 贡献代码、开发插件或在其基础上构建应用。
+欢迎来到 OpenClaw 开发者手册。本文档帮助您了解如何为 OpenClaw 贡献代码、开发插件或在其基础上构建应用。
 
 ## 开发环境搭建
 
@@ -21,8 +21,8 @@
 ### 克隆仓库
 
 ```bash
-git clone https://github.com/moltbot/moltbot.git
-cd moltbot
+git clone https://github.com/openclaw/openclaw.git
+cd openclaw
 ```
 
 ### 安装依赖
@@ -45,7 +45,7 @@ pnpm ui:build
 
 ```bash
 # 运行 CLI
-pnpm moltbot --help
+pnpm openclaw --help
 
 # 开发模式运行网关
 pnpm gateway:dev
@@ -57,7 +57,7 @@ pnpm gateway:watch
 ## 项目结构
 
 ```
-moltbot/
+openclaw/
 ├── src/                    # 核心源代码
 │   ├── agents/             # AI 代理系统
 │   ├── channels/           # 渠道抽象层
@@ -220,10 +220,10 @@ pnpm android:assemble
 
 ```bash
 # 详细日志模式
-moltbot gateway --verbose
+openclaw gateway --verbose
 
 # 查看日志
-moltbot logs --tail 100
+openclaw logs --tail 100
 ```
 
 ### 配置调试
@@ -250,7 +250,7 @@ moltbot logs --tail 100
       "type": "node",
       "request": "launch",
       "name": "Debug Gateway",
-      "program": "${workspaceFolder}/moltbot.mjs",
+      "program": "${workspaceFolder}/openclaw.mjs",
       "args": ["gateway", "--verbose"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"

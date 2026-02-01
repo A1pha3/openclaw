@@ -1,10 +1,10 @@
 # 消息路由
 
-本文档介绍 Moltbot 的消息路由系统，包括如何将入站消息路由到正确的 AI 代理。
+本文档介绍 OpenClaw 的消息路由系统，包括如何将入站消息路由到正确的 AI 代理。
 
 ## 路由概述
 
-当收到消息时，Moltbot 需要决定：
+当收到消息时，OpenClaw 需要决定：
 
 1. 哪个代理处理这条消息？
 2. 使用哪个会话上下文？
@@ -272,14 +272,14 @@
 使用详细日志：
 
 ```bash
-moltbot gateway --verbose
+openclaw gateway --verbose
 ```
 
 ### 检查代理绑定
 
 ```bash
-moltbot config get bindings
-moltbot config get agents.list
+openclaw config get bindings
+openclaw config get agents.list
 ```
 
 ### 模拟路由
@@ -287,7 +287,7 @@ moltbot config get agents.list
 （未来功能）
 
 ```bash
-moltbot route test --channel whatsapp --peer +15555550123
+openclaw route test --channel whatsapp --peer +15555550123
 ```
 
 ## 路由相关配置

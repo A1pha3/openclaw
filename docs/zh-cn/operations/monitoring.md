@@ -1,6 +1,6 @@
 # 监控指南
 
-本文档介绍如何监控 Moltbot 网关和相关服务的运行状态。
+本文档介绍如何监控 OpenClaw 网关和相关服务的运行状态。
 
 ## 健康检查
 
@@ -8,25 +8,25 @@
 
 ```bash
 # 查看网关状态
-moltbot gateway status
+openclaw gateway status
 
 # 查看所有渠道状态
-moltbot channels status
+openclaw channels status
 
 # 带探测的深度检查
-moltbot channels status --probe
+openclaw channels status --probe
 ```
 
 ### 诊断工具
 
 ```bash
 # 运行完整诊断
-moltbot doctor
+openclaw doctor
 
 # 检查特定问题
-moltbot doctor --check config
-moltbot doctor --check channels
-moltbot doctor --check permissions
+openclaw doctor --check config
+openclaw doctor --check channels
+openclaw doctor --check permissions
 ```
 
 ## 日志
@@ -35,13 +35,13 @@ moltbot doctor --check permissions
 
 ```bash
 # 实时查看日志
-moltbot logs --tail 100
+openclaw logs --tail 100
 
 # 查看特定级别
-moltbot logs --level error
+openclaw logs --level error
 
 # 查看特定渠道
-moltbot logs --channel telegram
+openclaw logs --channel telegram
 ```
 
 ### macOS 统一日志
@@ -49,7 +49,7 @@ moltbot logs --channel telegram
 使用项目提供的日志查询脚本：
 
 ```bash
-# 查看 Moltbot 子系统日志
+# 查看 OpenClaw 子系统日志
 ./scripts/clawlog.sh
 
 # 跟踪模式
@@ -66,7 +66,7 @@ moltbot logs --channel telegram
   "logging": {
     "level": "info",           // debug | info | warn | error
     "format": "pretty",        // pretty | json
-    "file": "~/.clawdbot/logs/moltbot.log",
+    "file": "~/.clawdbot/logs/openclaw.log",
     "maxSize": "10m",          // 单个文件最大大小
     "maxFiles": 5              // 保留的日志文件数量
   }
@@ -88,14 +88,14 @@ moltbot logs --channel telegram
 
 ```bash
 # 检查网关进程
-ps aux | grep moltbot
+ps aux | grep openclaw
 
 # 检查端口占用
 ss -ltnp | grep 18789
 lsof -i :18789
 
 # macOS launchd 状态
-launchctl print gui/$UID | grep moltbot
+launchctl print gui/$UID | grep openclaw
 ```
 
 ### 重启服务
@@ -105,8 +105,8 @@ launchctl print gui/$UID | grep moltbot
 ./scripts/restart-mac.sh
 
 # 强制重启（Linux/远程）
-pkill -9 -f moltbot-gateway || true
-nohup moltbot gateway run --bind loopback --port 18789 --force > /tmp/moltbot-gateway.log 2>&1 &
+pkill -9 -f openclaw-gateway || true
+nohup openclaw gateway run --bind loopback --port 18789 --force > /tmp/openclaw-gateway.log 2>&1 &
 ```
 
 ## 渠道监控
@@ -115,11 +115,11 @@ nohup moltbot gateway run --bind loopback --port 18789 --force > /tmp/moltbot-ga
 
 ```bash
 # 所有渠道概览
-moltbot channels status
+openclaw channels status
 
 # 特定渠道详情
-moltbot channels status whatsapp
-moltbot channels status telegram --verbose
+openclaw channels status whatsapp
+openclaw channels status telegram --verbose
 ```
 
 ### 渠道健康指标
@@ -135,11 +135,11 @@ moltbot channels status telegram --verbose
 
 ```bash
 # 查看待处理的配对请求
-moltbot pairing list
+openclaw pairing list
 
 # 按渠道查看
-moltbot pairing list telegram
-moltbot pairing list whatsapp
+openclaw pairing list telegram
+openclaw pairing list whatsapp
 ```
 
 ## 性能监控
@@ -148,20 +148,20 @@ moltbot pairing list whatsapp
 
 ```bash
 # 内存和 CPU 使用
-top -p $(pgrep -f moltbot)
+top -p $(pgrep -f openclaw)
 
 # 更详细的资源信息
-htop -p $(pgrep -f moltbot)
+htop -p $(pgrep -f openclaw)
 ```
 
 ### 会话统计
 
 ```bash
 # 查看活跃会话
-moltbot sessions list
+openclaw sessions list
 
 # 会话详情
-moltbot sessions info <session-id>
+openclaw sessions info <session-id>
 ```
 
 ## 告警设置
@@ -218,10 +218,10 @@ const metrics = {
 
 ```bash
 # 远程检查网关状态
-ssh gateway-host "moltbot channels status --probe"
+ssh gateway-host "openclaw channels status --probe"
 
 # 远程查看日志
-ssh gateway-host "tail -n 100 /tmp/moltbot-gateway.log"
+ssh gateway-host "tail -n 100 /tmp/openclaw-gateway.log"
 ```
 
 ### Tailscale 访问
@@ -247,7 +247,7 @@ ssh gateway-host "tail -n 100 /tmp/moltbot-gateway.log"
 1. 检查端口占用：`lsof -i :18789`
 2. 检查配置文件语法
 3. 查看启动日志
-4. 运行 `moltbot doctor`
+4. 运行 `openclaw doctor`
 
 ### 渠道断开连接
 
@@ -279,7 +279,7 @@ ssh gateway-host "tail -n 100 /tmp/moltbot-gateway.log"
   "logging": {
     "level": "info",
     "format": "json",              // 便于日志聚合
-    "file": "/var/log/moltbot/moltbot.log",
+    "file": "/var/log/openclaw/openclaw.log",
     "maxSize": "100m",
     "maxFiles": 10
   }
@@ -291,14 +291,14 @@ ssh gateway-host "tail -n 100 /tmp/moltbot-gateway.log"
 使用 systemd 管理服务（Linux）：
 
 ```ini
-# /etc/systemd/user/moltbot.service
+# /etc/systemd/user/openclaw.service
 [Unit]
-Description=Moltbot Gateway
+Description=OpenClaw Gateway
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/moltbot gateway run --bind loopback --port 18789
+ExecStart=/usr/local/bin/openclaw gateway run --bind loopback --port 18789
 Restart=always
 RestartSec=10
 
@@ -308,11 +308,11 @@ WantedBy=default.target
 
 ```bash
 # 启用服务
-systemctl --user enable moltbot
-systemctl --user start moltbot
+systemctl --user enable openclaw
+systemctl --user start openclaw
 
 # 查看状态
-systemctl --user status moltbot
+systemctl --user status openclaw
 ```
 
 ### 备份
@@ -321,7 +321,7 @@ systemctl --user status moltbot
 
 ```bash
 # 备份配置
-cp -r ~/.clawdbot/moltbot.json ~/backups/
+cp -r ~/.clawdbot/openclaw.json ~/backups/
 
 # 备份凭证
 cp -r ~/.clawdbot/credentials/ ~/backups/

@@ -1,6 +1,6 @@
 # Gateway 网关
 
-Gateway 是 Moltbot 的核心服务，负责管理所有消息渠道和 AI 代理的通信。
+Gateway 是 OpenClaw 的核心服务，负责管理所有消息渠道和 AI 代理的通信。
 
 ## 概述
 
@@ -17,13 +17,13 @@ Gateway 是一个长期运行的进程，提供：
 ### 基本启动
 
 ```bash
-moltbot gateway
+openclaw gateway
 ```
 
 ### 带参数启动
 
 ```bash
-moltbot gateway --port 18789 --verbose
+openclaw gateway --port 18789 --verbose
 ```
 
 ### 常用选项
@@ -95,7 +95,7 @@ CLI 连接时：
 
 ```bash
 export CLAWDBOT_GATEWAY_TOKEN="your-token"
-moltbot status
+openclaw status
 ```
 
 Control UI 连接时，在设置中输入令牌。
@@ -108,25 +108,25 @@ Control UI 连接时，在设置中输入令牌。
 
 ```bash
 # 安装服务
-moltbot onboard --install-daemon
+openclaw onboard --install-daemon
 
 # 查看状态
-moltbot service status
+openclaw service status
 
 # 启动/停止/重启
-moltbot service start
-moltbot service stop
-moltbot service restart
+openclaw service start
+openclaw service stop
+openclaw service restart
 ```
 
 ### 手动运行
 
 ```bash
 # 前台运行
-moltbot gateway --verbose
+openclaw gateway --verbose
 
 # 后台运行
-nohup moltbot gateway > /tmp/moltbot.log 2>&1 &
+nohup openclaw gateway > /tmp/openclaw.log 2>&1 &
 ```
 
 ## 状态检查
@@ -134,20 +134,20 @@ nohup moltbot gateway > /tmp/moltbot.log 2>&1 &
 ### 健康检查
 
 ```bash
-moltbot health
+openclaw health
 ```
 
 ### 状态查询
 
 ```bash
 # 基本状态
-moltbot status
+openclaw status
 
 # 深度检查（带探测）
-moltbot status --deep
+openclaw status --deep
 
 # 完整报告
-moltbot status --all
+openclaw status --all
 ```
 
 ### HTTP 健康端点
@@ -163,20 +163,20 @@ curl http://127.0.0.1:18789/health
 配置变更后自动重启：
 
 ```bash
-moltbot config set channels.telegram.enabled true
+openclaw config set channels.telegram.enabled true
 # Gateway 自动重启
 ```
 
 ### 手动重启
 
 ```bash
-moltbot gateway restart
+openclaw gateway restart
 ```
 
 ### 通过 RPC 重启
 
 ```bash
-moltbot gateway call gateway.restart --params '{}'
+openclaw gateway call gateway.restart --params '{}'
 ```
 
 ## RPC API
@@ -184,7 +184,7 @@ moltbot gateway call gateway.restart --params '{}'
 ### 调用 RPC 方法
 
 ```bash
-moltbot gateway call <method> --params '<json>'
+openclaw gateway call <method> --params '<json>'
 ```
 
 ### 常用方法
@@ -202,10 +202,10 @@ moltbot gateway call <method> --params '<json>'
 
 ```bash
 # 获取配置
-moltbot gateway call config.get --params '{}'
+openclaw gateway call config.get --params '{}'
 
 # 获取渠道状态
-moltbot gateway call channels.status --params '{"channel": "whatsapp"}'
+openclaw gateway call channels.status --params '{"channel": "whatsapp"}'
 ```
 
 ## Canvas Host
@@ -213,7 +213,7 @@ moltbot gateway call channels.status --params '{"channel": "whatsapp"}'
 Canvas Host 是 HTTP 文件服务器，用于节点 WebView：
 
 ```
-http://<gateway>:18793/__moltbot__/canvas/
+http://<gateway>:18793/__openclaw__/canvas/
 ```
 
 ### 配置
@@ -233,7 +233,7 @@ http://<gateway>:18793/__moltbot__/canvas/
 
 ### 日志位置
 
-默认：`/tmp/moltbot/moltbot-YYYY-MM-DD.log`
+默认：`/tmp/openclaw/openclaw-YYYY-MM-DD.log`
 
 ### 配置日志
 
@@ -241,7 +241,7 @@ http://<gateway>:18793/__moltbot__/canvas/
 {
   logging: {
     level: "info",              // debug | info | warn | error
-    file: "/var/log/moltbot/moltbot.log",
+    file: "/var/log/openclaw/openclaw.log",
     consoleLevel: "info",
     consoleStyle: "pretty"      // pretty | compact | json
   }
@@ -251,7 +251,7 @@ http://<gateway>:18793/__moltbot__/canvas/
 ### 查看日志
 
 ```bash
-moltbot logs --tail 100
+openclaw logs --tail 100
 ```
 
 ## 远程访问
@@ -279,7 +279,7 @@ ssh -L 18789:127.0.0.1:18789 user@gateway-host
 ```nginx
 server {
     listen 443 ssl;
-    server_name moltbot.example.com;
+    server_name openclaw.example.com;
     
     location / {
         proxy_pass http://127.0.0.1:18789;
@@ -298,12 +298,12 @@ server {
 # 实例 A
 CLAWDBOT_CONFIG_PATH=~/.clawdbot/a.json \
 CLAWDBOT_STATE_DIR=~/.clawdbot-a \
-moltbot gateway --port 19001
+openclaw gateway --port 19001
 
 # 实例 B
 CLAWDBOT_CONFIG_PATH=~/.clawdbot/b.json \
 CLAWDBOT_STATE_DIR=~/.clawdbot-b \
-moltbot gateway --port 19002
+openclaw gateway --port 19002
 ```
 
 ## 故障排除
@@ -312,13 +312,13 @@ moltbot gateway --port 19002
 
 ```bash
 # 诊断
-moltbot doctor
+openclaw doctor
 
 # 检查端口
 lsof -i :18789
 
 # 详细日志
-moltbot gateway --verbose
+openclaw gateway --verbose
 ```
 
 ### 连接问题
@@ -334,10 +334,10 @@ curl http://127.0.0.1:18789/health
 
 ```bash
 # 查看日志
-moltbot logs --tail 200
+openclaw logs --tail 200
 
 # 检查系统日志
-journalctl --user -u moltbot-gateway
+journalctl --user -u openclaw-gateway
 ```
 
 ## 最佳实践

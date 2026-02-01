@@ -6,7 +6,7 @@
 
 1. 创建 Discord 机器人并复制 Bot Token。
 2. 在 Discord 应用设置中，启用 **Message Content Intent**（如果需要使用白名单或名称查询，还需启用 **Server Members Intent**）。
-3. 为 Moltbot 设置 Token：
+3. 为 OpenClaw 设置 Token：
    - 环境变量：`DISCORD_BOT_TOKEN=...`
    - 或配置：`channels.discord.token: "..."`
    - 如果两者都设置，配置文件优先（环境变量仅作为默认账号的后备）。
@@ -29,7 +29,7 @@
 
 ## 目标
 
-- 通过 Discord 私信或服务器频道与 Moltbot 交流。
+- 通过 Discord 私信或服务器频道与 OpenClaw 交流。
 - 私聊合并到代理的主会话（默认 `agent:main:main`）；服务器频道隔离为 `agent:<agentId>:discord:channel:<channelId>`（显示名称使用 `discord:<guildSlug>#<channelSlug>`）。
 - 群组私信默认忽略；通过 `channels.discord.dm.groupEnabled` 启用，可选通过 `channels.discord.dm.groupChannels` 限制。
 - 保持路由确定性：回复始终返回到消息来源的频道。
@@ -38,11 +38,11 @@
 
 1. 创建 Discord 应用 → Bot，启用所需的 Intent（私信 + 服务器消息 + 消息内容），获取 Bot Token。
 2. 邀请机器人到服务器，授予读取/发送消息的权限。
-3. 配置 Moltbot 的 `channels.discord.token`（或使用 `DISCORD_BOT_TOKEN` 作为后备）。
+3. 配置 OpenClaw 的 `channels.discord.token`（或使用 `DISCORD_BOT_TOKEN` 作为后备）。
 4. 运行网关；当 Token 可用（配置优先，环境变量后备）且 `channels.discord.enabled` 不为 `false` 时，自动启动 Discord 频道。
 5. 私聊：使用 `user:<id>`（或 `<@id>` 提及）进行投递；所有对话落入共享的 `main` 会话。
 6. 服务器频道：使用 `channel:<channelId>` 进行投递。默认需要提及，可按服务器或频道设置。
-7. 私聊安全：默认通过 `channels.discord.dm.policy`（默认：`"pairing"`）。未知发送者收到配对码（1小时后过期）；通过 `moltbot pairing approve discord <code>` 审批。
+7. 私聊安全：默认通过 `channels.discord.dm.policy`（默认：`"pairing"`）。未知发送者收到配对码（1小时后过期）；通过 `openclaw pairing approve discord <code>` 审批。
 
 ## 配置写入
 
@@ -58,7 +58,7 @@
 
 ## 如何创建自己的机器人
 
-这是在服务器频道（如 `#help`）运行 Moltbot 的 Discord 开发者门户设置。
+这是在服务器频道（如 `#help`）运行 OpenClaw 的 Discord 开发者门户设置。
 
 ### 1) 创建 Discord 应用 + 机器人用户
 
@@ -67,7 +67,7 @@
    - **Bot** → **Add Bot**
    - 复制 **Bot Token**（这就是 `DISCORD_BOT_TOKEN` 的值）
 
-### 2) 启用 Moltbot 需要的 Gateway Intent
+### 2) 启用 OpenClaw 需要的 Gateway Intent
 
 Discord 默认阻止"特权 Intent"，需要显式启用。
 
@@ -100,7 +100,7 @@ Discord 默认阻止"特权 Intent"，需要显式启用。
 
 ### 4) 获取 ID（服务器/用户/频道）
 
-Discord 到处使用数字 ID；Moltbot 配置优先使用 ID。
+Discord 到处使用数字 ID；OpenClaw 配置优先使用 ID。
 
 1. Discord（桌面/网页）→ **用户设置** → **高级** → 启用 **开发者模式**
 2. 右键点击：
@@ -108,7 +108,7 @@ Discord 到处使用数字 ID；Moltbot 配置优先使用 ID。
    - 频道（如 `#help`）→ **复制频道 ID**
    - 你的用户 → **复制用户 ID**
 
-### 5) 配置 Moltbot
+### 5) 配置 OpenClaw
 
 #### Token
 
@@ -179,7 +179,7 @@ DISCORD_BOT_TOKEN=...
 
 ## 故障排除
 
-- 首先：运行 `moltbot doctor` 和 `moltbot channels status --probe`。
+- 首先：运行 `openclaw doctor` 和 `openclaw channels status --probe`。
 - **"Used disallowed intents"**：在开发者门户启用 **Message Content Intent**（可能还需要 **Server Members Intent**），然后重启网关。
 - **机器人连接但在服务器频道不回复**：
   - 缺少 **Message Content Intent**，或
@@ -334,7 +334,7 @@ DISCORD_BOT_TOKEN=...
 
 - 将 Bot Token 视为密码；在受监督的主机上优先使用 `DISCORD_BOT_TOKEN` 环境变量，或锁定配置文件权限。
 - 只授予机器人所需的权限（通常是读取/发送消息）。
-- 如果机器人卡住或被速率限制，确认没有其他进程占用 Discord 会话后重启网关（`moltbot gateway --force`）。
+- 如果机器人卡住或被速率限制，确认没有其他进程占用 Discord 会话后重启网关（`openclaw gateway --force`）。
 
 ## 相关文档
 

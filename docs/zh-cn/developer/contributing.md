@@ -1,6 +1,6 @@
 # 贡献指南
 
-感谢您对 Moltbot 的贡献兴趣！本文档介绍如何为项目做出贡献。
+感谢您对 OpenClaw 的贡献兴趣！本文档介绍如何为项目做出贡献。
 
 ## 开始之前
 
@@ -13,8 +13,8 @@
 ### 克隆仓库
 
 ```bash
-git clone https://github.com/moltbot/moltbot.git
-cd moltbot
+git clone https://github.com/openclaw/openclaw.git
+cd openclaw
 ```
 
 ### 安装依赖
@@ -62,7 +62,7 @@ pnpm dev
 pnpm gateway:watch
 
 # 运行 CLI
-pnpm moltbot <command>
+pnpm openclaw <command>
 ```
 
 ### 3. 检查代码
@@ -283,7 +283,7 @@ async function fetchWithRetry(url: string): Promise<Response> {
 1. 在 `extensions/` 创建插件目录
 2. 初始化 `package.json`
    - 不使用 `workspace:*` 依赖
-   - `moltbot` 放在 `devDependencies` 或 `peerDependencies`
+   - `openclaw` 放在 `devDependencies` 或 `peerDependencies`
 3. 实现插件入口
 4. 编写文档
 5. 更新标签规则

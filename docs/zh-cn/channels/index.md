@@ -1,12 +1,12 @@
 # 渠道概述
 
-Moltbot 支持连接多种消息平台，让您的 AI 代理能够通过用户熟悉的通信工具进行交互。
+OpenClaw 支持连接多种消息平台，让您的 AI 代理能够通过用户熟悉的通信工具进行交互。
 
 ## 支持的渠道
 
 ### 内置渠道
 
-这些渠道随 Moltbot 核心安装，无需额外插件。
+这些渠道随 OpenClaw 核心安装，无需额外插件。
 
 | 渠道 | 类型 | 状态 | 说明 |
 |------|------|------|------|
@@ -24,17 +24,17 @@ Moltbot 支持连接多种消息平台，让您的 AI 代理能够通过用户�
 
 ```bash
 # 安装插件示例
-moltbot plugins install @moltbot/mattermost
+openclaw plugins install @openclaw/mattermost
 ```
 
 | 渠道 | 插件包 | 状态 | 说明 |
 |------|--------|------|------|
-| [Matrix](/zh-cn/channels/matrix) | `@moltbot/matrix` | 稳定 | 去中心化协议 |
-| [Microsoft Teams](/zh-cn/channels/msteams) | `@moltbot/msteams` | 稳定 | 企业协作 |
-| [Mattermost](/zh-cn/channels/mattermost) | `@moltbot/mattermost` | 稳定 | 开源团队协作 |
-| [Twitch](/zh-cn/channels/twitch) | `@moltbot/twitch` | Beta | 直播聊天 |
-| [Nostr](/zh-cn/channels/nostr) | `@moltbot/nostr` | Beta | 去中心化社交 |
-| [Zalo](/zh-cn/channels/zalo) | `@moltbot/zalo` | Beta | 越南通信应用 |
+| [Matrix](/zh-cn/channels/matrix) | `@openclaw/matrix` | 稳定 | 去中心化协议 |
+| [Microsoft Teams](/zh-cn/channels/msteams) | `@openclaw/msteams` | 稳定 | 企业协作 |
+| [Mattermost](/zh-cn/channels/mattermost) | `@openclaw/mattermost` | 稳定 | 开源团队协作 |
+| [Twitch](/zh-cn/channels/twitch) | `@openclaw/twitch` | Beta | 直播聊天 |
+| [Nostr](/zh-cn/channels/nostr) | `@openclaw/nostr` | Beta | 去中心化社交 |
+| [Zalo](/zh-cn/channels/zalo) | `@openclaw/zalo` | Beta | 越南通信应用 |
 
 ## 渠道功能对比
 
@@ -127,7 +127,7 @@ moltbot plugins install @moltbot/mattermost
       {
         "id": "main",
         "groupChat": {
-          "mentionPatterns": ["@clawd", "小助手", "moltbot"]
+          "mentionPatterns": ["@clawd", "小助手", "openclaw"]
         }
       }
     ]
@@ -164,30 +164,30 @@ moltbot plugins install @moltbot/mattermost
 
 ```bash
 # 扫码登录
-moltbot channels login
+openclaw channels login
 
 # 查看状态
-moltbot channels status whatsapp
+openclaw channels status whatsapp
 ```
 
 ### Telegram
 
 ```bash
 # 设置 Bot Token
-moltbot config set channels.telegram.botToken "YOUR_TOKEN"
+openclaw config set channels.telegram.botToken "YOUR_TOKEN"
 
 # 查看状态
-moltbot channels status telegram
+openclaw channels status telegram
 ```
 
 ### Discord
 
 ```bash
 # 设置 Bot Token
-moltbot config set channels.discord.token "YOUR_TOKEN"
+openclaw config set channels.discord.token "YOUR_TOKEN"
 
 # 查看状态
-moltbot channels status discord
+openclaw channels status discord
 ```
 
 ## 渠道状态检查
@@ -195,13 +195,13 @@ moltbot channels status discord
 查看所有渠道状态：
 
 ```bash
-moltbot channels status
+openclaw channels status
 ```
 
 带探测的深度检查：
 
 ```bash
-moltbot channels status --probe
+openclaw channels status --probe
 ```
 
 ## 故障排除
@@ -210,8 +210,8 @@ moltbot channels status --probe
 
 1. 检查网络连接
 2. 验证认证信息（Token/凭证）
-3. 运行 `moltbot doctor` 诊断
-4. 查看日志 `moltbot logs --tail 100`
+3. 运行 `openclaw doctor` 诊断
+4. 查看日志 `openclaw logs --tail 100`
 
 ### 消息发送失败
 

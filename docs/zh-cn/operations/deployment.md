@@ -1,6 +1,6 @@
 # 部署指南
 
-本文档介绍如何在各种环境中部署 Moltbot。
+本文档介绍如何在各种环境中部署 OpenClaw。
 
 ## 部署模式
 
@@ -27,7 +27,7 @@
 **推荐方式**：使用向导安装服务
 
 ```bash
-moltbot onboard --install-daemon
+openclaw onboard --install-daemon
 ```
 
 这会根据您的系统自动安装：
@@ -39,13 +39,13 @@ moltbot onboard --install-daemon
 前台运行（用于调试）：
 
 ```bash
-moltbot gateway --port 18789 --verbose
+openclaw gateway --port 18789 --verbose
 ```
 
 后台运行：
 
 ```bash
-nohup moltbot gateway --port 18789 > /tmp/moltbot.log 2>&1 &
+nohup openclaw gateway --port 18789 > /tmp/openclaw.log 2>&1 &
 ```
 
 ## Docker 部署
@@ -54,10 +54,10 @@ nohup moltbot gateway --port 18789 > /tmp/moltbot.log 2>&1 &
 
 ```bash
 docker run -d \
-  --name moltbot \
+  --name openclaw \
   -p 18789:18789 \
   -v ~/.clawdbot:/root/.clawdbot \
-  ghcr.io/moltbot/moltbot:latest \
+  ghcr.io/openclaw/openclaw:latest \
   gateway --port 18789
 ```
 
@@ -67,14 +67,14 @@ docker run -d \
 version: '3.8'
 
 services:
-  moltbot:
-    image: ghcr.io/moltbot/moltbot:latest
-    container_name: moltbot
+  openclaw:
+    image: ghcr.io/openclaw/openclaw:latest
+    container_name: openclaw
     ports:
       - "18789:18789"
       - "18793:18793"
     volumes:
-      - moltbot-data:/root/.clawdbot
+      - openclaw-data:/root/.clawdbot
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -82,13 +82,13 @@ services:
     command: gateway --port 18789 --bind 0.0.0.0
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "moltbot", "health"]
+      test: ["CMD", "openclaw", "health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
 volumes:
-  moltbot-data:
+  openclaw-data:
 ```
 
 启动：
@@ -100,13 +100,13 @@ docker-compose up -d
 ### 构建自定义镜像
 
 ```dockerfile
-FROM ghcr.io/moltbot/moltbot:latest
+FROM ghcr.io/openclaw/openclaw:latest
 
 # 添加自定义配置
-COPY moltbot.json /root/.clawdbot/moltbot.json
+COPY openclaw.json /root/.clawdbot/openclaw.json
 
 # 安装插件
-RUN moltbot plugins install @moltbot/mattermost
+RUN openclaw plugins install @openclaw/mattermost
 ```
 
 ## 云平台部署
@@ -121,10 +121,10 @@ RUN moltbot plugins install @moltbot/mattermost
 ```yaml
 # railway.yaml
 services:
-  moltbot:
-    image: ghcr.io/moltbot/moltbot:latest
+  openclaw:
+    image: ghcr.io/openclaw/openclaw:latest
     command: gateway --port $PORT --bind 0.0.0.0
-    healthcheck: moltbot health
+    healthcheck: openclaw health
 ```
 
 ### Render
@@ -138,13 +138,13 @@ services:
 # render.yaml
 services:
   - type: web
-    name: moltbot
+    name: openclaw
     env: docker
-    dockerImage: ghcr.io/moltbot/moltbot:latest
+    dockerImage: ghcr.io/openclaw/openclaw:latest
     dockerCommand: gateway --port $PORT --bind 0.0.0.0
     healthCheckPath: /health
     disk:
-      name: moltbot-data
+      name: openclaw-data
       mountPath: /root/.clawdbot
       sizeGB: 10
 ```
@@ -156,7 +156,7 @@ services:
 fly launch
 
 # 创建持久化存储
-fly volumes create moltbot_data --size 10
+fly volumes create openclaw_data --size 10
 
 # 部署
 fly deploy
@@ -165,10 +165,10 @@ fly deploy
 `fly.toml`:
 
 ```toml
-app = "moltbot"
+app = "openclaw"
 
 [build]
-  image = "ghcr.io/moltbot/moltbot:latest"
+  image = "ghcr.io/openclaw/openclaw:latest"
 
 [[services]]
   internal_port = 18789
@@ -184,7 +184,7 @@ app = "moltbot"
     timeout = 10000
 
 [mounts]
-  source = "moltbot_data"
+  source = "openclaw_data"
   destination = "/root/.clawdbot"
 ```
 
@@ -197,14 +197,14 @@ app = "moltbot"
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
-# 安装 Moltbot
-npm install -g moltbot@latest
+# 安装 OpenClaw
+npm install -g openclaw@latest
 
 # 配置
-moltbot onboard --install-daemon
+openclaw onboard --install-daemon
 
 # 启动服务
-systemctl --user enable --now moltbot-gateway
+systemctl --user enable --now openclaw-gateway
 ```
 
 ### 配置防火墙
@@ -252,7 +252,7 @@ ssh -L 18789:127.0.0.1:18789 user@server
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name moltbot.example.com;
+    server_name openclaw.example.com;
     
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
@@ -272,7 +272,7 @@ server {
 使用 Caddy：
 
 ```
-moltbot.example.com {
+openclaw.example.com {
     reverse_proxy 127.0.0.1:18789
 }
 ```
@@ -304,11 +304,11 @@ moltbot.example.com {
 ```bash
 # WhatsApp 实例
 CLAWDBOT_STATE_DIR=~/.clawdbot-wa \
-moltbot gateway --port 19001
+openclaw gateway --port 19001
 
 # Telegram 实例
 CLAWDBOT_STATE_DIR=~/.clawdbot-tg \
-moltbot gateway --port 19002
+openclaw gateway --port 19002
 ```
 
 ## 安全建议
@@ -340,10 +340,10 @@ moltbot gateway --port 19002
 
 ```bash
 # 定期检查更新
-moltbot update
+openclaw update
 
 # 自动更新（需要自行配置 cron）
-0 2 * * * moltbot update && moltbot service restart
+0 2 * * * openclaw update && openclaw service restart
 ```
 
 ## 监控配置
@@ -352,7 +352,7 @@ moltbot update
 
 ```bash
 # 添加到监控系统
-curl -f http://127.0.0.1:18789/health || alert "Moltbot is down"
+curl -f http://127.0.0.1:18789/health || alert "OpenClaw is down"
 ```
 
 ### 日志收集
@@ -363,7 +363,7 @@ curl -f http://127.0.0.1:18789/health || alert "Moltbot is down"
 {
   logging: {
     level: "info",
-    file: "/var/log/moltbot/moltbot.log",
+    file: "/var/log/openclaw/openclaw.log",
     consoleStyle: "json"  // 便于日志收集
   }
 }

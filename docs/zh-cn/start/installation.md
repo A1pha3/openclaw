@@ -1,6 +1,6 @@
 # 安装指南
 
-本文档详细介绍 Moltbot 的各种安装方式，帮助您根据自己的环境选择最合适的安装方法。
+本文档详细介绍 OpenClaw 的各种安装方式，帮助您根据自己的环境选择最合适的安装方法。
 
 ## 系统要求
 
@@ -37,18 +37,18 @@
 **macOS / Linux:**
 
 ```bash
-curl -fsSL https://molt.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
 **Windows (PowerShell，以管理员身份运行):**
 
 ```powershell
-iwr -useb https://molt.bot/install.ps1 | iex
+iwr -useb https://openclaw.ai/install.ps1 | iex
 ```
 
 安装脚本会：
 - 检测您的系统环境
-- 安装 Moltbot CLI
+- 安装 OpenClaw CLI
 - 配置 PATH 环境变量
 - 创建必要的目录结构
 
@@ -58,10 +58,10 @@ iwr -useb https://molt.bot/install.ps1 | iex
 
 ```bash
 # 使用 npm
-npm install -g moltbot@latest
+npm install -g openclaw@latest
 
 # 或使用 pnpm（推荐）
-pnpm add -g moltbot@latest
+pnpm add -g openclaw@latest
 ```
 
 ### 方式三：从源码安装
@@ -70,8 +70,8 @@ pnpm add -g moltbot@latest
 
 ```bash
 # 克隆仓库
-git clone https://github.com/moltbot/moltbot.git
-cd moltbot
+git clone https://github.com/openclaw/openclaw.git
+cd openclaw
 
 # 安装依赖
 pnpm install
@@ -83,13 +83,13 @@ pnpm ui:build
 pnpm build
 
 # 运行配置向导
-pnpm moltbot onboard --install-daemon
+pnpm openclaw onboard --install-daemon
 ```
 
 从源码运行网关：
 
 ```bash
-node moltbot.mjs gateway --port 18789 --verbose
+node openclaw.mjs gateway --port 18789 --verbose
 ```
 
 ### 方式四：Docker 安装
@@ -98,14 +98,14 @@ node moltbot.mjs gateway --port 18789 --verbose
 
 ```bash
 # 拉取镜像
-docker pull ghcr.io/moltbot/moltbot:latest
+docker pull ghcr.io/openclaw/openclaw:latest
 
 # 运行容器
 docker run -d \
-  --name moltbot \
+  --name openclaw \
   -p 18789:18789 \
   -v ~/.clawdbot:/root/.clawdbot \
-  ghcr.io/moltbot/moltbot:latest \
+  ghcr.io/openclaw/openclaw:latest \
   gateway --port 18789
 ```
 
@@ -114,8 +114,8 @@ docker run -d \
 ```yaml
 version: '3.8'
 services:
-  moltbot:
-    image: ghcr.io/moltbot/moltbot:latest
+  openclaw:
+    image: ghcr.io/openclaw/openclaw:latest
     ports:
       - "18789:18789"
     volumes:
@@ -126,22 +126,22 @@ services:
 
 ## 版本与更新渠道
 
-Moltbot 提供三个发布渠道：
+OpenClaw 提供三个发布渠道：
 
 | 渠道 | 说明 | 安装命令 |
 |------|------|----------|
-| **stable** | 正式发布版本，最稳定 | `npm install -g moltbot@latest` |
-| **beta** | 预发布版本，包含新功能 | `npm install -g moltbot@beta` |
+| **stable** | 正式发布版本，最稳定 | `npm install -g openclaw@latest` |
+| **beta** | 预发布版本，包含新功能 | `npm install -g openclaw@beta` |
 | **dev** | 开发版本，最新代码 | 从源码安装 |
 
-### 更新 Moltbot
+### 更新 OpenClaw
 
 ```bash
 # 更新到最新稳定版
-moltbot update
+openclaw update
 
 # 或手动更新
-npm update -g moltbot
+npm update -g openclaw
 ```
 
 ### 版本回滚
@@ -149,7 +149,7 @@ npm update -g moltbot
 如果新版本有问题，可以回滚到之前的版本：
 
 ```bash
-npm install -g moltbot@2026.1.15
+npm install -g openclaw@2026.1.15
 ```
 
 ## 安装验证
@@ -158,22 +158,22 @@ npm install -g moltbot@2026.1.15
 
 ```bash
 # 检查版本
-moltbot --version
+openclaw --version
 
 # 查看帮助
-moltbot --help
+openclaw --help
 
 # 运行诊断
-moltbot doctor
+openclaw doctor
 ```
 
 ## 目录结构
 
-安装后，Moltbot 会创建以下目录结构：
+安装后，OpenClaw 会创建以下目录结构：
 
 ```
 ~/.clawdbot/
-├── moltbot.json          # 主配置文件
+├── openclaw.json          # 主配置文件
 ├── credentials/          # 认证信息
 │   ├── oauth.json        # OAuth 凭证
 │   └── whatsapp/         # WhatsApp 会话
@@ -188,11 +188,11 @@ moltbot doctor
 
 ## 环境变量
 
-Moltbot 支持通过环境变量进行配置：
+OpenClaw 支持通过环境变量进行配置：
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `CLAWDBOT_CONFIG_PATH` | 配置文件路径 | `~/.clawdbot/moltbot.json` |
+| `CLAWDBOT_CONFIG_PATH` | 配置文件路径 | `~/.clawdbot/openclaw.json` |
 | `CLAWDBOT_STATE_DIR` | 状态目录 | `~/.clawdbot` |
 | `CLAWDBOT_GATEWAY_TOKEN` | 网关认证令牌 | - |
 | `OPENAI_API_KEY` | OpenAI API 密钥 | - |
@@ -207,18 +207,18 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 ## 多实例安装
 
-如果需要运行多个 Moltbot 实例：
+如果需要运行多个 OpenClaw 实例：
 
 ```bash
 # 实例 A
 CLAWDBOT_CONFIG_PATH=~/.clawdbot/a.json \
 CLAWDBOT_STATE_DIR=~/.clawdbot-a \
-moltbot gateway --port 19001
+openclaw gateway --port 19001
 
 # 实例 B
 CLAWDBOT_CONFIG_PATH=~/.clawdbot/b.json \
 CLAWDBOT_STATE_DIR=~/.clawdbot-b \
-moltbot gateway --port 19002
+openclaw gateway --port 19002
 ```
 
 ## 后台服务安装
@@ -226,42 +226,42 @@ moltbot gateway --port 19002
 ### macOS (launchd)
 
 ```bash
-moltbot onboard --install-daemon
+openclaw onboard --install-daemon
 ```
 
-这会创建 `~/Library/LaunchAgents/bot.molt.gateway.plist`。
+这会创建 `~/Library/LaunchAgents/openclaw.gateway.plist`。
 
 手动管理服务：
 
 ```bash
 # 查看状态
-moltbot service status
+openclaw service status
 
 # 启动
-moltbot service start
+openclaw service start
 
 # 停止
-moltbot service stop
+openclaw service stop
 
 # 重启
-moltbot service restart
+openclaw service restart
 ```
 
 ### Linux (systemd)
 
 ```bash
-moltbot onboard --install-daemon
+openclaw onboard --install-daemon
 ```
 
-这会创建 `~/.config/systemd/user/moltbot-gateway.service`。
+这会创建 `~/.config/systemd/user/openclaw-gateway.service`。
 
 手动管理：
 
 ```bash
-systemctl --user status moltbot-gateway
-systemctl --user start moltbot-gateway
-systemctl --user stop moltbot-gateway
-systemctl --user restart moltbot-gateway
+systemctl --user status openclaw-gateway
+systemctl --user start openclaw-gateway
+systemctl --user stop openclaw-gateway
+systemctl --user restart openclaw-gateway
 ```
 
 ## 卸载
@@ -270,10 +270,10 @@ systemctl --user restart moltbot-gateway
 
 ```bash
 # 停止服务
-moltbot service stop
+openclaw service stop
 
 # 卸载 CLI
-npm uninstall -g moltbot
+npm uninstall -g openclaw
 
 # 删除配置和数据（谨慎！）
 rm -rf ~/.clawdbot
@@ -282,7 +282,7 @@ rm -rf ~/.clawdbot
 ### 仅卸载 CLI（保留数据）
 
 ```bash
-npm uninstall -g moltbot
+npm uninstall -g openclaw
 ```
 
 ## 故障排除

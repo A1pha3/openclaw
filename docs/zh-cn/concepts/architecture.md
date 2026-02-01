@@ -1,10 +1,10 @@
 # 系统架构
 
-本文档详细介绍 Moltbot 的系统架构，帮助您深入理解各组件的职责和交互方式。
+本文档详细介绍 OpenClaw 的系统架构，帮助您深入理解各组件的职责和交互方式。
 
 ## 架构概述
 
-Moltbot 采用中心化网关架构，通过 Gateway（网关）统一管理所有消息渠道和 AI 代理的通信。
+OpenClaw 采用中心化网关架构，通过 Gateway（网关）统一管理所有消息渠道和 AI 代理的通信。
 
 ```
 消息渠道                         网关                          客户端
@@ -30,7 +30,7 @@ Moltbot 采用中心化网关架构，通过 Gateway（网关）统一管理所�
 
 ### 1. Gateway（网关）
 
-Gateway 是 Moltbot 的核心组件，负责：
+Gateway 是 OpenClaw 的核心组件，负责：
 
 - **消息路由**: 接收来自各渠道的消息，路由到正确的 AI 代理
 - **会话管理**: 维护用户会话状态和上下文
@@ -41,7 +41,7 @@ Gateway 是 Moltbot 的核心组件，负责：
 **启动网关:**
 
 ```bash
-moltbot gateway --port 18789
+openclaw gateway --port 18789
 ```
 
 **网关特性:**
@@ -55,7 +55,7 @@ moltbot gateway --port 18789
 
 ### 2. 消息渠道（Channels）
 
-消息渠道是 Moltbot 与外部消息平台的桥接层。
+消息渠道是 OpenClaw 与外部消息平台的桥接层。
 
 **内置渠道:**
 
@@ -120,7 +120,7 @@ AI 代理负责处理消息并生成回复。
 
 ### 5. 插件系统（Plugins）
 
-Moltbot 支持通过插件扩展功能。
+OpenClaw 支持通过插件扩展功能。
 
 **插件类型:**
 
@@ -223,7 +223,7 @@ Canvas:  https://gateway.example.com:18793
 ```
 环境变量 (最高优先级)
     ↓
-配置文件 (~/.clawdbot/moltbot.json)
+配置文件 (~/.clawdbot/openclaw.json)
     ↓
 默认值 (最低优先级)
 ```
@@ -234,7 +234,7 @@ Canvas:  https://gateway.example.com:18793
 
 ```bash
 # 修改配置
-moltbot config set channels.telegram.enabled true
+openclaw config set channels.telegram.enabled true
 
 # Gateway 自动重启应用变更
 ```
@@ -277,18 +277,18 @@ moltbot config set channels.telegram.enabled true
 ### 健康检查
 
 ```bash
-moltbot health
+openclaw health
 ```
 
 ### 状态查询
 
 ```bash
-moltbot status --all
+openclaw status --all
 ```
 
 ### 日志系统
 
-日志文件位置：`/tmp/moltbot/moltbot-YYYY-MM-DD.log`
+日志文件位置：`/tmp/openclaw/openclaw-YYYY-MM-DD.log`
 
 配置日志级别：
 

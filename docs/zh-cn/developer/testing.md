@@ -1,10 +1,10 @@
 # 测试指南
 
-本文档介绍如何为 Moltbot 编写和运行测试。
+本文档介绍如何为 OpenClaw 编写和运行测试。
 
 ## 测试框架
 
-Moltbot 使用 **Vitest** 作为测试框架，配合 V8 覆盖率工具。
+OpenClaw 使用 **Vitest** 作为测试框架，配合 V8 覆盖率工具。
 
 ### 覆盖率要求
 
@@ -43,7 +43,7 @@ pnpm test -t "should route messages"
 需要真实 API 密钥的测试：
 
 ```bash
-# Moltbot 实时测试
+# OpenClaw 实时测试
 CLAWDBOT_LIVE_TEST=1 pnpm test:live
 
 # 包含提供者实时测试

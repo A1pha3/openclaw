@@ -1,10 +1,10 @@
 # AI 代理系统
 
-本文档详细介绍 Moltbot 的 AI 代理（Agent）系统，包括配置、工作流程和高级特性。
+本文档详细介绍 OpenClaw 的 AI 代理（Agent）系统，包括配置、工作流程和高级特性。
 
 ## 代理概述
 
-代理是 Moltbot 的核心组件，负责：
+代理是 OpenClaw 的核心组件，负责：
 
 - 接收和处理用户消息
 - 调用 AI 模型生成回复
@@ -231,7 +231,7 @@
         scope: "session",        // session | agent | shared
         workspaceAccess: "rw",   // none | ro | rw
         docker: {
-          image: "moltbot-sandbox:latest",
+          image: "openclaw-sandbox:latest",
           cpuLimit: "2",
           memoryLimit: "2g"
         }
@@ -460,21 +460,21 @@
 ### 查看代理状态
 
 ```bash
-moltbot agents list
-moltbot agents status <agentId>
+openclaw agents list
+openclaw agents status <agentId>
 ```
 
 ### 查看会话
 
 ```bash
-moltbot sessions list
-moltbot sessions history <sessionKey>
+openclaw sessions list
+openclaw sessions history <sessionKey>
 ```
 
 ### 调试模式
 
 ```bash
-moltbot gateway --verbose
+openclaw gateway --verbose
 ```
 
 ## 最佳实践

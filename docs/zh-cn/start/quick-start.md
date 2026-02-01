@@ -1,6 +1,6 @@
 # 快速入门
 
-本指南将帮助您在 5 分钟内完成 Moltbot 的安装和基础配置，发送您的第一条消息。
+本指南将帮助您在 5 分钟内完成 OpenClaw 的安装和基础配置，发送您的第一条消息。
 
 ## 前置要求
 
@@ -19,48 +19,48 @@ node --version
 
 如果您还没有安装 Node.js 或版本过低，请访问 [nodejs.org](https://nodejs.org) 下载安装。
 
-## 第一步：安装 Moltbot
+## 第一步：安装 OpenClaw
 
 ### 方式一：使用安装脚本（推荐）
 
 **macOS / Linux:**
 
 ```bash
-curl -fsSL https://molt.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-iwr -useb https://molt.bot/install.ps1 | iex
+iwr -useb https://openclaw.ai/install.ps1 | iex
 ```
 
 ### 方式二：使用 npm 安装
 
 ```bash
-npm install -g moltbot@latest
+npm install -g openclaw@latest
 ```
 
 或使用 pnpm：
 
 ```bash
-pnpm add -g moltbot@latest
+pnpm add -g openclaw@latest
 ```
 
 ### 验证安装
 
 ```bash
-moltbot --version
+openclaw --version
 ```
 
 您应该看到类似 `2026.1.27` 的版本号。
 
 ## 第二步：运行配置向导
 
-Moltbot 提供了交互式配置向导，帮助您完成初始设置：
+OpenClaw 提供了交互式配置向导，帮助您完成初始设置：
 
 ```bash
-moltbot onboard --install-daemon
+openclaw onboard --install-daemon
 ```
 
 向导将引导您完成以下配置：
@@ -80,7 +80,7 @@ moltbot onboard --install-daemon
 WhatsApp 使用二维码扫描方式登录：
 
 ```bash
-moltbot channels login
+openclaw channels login
 ```
 
 终端会显示二维码，使用手机 WhatsApp：
@@ -99,7 +99,7 @@ moltbot channels login
 4. 在向导中输入 Token，或手动配置：
 
 ```bash
-moltbot config set channels.telegram.botToken "YOUR_BOT_TOKEN"
+openclaw config set channels.telegram.botToken "YOUR_BOT_TOKEN"
 ```
 
 ### 连接 Discord
@@ -112,7 +112,7 @@ moltbot config set channels.telegram.botToken "YOUR_BOT_TOKEN"
 4. 配置 Token：
 
 ```bash
-moltbot config set channels.discord.token "YOUR_BOT_TOKEN"
+openclaw config set channels.discord.token "YOUR_BOT_TOKEN"
 ```
 
 ## 第四步：启动网关
@@ -120,13 +120,13 @@ moltbot config set channels.discord.token "YOUR_BOT_TOKEN"
 如果您在向导中选择了安装后台服务，网关应该已经在运行。检查状态：
 
 ```bash
-moltbot gateway status
+openclaw gateway status
 ```
 
 手动启动网关（前台模式）：
 
 ```bash
-moltbot gateway --port 18789 --verbose
+openclaw gateway --port 18789 --verbose
 ```
 
 ## 第五步：发送测试消息
@@ -136,7 +136,7 @@ moltbot gateway --port 18789 --verbose
 最快的测试方式是打开浏览器控制台：
 
 ```bash
-moltbot dashboard
+openclaw dashboard
 ```
 
 或直接访问：http://127.0.0.1:18789/
@@ -148,7 +148,7 @@ moltbot dashboard
 发送 WhatsApp 消息：
 
 ```bash
-moltbot message send --target +15555550123 --message "你好，来自 Moltbot"
+openclaw message send --target +15555550123 --message "你好，来自 OpenClaw"
 ```
 
 ## 第六步：验证安装
@@ -157,13 +157,13 @@ moltbot message send --target +15555550123 --message "你好，来自 Moltbot"
 
 ```bash
 # 查看整体状态
-moltbot status
+openclaw status
 
 # 健康检查
-moltbot health
+openclaw health
 
 # 安全审计
-moltbot security audit --deep
+openclaw security audit --deep
 ```
 
 ## 常见问题
@@ -174,10 +174,10 @@ moltbot security audit --deep
 
 ```bash
 # 查看待处理的配对请求
-moltbot pairing list whatsapp
+openclaw pairing list whatsapp
 
 # 批准配对
-moltbot pairing approve whatsapp <code>
+openclaw pairing approve whatsapp <code>
 ```
 
 ### 网关无法启动？
@@ -185,13 +185,13 @@ moltbot pairing approve whatsapp <code>
 检查配置是否有效：
 
 ```bash
-moltbot doctor
+openclaw doctor
 ```
 
 如果有问题，尝试自动修复：
 
 ```bash
-moltbot doctor --fix
+openclaw doctor --fix
 ```
 
 ### 认证失败？
@@ -199,14 +199,14 @@ moltbot doctor --fix
 确认您已配置有效的 API 密钥：
 
 ```bash
-moltbot health
+openclaw health
 ```
 
 如果显示"no auth configured"，需要重新运行向导配置认证。
 
 ## 下一步
 
-恭喜！您已经成功完成了 Moltbot 的基础配置。接下来您可以：
+恭喜！您已经成功完成了 OpenClaw 的基础配置。接下来您可以：
 
 - 📖 阅读 [安装指南](/zh-cn/start/installation) 了解更多安装选项
 - 🔧 查看 [配置参考](/zh-cn/config/reference) 进行高级配置
@@ -217,6 +217,6 @@ moltbot health
 
 如果遇到问题：
 
-1. 运行 `moltbot doctor` 诊断问题
+1. 运行 `openclaw doctor` 诊断问题
 2. 查看 [故障排除](/zh-cn/operations/troubleshooting) 文档
-3. 在 [GitHub Issues](https://github.com/moltbot/moltbot/issues) 提交问题
+3. 在 [GitHub Issues](https://github.com/openclaw/openclaw/issues) 提交问题

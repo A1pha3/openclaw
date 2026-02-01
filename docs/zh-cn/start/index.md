@@ -1,10 +1,10 @@
 # 入门指南
 
-欢迎使用 Moltbot！本部分将指导您从零开始，逐步完成 Moltbot 的安装、配置和使用。
+欢迎使用 OpenClaw！本部分将指导您从零开始，逐步完成 OpenClaw 的安装、配置和使用。
 
-## 什么是 Moltbot？
+## 什么是 OpenClaw？
 
-Moltbot 是一个强大的多渠道 AI 代理网关，可以将 AI 代理连接到您常用的消息平台。
+OpenClaw 是一个强大的多渠道 AI 代理网关，可以将 AI 代理连接到您常用的消息平台。
 
 **核心功能：**
 
@@ -27,7 +27,7 @@ Moltbot 是一个强大的多渠道 AI 代理网关，可以将 AI 代理连接�
 
 ### 新手入门
 
-如果您是第一次使用 Moltbot：
+如果您是第一次使用 OpenClaw：
 
 1. **[快速入门](/zh-cn/start/quick-start)** - 5 分钟完成安装和基础配置
 2. **[安装指南](/zh-cn/start/installation)** - 详细的安装选项说明
@@ -35,7 +35,7 @@ Moltbot 是一个强大的多渠道 AI 代理网关，可以将 AI 代理连接�
 
 ### 进阶学习
 
-理解 Moltbot 的工作原理：
+理解 OpenClaw 的工作原理：
 
 1. **[系统架构](/zh-cn/concepts/architecture)** - 整体架构概述
 2. **[Gateway 网关](/zh-cn/concepts/gateway)** - 核心服务详解
@@ -44,10 +44,10 @@ Moltbot 是一个强大的多渠道 AI 代理网关，可以将 AI 代理连接�
 
 ### 高级使用
 
-发挥 Moltbot 的全部潜力：
+发挥 OpenClaw 的全部潜力：
 
 1. **[消息路由](/zh-cn/concepts/routing)** - 多代理智能路由
-2. **[插件开发](/zh-cn/developer/plugin-development)** - 扩展 Moltbot
+2. **[插件开发](/zh-cn/developer/plugin-development)** - 扩展 OpenClaw
 3. **[运维指南](/zh-cn/operations/index)** - 生产环境最佳实践
 
 ## 快速开始
@@ -56,22 +56,22 @@ Moltbot 是一个强大的多渠道 AI 代理网关，可以将 AI 代理连接�
 
 ```bash
 # 使用安装脚本（推荐）
-curl -fsSL https://molt.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 
 # 或使用 npm
-npm install -g moltbot@latest
+npm install -g openclaw@latest
 ```
 
 ### 2. 配置
 
 ```bash
-moltbot onboard --install-daemon
+openclaw onboard --install-daemon
 ```
 
 ### 3. 连接 WhatsApp
 
 ```bash
-moltbot channels login
+openclaw channels login
 ```
 
 扫描二维码完成连接。
@@ -81,7 +81,7 @@ moltbot channels login
 打开浏览器控制台：
 
 ```bash
-moltbot dashboard
+openclaw dashboard
 ```
 
 或直接访问 http://127.0.0.1:18789/
@@ -98,9 +98,9 @@ moltbot dashboard
 ## 获取帮助
 
 - 📖 **[故障排除](/zh-cn/operations/troubleshooting)** - 常见问题解答
-- 🩺 **诊断工具**: `moltbot doctor`
-- 📋 **状态检查**: `moltbot status --all`
-- 🐛 **问题反馈**: [GitHub Issues](https://github.com/moltbot/moltbot/issues)
+- 🩺 **诊断工具**: `openclaw doctor`
+- 📋 **状态检查**: `openclaw status --all`
+- 🐛 **问题反馈**: [GitHub Issues](https://github.com/openclaw/openclaw/issues)
 
 ## 文档导航
 

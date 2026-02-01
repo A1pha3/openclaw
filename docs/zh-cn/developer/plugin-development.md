@@ -1,10 +1,10 @@
 # 插件开发
 
-本指南介绍如何为 Moltbot 开发自定义插件，扩展其功能。
+本指南介绍如何为 OpenClaw 开发自定义插件，扩展其功能。
 
 ## 插件类型
 
-Moltbot 支持以下类型的插件：
+OpenClaw 支持以下类型的插件：
 
 | 类型 | 说明 | 示例 |
 |------|------|------|
@@ -18,21 +18,21 @@ Moltbot 支持以下类型的插件：
 ### 创建插件项目
 
 ```bash
-mkdir moltbot-plugin-example
-cd moltbot-plugin-example
+mkdir openclaw-plugin-example
+cd openclaw-plugin-example
 npm init -y
 ```
 
 ### 安装 SDK
 
 ```bash
-npm install moltbot --save-dev
+npm install openclaw --save-dev
 ```
 
 ### 基本结构
 
 ```
-moltbot-plugin-example/
+openclaw-plugin-example/
 ├── package.json
 ├── src/
 │   └── index.ts
@@ -44,7 +44,7 @@ moltbot-plugin-example/
 
 ```json
 {
-  "name": "@yourorg/moltbot-example",
+  "name": "@yourorg/openclaw-example",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -52,10 +52,10 @@ moltbot-plugin-example/
     ".": "./dist/index.js"
   },
   "peerDependencies": {
-    "moltbot": ">=2026.1.0"
+    "openclaw": ">=2026.1.0"
   },
   "devDependencies": {
-    "moltbot": "^2026.1.0",
+    "openclaw": "^2026.1.0",
     "typescript": "^5.9.0"
   }
 }
@@ -72,7 +72,7 @@ import {
   type ChannelMessage,
   type SendResult,
   defineChannelPlugin
-} from 'moltbot/plugin-sdk';
+} from 'openclaw/plugin-sdk';
 
 export const myChannelPlugin = defineChannelPlugin({
   // 插件标识
@@ -176,7 +176,7 @@ export const myChannelPlugin = defineChannelPlugin({
 
 ```typescript
 // src/index.ts
-import { defineSkillPlugin, type Tool } from 'moltbot/plugin-sdk';
+import { defineSkillPlugin, type Tool } from 'openclaw/plugin-sdk';
 
 export const mySkillPlugin = defineSkillPlugin({
   id: 'myskill',
@@ -277,7 +277,7 @@ async execute(params, context) {
 ## 存储插件开发
 
 ```typescript
-import { defineStoragePlugin } from 'moltbot/plugin-sdk';
+import { defineStoragePlugin } from 'openclaw/plugin-sdk';
 
 export const myStoragePlugin = defineStoragePlugin({
   id: 'mystorage',
@@ -383,7 +383,7 @@ describe('mySkillPlugin', () => {
 ### 集成测试
 
 ```typescript
-import { createTestGateway } from 'moltbot/testing';
+import { createTestGateway } from 'openclaw/testing';
 
 describe('myChannelPlugin integration', () => {
   it('should handle messages', async () => {
@@ -427,8 +427,8 @@ npm publish --access public
 
 ### 命名约定
 
-- 官方插件：`@moltbot/<name>`
-- 社区插件：`moltbot-plugin-<name>` 或 `@yourorg/moltbot-<name>`
+- 官方插件：`@openclaw/<name>`
+- 社区插件：`openclaw-plugin-<name>` 或 `@yourorg/openclaw-<name>`
 
 ## 最佳实践
 
@@ -484,7 +484,7 @@ async init(context) {
 使用 TypeScript 并充分利用类型：
 
 ```typescript
-import type { ToolExecuteContext } from 'moltbot/plugin-sdk';
+import type { ToolExecuteContext } from 'openclaw/plugin-sdk';
 
 interface MyToolParams {
   query: string;
@@ -500,10 +500,10 @@ async execute(params: MyToolParams, context: ToolExecuteContext) {
 
 查看官方插件获取更多示例：
 
-- [Mattermost](https://github.com/moltbot/moltbot/tree/main/extensions/mattermost)
-- [Matrix](https://github.com/moltbot/moltbot/tree/main/extensions/matrix)
-- [Voice Call](https://github.com/moltbot/moltbot/tree/main/extensions/voice-call)
-- [Memory LanceDB](https://github.com/moltbot/moltbot/tree/main/extensions/memory-lancedb)
+- [Mattermost](https://github.com/openclaw/openclaw/tree/main/extensions/mattermost)
+- [Matrix](https://github.com/openclaw/openclaw/tree/main/extensions/matrix)
+- [Voice Call](https://github.com/openclaw/openclaw/tree/main/extensions/voice-call)
+- [Memory LanceDB](https://github.com/openclaw/openclaw/tree/main/extensions/memory-lancedb)
 
 ## 下一步
 

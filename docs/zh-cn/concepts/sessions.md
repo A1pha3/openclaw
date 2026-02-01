@@ -1,6 +1,6 @@
 # 会话管理
 
-本文档介绍 Moltbot 的会话系统，包括会话生命周期、上下文管理和配置选项。
+本文档介绍 OpenClaw 的会话系统，包括会话生命周期、上下文管理和配置选项。
 
 ## 会话概述
 
@@ -184,32 +184,32 @@ agent:<agentId>:<channel>:<type>:<id>
 
 ```bash
 # 列出所有会话
-moltbot sessions list
+openclaw sessions list
 
 # 查看特定会话
-moltbot sessions show <sessionKey>
+openclaw sessions show <sessionKey>
 ```
 
 ### 查看历史
 
 ```bash
-moltbot sessions history <sessionKey>
+openclaw sessions history <sessionKey>
 ```
 
 ### 清除会话
 
 ```bash
 # 清除特定会话
-moltbot sessions clear <sessionKey>
+openclaw sessions clear <sessionKey>
 
 # 清除所有会话
-moltbot sessions clear --all
+openclaw sessions clear --all
 ```
 
 ### 导出会话
 
 ```bash
-moltbot sessions export <sessionKey> > session.json
+openclaw sessions export <sessionKey> > session.json
 ```
 
 ## 聊天命令
@@ -375,19 +375,19 @@ agent:work:whatsapp:dm:+15555550123
 ### 查看活动会话
 
 ```bash
-moltbot sessions list --active
+openclaw sessions list --active
 ```
 
 ### 会话统计
 
 ```bash
-moltbot sessions stats
+openclaw sessions stats
 ```
 
 ### 调试模式
 
 ```bash
-moltbot gateway --verbose
+openclaw gateway --verbose
 ```
 
 ## 最佳实践

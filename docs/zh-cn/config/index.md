@@ -1,24 +1,24 @@
 # 配置概述
 
-Moltbot 使用 JSON5 格式的配置文件，支持注释和尾随逗号，便于阅读和维护。
+OpenClaw 使用 JSON5 格式的配置文件，支持注释和尾随逗号，便于阅读和维护。
 
 ## 配置文件位置
 
 默认配置文件路径：
 
 ```
-~/.clawdbot/moltbot.json
+~/.clawdbot/openclaw.json
 ```
 
 可通过环境变量覆盖：
 
 ```bash
-export CLAWDBOT_CONFIG_PATH=~/custom/moltbot.json
+export CLAWDBOT_CONFIG_PATH=~/custom/openclaw.json
 ```
 
 ## 配置格式
 
-Moltbot 使用 JSON5 格式，支持：
+OpenClaw 使用 JSON5 格式，支持：
 
 - 单行和多行注释
 - 对象键不需要引号（无特殊字符时）
@@ -45,7 +45,7 @@ Moltbot 使用 JSON5 格式，支持：
 
 ## 最小配置
 
-如果没有配置文件，Moltbot 使用安全的默认值。最小推荐配置：
+如果没有配置文件，OpenClaw 使用安全的默认值。最小推荐配置：
 
 ```json5
 {
@@ -121,14 +121,14 @@ Moltbot 使用 JSON5 格式，支持：
   // 日志配置
   logging: {
     level: "info",
-    file: "/tmp/moltbot/moltbot.log"
+    file: "/tmp/openclaw/openclaw.log"
   }
 }
 ```
 
 ## 配置验证
 
-Moltbot 使用严格的配置验证：
+OpenClaw 使用严格的配置验证：
 
 - 未知键会导致网关拒绝启动
 - 类型不匹配会报错
@@ -138,10 +138,10 @@ Moltbot 使用严格的配置验证：
 
 ```bash
 # 诊断问题
-moltbot doctor
+openclaw doctor
 
 # 自动修复
-moltbot doctor --fix
+openclaw doctor --fix
 ```
 
 ## 配置管理
@@ -150,27 +150,27 @@ moltbot doctor --fix
 
 ```bash
 # 查看当前配置
-moltbot config get
+openclaw config get
 
 # 查看特定配置项
-moltbot config get channels.telegram.enabled
+openclaw config get channels.telegram.enabled
 ```
 
 ### 修改配置
 
 ```bash
 # 设置配置项
-moltbot config set channels.telegram.enabled true
+openclaw config set channels.telegram.enabled true
 
 # 删除配置项
-moltbot config unset channels.discord
+openclaw config unset channels.discord
 ```
 
 ### 配置编辑
 
 ```bash
 # 使用默认编辑器
-moltbot config edit
+openclaw config edit
 ```
 
 ## 环境变量
@@ -218,7 +218,7 @@ moltbot config edit
 将配置拆分到多个文件：
 
 ```json5
-// ~/.clawdbot/moltbot.json
+// ~/.clawdbot/openclaw.json
 {
   gateway: { port: 18789 },
   
@@ -248,17 +248,17 @@ moltbot config edit
 
 ```bash
 # 重启网关应用新配置
-moltbot gateway restart
+openclaw gateway restart
 ```
 
 ### 通过 RPC 更新
 
 ```bash
 # 获取当前配置（包含 hash）
-moltbot gateway call config.get --params '{}'
+openclaw gateway call config.get --params '{}'
 
 # 应用新配置
-moltbot gateway call config.apply --params '{
+openclaw gateway call config.apply --params '{
   "raw": "{...新配置...}",
   "baseHash": "<hash>",
   "restartDelayMs": 1000

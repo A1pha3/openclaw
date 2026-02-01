@@ -1,6 +1,6 @@
 # 配置示例
 
-本文档提供常见使用场景的配置示例，帮助您快速上手 Moltbot。
+本文档提供常见使用场景的配置示例，帮助您快速上手 OpenClaw。
 
 ## 基础配置
 
@@ -272,7 +272,7 @@
         "scope": "session",
         "workspaceAccess": "rw",
         "docker": {
-          "image": "moltbot-sandbox:latest",
+          "image": "openclaw-sandbox:latest",
           "cpuLimit": "2",
           "memoryLimit": "2g"
         }
@@ -389,7 +389,7 @@
   "logging": {
     "level": "debug",
     "format": "pretty",
-    "file": "~/.clawdbot/logs/moltbot.log",
+    "file": "~/.clawdbot/logs/openclaw.log",
     "maxSize": "10m",
     "maxFiles": 5
   }
@@ -403,7 +403,7 @@
   "logging": {
     "level": "info",
     "format": "json",
-    "file": "/var/log/moltbot/moltbot.log",
+    "file": "/var/log/openclaw/openclaw.log",
     "maxSize": "100m",
     "maxFiles": 10
   }
@@ -451,7 +451,7 @@
 {
   "messages": {
     "groupChat": {
-      "mentionPatterns": ["@clawd", "小助手", "moltbot"],
+      "mentionPatterns": ["@clawd", "小助手", "openclaw"],
       "historyLimit": 50
     },
     "responsePrefix": "",

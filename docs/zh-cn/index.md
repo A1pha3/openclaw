@@ -1,6 +1,6 @@
-# Moltbot 中文文档
+# OpenClaw 中文文档
 
-欢迎使用 Moltbot 中文文档。本文档将帮助您从零开始，逐步掌握 Moltbot 的使用、开发和运维。
+欢迎使用 OpenClaw 中文文档。本文档将帮助您从零开始，逐步掌握 OpenClaw 的使用、开发和运维。
 
 ## 文档结构
 
@@ -8,7 +8,7 @@
 
 ### 入门指南
 
-适合刚接触 Moltbot 的新用户，从安装到发送第一条消息。
+适合刚接触 OpenClaw 的新用户，从安装到发送第一条消息。
 
 - [快速入门](/zh-cn/start/quick-start) - 5分钟快速上手
 - [安装指南](/zh-cn/start/installation) - 详细安装步骤
@@ -17,7 +17,7 @@
 
 ### 核心概念
 
-深入理解 Moltbot 的架构和工作原理。
+深入理解 OpenClaw 的架构和工作原理。
 
 - [系统架构](/zh-cn/concepts/architecture) - 整体架构概述
 - [Gateway 网关](/zh-cn/concepts/gateway) - 核心网关系统
@@ -53,7 +53,7 @@
 
 - [开发概述](/zh-cn/developer/index) - 开发环境搭建
 - [项目结构](/zh-cn/developer/project-structure) - 代码组织结构
-- [插件开发](/zh-cn/developer/plugin-development) - 扩展 Moltbot
+- [插件开发](/zh-cn/developer/plugin-development) - 扩展 OpenClaw
 - [API 参考](/zh-cn/developer/api-reference) - 接口文档
 - [测试指南](/zh-cn/developer/testing) - 测试最佳实践
 - [贡献指南](/zh-cn/developer/contributing) - 如何贡献代码
@@ -80,9 +80,9 @@
 | 部署到生产环境 | [部署指南](/zh-cn/operations/deployment) |
 | 解决问题 | [故障排除](/zh-cn/operations/troubleshooting) |
 
-## 关于 Moltbot
+## 关于 OpenClaw
 
-Moltbot 是一个强大的多渠道 AI 代理网关，支持：
+OpenClaw 是一个强大的多渠道 AI 代理网关，支持：
 
 - **多渠道集成**: WhatsApp、Telegram、Discord、Slack、iMessage 等
 - **AI 代理桥接**: 集成 Pi 等 AI 编程代理
@@ -92,9 +92,9 @@ Moltbot 是一个强大的多渠道 AI 代理网关，支持：
 
 ## 获取帮助
 
-- **GitHub**: [moltbot/moltbot](https://github.com/moltbot/moltbot)
-- **问题反馈**: [GitHub Issues](https://github.com/moltbot/moltbot/issues)
-- **英文文档**: [docs.molt.bot](https://docs.molt.bot)
+- **GitHub**: [openclaw/openclaw](https://github.com/openclaw/openclaw)
+- **问题反馈**: [GitHub Issues](https://github.com/openclaw/openclaw/issues)
+- **英文文档**: [docs.openclaw.ai](https://docs.openclaw.ai)
 
 ---
 

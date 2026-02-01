@@ -1,6 +1,6 @@
 # Matrix 配置
 
-Matrix 是一个开放的、去中心化的消息协议。Moltbot 通过插件支持 Matrix 渠道，可以作为 Matrix 用户连接到任何 homeserver。
+Matrix 是一个开放的、去中心化的消息协议。OpenClaw 通过插件支持 Matrix 渠道，可以作为 Matrix 用户连接到任何 homeserver。
 
 ## 概述
 
@@ -16,24 +16,24 @@ Matrix 渠道作为插件提供，不包含在核心安装中。
 ### 从 npm 安装
 
 ```bash
-moltbot plugins install @moltbot/matrix
+openclaw plugins install @openclaw/matrix
 ```
 
 ### 从本地安装
 
 ```bash
 # Git 仓库本地开发
-moltbot plugins install ./extensions/matrix
+openclaw plugins install ./extensions/matrix
 ```
 
-如果在配置/引导过程中选择 Matrix 并检测到 Git 仓库，Moltbot 会自动提供本地安装路径选项。
+如果在配置/引导过程中选择 Matrix 并检测到 Git 仓库，OpenClaw 会自动提供本地安装路径选项。
 
 ## 快速开始
 
 ### 1. 安装插件
 
 ```bash
-moltbot plugins install @moltbot/matrix
+openclaw plugins install @openclaw/matrix
 ```
 
 ### 2. 创建 Matrix 账号
@@ -60,7 +60,7 @@ curl --request POST \
 }'
 ```
 
-或者配置用户名和密码，让 Moltbot 自动获取并存储令牌。
+或者配置用户名和密码，让 OpenClaw 自动获取并存储令牌。
 
 ### 4. 配置凭证
 
@@ -94,7 +94,7 @@ export MATRIX_PASSWORD="your-password"
 ### 5. 启动网关
 
 ```bash
-moltbot gateway run
+openclaw gateway run
 ```
 
 ### 6. 开始使用
@@ -125,7 +125,7 @@ Matrix 支持端到端加密，通过 Rust crypto SDK 实现。
 
 - 加密房间的消息自动解密
 - 发送到加密房间的媒体自动加密
-- 首次连接时，Moltbot 请求其他会话的设备验证
+- 首次连接时，OpenClaw 请求其他会话的设备验证
 - 需要在另一个 Matrix 客户端（如 Element）中验证设备以启用密钥共享
 
 ### 设备验证
@@ -179,10 +179,10 @@ node node_modules/@matrix-org/matrix-sdk-crypto-nodejs/download-lib.js
 
 ```bash
 # 查看待审批的配对请求
-moltbot pairing list matrix
+openclaw pairing list matrix
 
 # 审批配对
-moltbot pairing approve matrix <CODE>
+openclaw pairing approve matrix <CODE>
 ```
 
 ### 房间（群组）策略
@@ -406,7 +406,7 @@ Beeper 是一个流行的 Matrix 客户端，但它要求启用 E2EE：
 ### 私信收不到
 
 1. 检查 `dm.policy` 和 `dm.allowFrom` 配置
-2. 验证配对状态：`moltbot pairing list matrix`
+2. 验证配对状态：`openclaw pairing list matrix`
 
 ## 相关文档
 

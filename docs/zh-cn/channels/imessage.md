@@ -1,6 +1,6 @@
 # iMessage 配置
 
-iMessage 是 Apple 生态系统中的即时通讯服务，Moltbot 通过 `imsg` 工具在 macOS 上支持 iMessage 渠道。
+iMessage 是 Apple 生态系统中的即时通讯服务，OpenClaw 通过 `imsg` 工具在 macOS 上支持 iMessage 渠道。
 
 ## 概述
 
@@ -27,7 +27,7 @@ brew install steipete/tap/imsg
 
 ### 授予权限
 
-Moltbot 和 imsg 需要以下 macOS 权限：
+OpenClaw 和 imsg 需要以下 macOS 权限：
 
 1. **完全磁盘访问权限**：访问 Messages 数据库
 2. **自动化权限**：发送消息时需要
@@ -51,7 +51,7 @@ Moltbot 和 imsg 需要以下 macOS 权限：
 ### 启动网关
 
 ```bash
-moltbot gateway run
+openclaw gateway run
 ```
 
 首次启动时，macOS 可能会弹出权限请求对话框，请批准这些请求。
@@ -94,10 +94,10 @@ Messages App ← imsg rpc ← stdio ←────┘
 
 ```bash
 # 查看待审批的配对请求
-moltbot pairing list imessage
+openclaw pairing list imessage
 
 # 审批配对
-moltbot pairing approve imessage <CODE>
+openclaw pairing approve imessage <CODE>
 ```
 
 配对码在 1 小时后过期。
@@ -126,7 +126,7 @@ iMessage 没有原生提及元数据，使用文本模式匹配：
       {
         "id": "main",
         "groupChat": {
-          "mentionPatterns": ["@clawd", "小助手", "moltbot"]
+          "mentionPatterns": ["@clawd", "小助手", "openclaw"]
         }
       }
     ]
@@ -156,7 +156,7 @@ iMessage 白名单支持多种标识符格式：
 
 某些 iMessage 线程可能有多个参与者但仍以 `is_group=false` 到达。
 
-如果您在 `channels.imessage.groups` 下显式配置 `chat_id`，Moltbot 会将该线程视为"群组"：
+如果您在 `channels.imessage.groups` 下显式配置 `chat_id`，OpenClaw 会将该线程视为"群组"：
 
 ```json5
 {
@@ -255,7 +255,7 @@ exec ssh -T gateway-host imsg "$@"
 ```
 ┌──────────────────────────────┐          SSH (imsg rpc)          ┌──────────────────────────┐
 │ 网关主机 (Linux/VM)          │──────────────────────────────────▶│ Mac (Messages + imsg)    │
-│ - moltbot gateway           │          SCP (附件)               │ - Messages 已登录         │
+│ - openclaw gateway           │          SCP (附件)               │ - Messages 已登录         │
 │ - channels.imessage.cliPath │◀──────────────────────────────────│ - 远程登录已启用          │
 └──────────────────────────────┘                                   └──────────────────────────┘
                ▲
@@ -384,8 +384,8 @@ imsg chats --limit 20
 ### 发送消息示例
 
 ```bash
-moltbot message send --to "chat_id:123" --message "你好"
-moltbot message send --to "imessage:+15551234567" --message "你好"
+openclaw message send --to "chat_id:123" --message "你好"
+openclaw message send --to "imessage:+15551234567" --message "你好"
 ```
 
 ## 多账号配置
@@ -504,7 +504,7 @@ moltbot message send --to "imessage:+15551234567" --message "你好"
 
 1. 检查 allowFrom 配置
 2. 确认 DM/群组策略
-3. 验证配对状态：`moltbot pairing list imessage`
+3. 验证配对状态：`openclaw pairing list imessage`
 
 ## 相关文档
 

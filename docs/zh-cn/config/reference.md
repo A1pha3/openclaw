@@ -1,6 +1,6 @@
 # 配置参考
 
-本文档提供 Moltbot 配置的完整参考。
+本文档提供 OpenClaw 配置的完整参考。
 
 ## 配置结构
 
@@ -69,7 +69,7 @@
         workspaceAccess: "rw",   // none | ro | rw
         workspaceRoot: "~/.clawdbot/sandboxes",
         docker: {
-          image: "moltbot-sandbox:latest",
+          image: "openclaw-sandbox:latest",
           cpuLimit: "2",
           memoryLimit: "2g"
         }
@@ -347,7 +347,7 @@
 {
   logging: {
     level: "info",                    // debug | info | warn | error
-    file: "/tmp/moltbot/moltbot.log",
+    file: "/tmp/openclaw/openclaw.log",
     consoleLevel: "info",
     consoleStyle: "pretty",           // pretty | compact | json
     redactSensitive: "tools",         // off | tools

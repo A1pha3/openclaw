@@ -1,6 +1,6 @@
 # Telegram 配置
 
-本文档介绍如何配置 Moltbot 连接 Telegram Bot。
+本文档介绍如何配置 OpenClaw 连接 Telegram Bot。
 
 ## 创建 Telegram Bot
 
@@ -30,12 +30,12 @@ BotFather 会返回类似这样的 Token：
 
 **保存好这个 Token！**
 
-## 配置 Moltbot
+## 配置 OpenClaw
 
 ### 快速配置
 
 ```bash
-moltbot config set channels.telegram.botToken "YOUR_BOT_TOKEN"
+openclaw config set channels.telegram.botToken "YOUR_BOT_TOKEN"
 ```
 
 ### 完整配置
@@ -330,18 +330,18 @@ Telegram 超级群组支持话题：
 ### 查看状态
 
 ```bash
-moltbot channels status telegram
-moltbot channels status telegram --probe
+openclaw channels status telegram
+openclaw channels status telegram --probe
 ```
 
 ### 发送消息
 
 ```bash
 # 发送私信
-moltbot message send --channel telegram --target "tg:123456789" --message "你好"
+openclaw message send --channel telegram --target "tg:123456789" --message "你好"
 
 # 发送到群组
-moltbot message send --channel telegram --target "group:-1001234567890" --message "群消息"
+openclaw message send --channel telegram --target "group:-1001234567890" --message "群消息"
 ```
 
 ## 故障排除
@@ -355,12 +355,12 @@ curl https://api.telegram.org/bot<TOKEN>/getMe
 
 2. 检查配置：
 ```bash
-moltbot config get channels.telegram
+openclaw config get channels.telegram
 ```
 
 3. 检查日志：
 ```bash
-moltbot logs --tail 50
+openclaw logs --tail 50
 ```
 
 ### 群组无法使用
@@ -373,10 +373,10 @@ moltbot logs --tail 50
 
 ```bash
 # 查看待审批配对
-moltbot pairing list telegram
+openclaw pairing list telegram
 
 # 审批
-moltbot pairing approve telegram <code>
+openclaw pairing approve telegram <code>
 ```
 
 ## 最佳实践

@@ -4,45 +4,45 @@
 
 ## 诊断工具
 
-### moltbot doctor
+### openclaw doctor
 
 这是最重要的诊断工具，可以自动检测和修复常见问题：
 
 ```bash
 # 诊断问题
-moltbot doctor
+openclaw doctor
 
 # 自动修复
-moltbot doctor --fix
+openclaw doctor --fix
 
 # 或使用 --yes 自动确认
-moltbot doctor --yes
+openclaw doctor --yes
 ```
 
 ### 健康检查
 
 ```bash
 # 基础健康检查
-moltbot health
+openclaw health
 
 # 深度检查
-moltbot status --deep
+openclaw status --deep
 
 # 完整状态报告（适合分享）
-moltbot status --all
+openclaw status --all
 ```
 
 ### 查看日志
 
 ```bash
 # 实时日志
-moltbot logs --tail 100
+openclaw logs --tail 100
 
 # 查看特定日志文件
-cat /tmp/moltbot/moltbot-$(date +%Y-%m-%d).log
+cat /tmp/openclaw/openclaw-$(date +%Y-%m-%d).log
 
 # 搜索错误
-grep -i error /tmp/moltbot/moltbot-*.log | tail -50
+grep -i error /tmp/openclaw/openclaw-*.log | tail -50
 ```
 
 ## 常见问题
@@ -82,18 +82,18 @@ source ~/.bashrc
 
 #### 网关无法启动
 
-**症状**: `moltbot gateway` 启动失败
+**症状**: `openclaw gateway` 启动失败
 
 **诊断**:
 ```bash
 # 检查配置
-moltbot doctor
+openclaw doctor
 
 # 检查端口占用
 lsof -i :18789
 
 # 详细日志启动
-moltbot gateway --verbose
+openclaw gateway --verbose
 ```
 
 **常见原因**:
@@ -108,13 +108,13 @@ moltbot gateway --verbose
 **解决方案**:
 ```bash
 # 诊断配置问题
-moltbot doctor
+openclaw doctor
 
 # 自动修复
-moltbot doctor --fix
+openclaw doctor --fix
 
 # 手动编辑修复
-moltbot config edit
+openclaw config edit
 ```
 
 #### 端口占用
@@ -130,7 +130,7 @@ lsof -i :18789
 kill -9 <PID>
 
 # 或使用其他端口
-moltbot gateway --port 18790
+openclaw gateway --port 18790
 ```
 
 ### 认证问题
@@ -142,10 +142,10 @@ moltbot gateway --port 18790
 **解决方案**:
 ```bash
 # 重新运行配置向导
-moltbot onboard
+openclaw onboard
 
 # 或手动配置
-moltbot configure --section auth
+openclaw configure --section auth
 ```
 
 #### OAuth 令牌过期
@@ -155,7 +155,7 @@ moltbot configure --section auth
 **解决方案**:
 ```bash
 # 重新认证
-moltbot configure --section auth
+openclaw configure --section auth
 
 # 检查令牌文件
 ls -la ~/.clawdbot/credentials/
@@ -171,7 +171,7 @@ ls -la ~/.clawdbot/credentials/
 3. 验证账户余额
 
 ```bash
-moltbot config set models.providers.openai.apiKey "sk-..."
+openclaw config set models.providers.openai.apiKey "sk-..."
 ```
 
 ### 渠道问题
@@ -180,21 +180,21 @@ moltbot config set models.providers.openai.apiKey "sk-..."
 
 **诊断**:
 ```bash
-moltbot channels status whatsapp --probe
+openclaw channels status whatsapp --probe
 ```
 
 **常见解决方案**:
 
 1. **重新登录**:
 ```bash
-moltbot channels logout whatsapp
-moltbot channels login
+openclaw channels logout whatsapp
+openclaw channels login
 ```
 
 2. **清除会话**:
 ```bash
 rm -rf ~/.clawdbot/credentials/whatsapp/
-moltbot channels login
+openclaw channels login
 ```
 
 3. **检查网络**: 确保能访问 WhatsApp 服务器
@@ -215,7 +215,7 @@ moltbot channels login
 
 **诊断**:
 ```bash
-moltbot channels status telegram --probe
+openclaw channels status telegram --probe
 ```
 
 **常见解决方案**:
@@ -228,7 +228,7 @@ curl https://api.telegram.org/bot<TOKEN>/getMe
 
 2. **检查配置**:
 ```bash
-moltbot config get channels.telegram
+openclaw config get channels.telegram
 ```
 
 3. **检查 allowlist**: 确认发送者在允许列表中
@@ -237,7 +237,7 @@ moltbot config get channels.telegram
 
 **诊断**:
 ```bash
-moltbot channels status discord --probe
+openclaw channels status discord --probe
 ```
 
 **常见解决方案**:
@@ -254,22 +254,22 @@ moltbot channels status discord --probe
 
 1. 渠道是否连接？
 ```bash
-moltbot channels status
+openclaw channels status
 ```
 
 2. DM 策略是否正确？
 ```bash
-moltbot config get channels.<channel>.dmPolicy
+openclaw config get channels.<channel>.dmPolicy
 ```
 
 3. 是否有待处理的配对？
 ```bash
-moltbot pairing list <channel>
+openclaw pairing list <channel>
 ```
 
 4. allowlist 是否包含发送者？
 ```bash
-moltbot config get channels.<channel>.allowFrom
+openclaw config get channels.<channel>.allowFrom
 ```
 
 #### 消息发送失败
@@ -277,10 +277,10 @@ moltbot config get channels.<channel>.allowFrom
 **诊断**:
 ```bash
 # 查看日志
-moltbot logs --tail 50
+openclaw logs --tail 50
 
 # 测试发送
-moltbot message send --channel whatsapp --target +15555550123 --message "test" --verbose
+openclaw message send --channel whatsapp --target +15555550123 --message "test" --verbose
 ```
 
 **常见原因**:
@@ -294,17 +294,17 @@ moltbot message send --channel whatsapp --target +15555550123 --message "test" -
 
 1. 群组策略:
 ```bash
-moltbot config get channels.<channel>.groupPolicy
+openclaw config get channels.<channel>.groupPolicy
 ```
 
 2. 群组白名单:
 ```bash
-moltbot config get channels.<channel>.groups
+openclaw config get channels.<channel>.groups
 ```
 
 3. 提及要求:
 ```bash
-moltbot config get channels.<channel>.groups."*".requireMention
+openclaw config get channels.<channel>.groups."*".requireMention
 ```
 
 ### 性能问题
@@ -313,8 +313,8 @@ moltbot config get channels.<channel>.groups."*".requireMention
 
 **诊断**:
 ```bash
-moltbot status
-moltbot health
+openclaw status
+openclaw health
 ```
 
 **优化建议**:
@@ -338,10 +338,10 @@ moltbot health
 **诊断**:
 ```bash
 # 查看内存使用
-moltbot status
+openclaw status
 
 # 系统级别
-ps aux | grep moltbot
+ps aux | grep openclaw
 ```
 
 **解决方案**:
@@ -356,22 +356,22 @@ ps aux | grep moltbot
 **macOS (launchd)**:
 ```bash
 # 检查状态
-launchctl print gui/$UID | grep moltbot
+launchctl print gui/$UID | grep openclaw
 
 # 查看日志
-cat ~/Library/Logs/moltbot-gateway.log
+cat ~/Library/Logs/openclaw-gateway.log
 
 # 手动加载
-launchctl load ~/Library/LaunchAgents/bot.molt.gateway.plist
+launchctl load ~/Library/LaunchAgents/openclaw.gateway.plist
 ```
 
 **Linux (systemd)**:
 ```bash
 # 检查状态
-systemctl --user status moltbot-gateway
+systemctl --user status openclaw-gateway
 
 # 查看日志
-journalctl --user -u moltbot-gateway -n 100
+journalctl --user -u openclaw-gateway -n 100
 
 # 重新加载
 systemctl --user daemon-reload
@@ -382,10 +382,10 @@ systemctl --user daemon-reload
 **检查服务配置**:
 ```bash
 # macOS
-cat ~/Library/LaunchAgents/bot.molt.gateway.plist
+cat ~/Library/LaunchAgents/openclaw.gateway.plist
 
 # Linux
-cat ~/.config/systemd/user/moltbot-gateway.service
+cat ~/.config/systemd/user/openclaw-gateway.service
 ```
 
 确保有重启策略配置。
@@ -398,7 +398,7 @@ cat ~/.config/systemd/user/moltbot-gateway.service
 | `EADDRINUSE` | 端口占用 | 更换端口或终止占用进程 |
 | `ECONNREFUSED` | 连接被拒绝 | 检查目标服务是否运行 |
 | `ETIMEDOUT` | 连接超时 | 检查网络连接 |
-| `E_CONFIG_INVALID` | 配置无效 | 运行 `moltbot doctor` |
+| `E_CONFIG_INVALID` | 配置无效 | 运行 `openclaw doctor` |
 | `E_AUTH_FAILED` | 认证失败 | 重新配置认证 |
 
 ## 获取帮助
@@ -407,15 +407,15 @@ cat ~/.config/systemd/user/moltbot-gateway.service
 
 1. **收集信息**:
 ```bash
-moltbot status --all > status.txt
-moltbot doctor 2>&1 | tee doctor.txt
-moltbot logs --tail 200 > logs.txt
+openclaw status --all > status.txt
+openclaw doctor 2>&1 | tee doctor.txt
+openclaw logs --tail 200 > logs.txt
 ```
 
-2. **提交 Issue**: [GitHub Issues](https://github.com/moltbot/moltbot/issues)
+2. **提交 Issue**: [GitHub Issues](https://github.com/openclaw/openclaw/issues)
 
 3. **包含信息**:
-   - Moltbot 版本
+   - OpenClaw 版本
    - 操作系统
    - 错误信息
    - 复现步骤

@@ -1,11 +1,11 @@
 # 项目结构
 
-本文档介绍 Moltbot 代码库的组织结构，帮助开发者快速理解项目布局。
+本文档介绍 OpenClaw 代码库的组织结构，帮助开发者快速理解项目布局。
 
 ## 目录概览
 
 ```
-moltbot/
+openclaw/
 ├── src/                    # 核心源代码
 ├── apps/                   # 原生应用（iOS、Android、macOS）
 ├── extensions/             # 插件/扩展
@@ -95,7 +95,7 @@ apps/
 │
 └── macos/                 # macOS 菜单栏应用
     ├── Sources/
-    │   └── Moltbot/
+    │   └── OpenClaw/
     │       ├── App/       # 应用主体
     │       ├── Views/     # SwiftUI 视图
     │       ├── Services/  # 服务层
@@ -173,7 +173,7 @@ scripts/
 ## 配置文件
 
 ```
-moltbot/
+openclaw/
 ├── package.json           # 主项目配置
 ├── pnpm-workspace.yaml    # pnpm 工作区配置
 ├── pnpm-lock.yaml         # 依赖锁定文件
@@ -191,14 +191,14 @@ moltbot/
 
 ### CLI 模块 (`src/cli/`)
 
-CLI 是用户与 Moltbot 交互的主要入口：
+CLI 是用户与 OpenClaw 交互的主要入口：
 
 ```typescript
 // src/cli/index.ts
 import { Command } from 'commander'
 
 const program = new Command()
-  .name('moltbot')
+  .name('openclaw')
   .description('Personal AI Assistant')
   .version(version)
 
@@ -309,7 +309,7 @@ dist/
 | `package.json` | CLI/npm 版本 |
 | `apps/android/app/build.gradle.kts` | Android versionName/versionCode |
 | `apps/ios/Sources/Info.plist` | iOS CFBundleShortVersionString |
-| `apps/macos/Sources/Moltbot/Resources/Info.plist` | macOS 版本 |
+| `apps/macos/Sources/OpenClaw/Resources/Info.plist` | macOS 版本 |
 | `docs/install/updating.md` | 文档中的固定版本 |
 
 ## 相关文档

@@ -1,30 +1,30 @@
 # 软件升级
 
-本文档介绍如何升级 Moltbot 到最新版本。
+本文档介绍如何升级 OpenClaw 到最新版本。
 
 ## 查看新版本
 
 使用以下命令检查新版本：
 
 ```bash
-moltbot --version
+openclaw --version
 ```
 
 查看当前版本：
 
 ```bash
-moltbot --version
+openclaw --version
 ```
 
 ## 自动更新
 
-Moltbot 会在运行时自动检查更新并提示更新。
+OpenClaw 会在运行时自动检查更新并提示更新。
 
 ## 手动更新
 
 ```bash
-npm install -g moltbot@latest
-pnpm install -g moltbot@next
+npm install -g openclaw@latest
+pnpm install -g openclaw@next
 ```
 
 ### 更新版本注意事项
@@ -35,7 +35,7 @@ pnpm install -g moltbot@next
 
 ## 新版本号说明
 
-Moltbot 使用日历版本号格式：
+OpenClaw 使用日历版本号格式：
 
 ```
 YYYY.M.D[-beta.N]
@@ -52,7 +52,7 @@ YYYY.M.D[-beta.N]
 新版本可能引入新的环境变量：
 
 ```bash
-export CLAWDBOT_CONFIG=~/.clawdbot/moltbot.json
+export CLAWDBOT_CONFIG=~/.clawdbot/openclaw.json
 export CLAWDBOT_GATWAY_TOKEN=...
 ```
 
@@ -60,7 +60,7 @@ export CLAWDBOT_GATWAY_TOKEN=...
 
 ```bash
 # 删除废弃的配置项
-moltbot config unset channels.whatsapp.groupRequireMention
+openclaw config unset channels.whatsapp.groupRequireMention
 ```
 
 ## 故障排除
@@ -70,14 +70,14 @@ moltbot config unset channels.whatsapp.groupRequireMention
 ```bash
 # 重新构建
 pnpm install --force
-moltbot doctor
+openclaw doctor
 ```
 
 ### 配置错误
 
 ```bash
 # 验证配置语法
-moltbot doctor
+openclaw doctor
 ```
 
 ## 相关文档
@@ -87,7 +87,7 @@ moltbot doctor
 - [配置示例](/zh-cn/config/examples)
 ```
 
-## 下一步- 查看版本变更：`git log` 或 [变更日志](https://github.com/moltbot/moltbot/commits/main)
+## 下一步- 查看版本变更：`git log` 或 [变更日志](https://github.com/openclaw/openclaw/commits/main)
 
 - 选择合适的升级时机：非紧急更新建议选择稳定版本
 </think>

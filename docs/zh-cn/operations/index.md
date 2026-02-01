@@ -1,10 +1,10 @@
 # 运维手册
 
-本手册面向负责 Moltbot 生产环境部署和维护的运维工程师，提供全面的运维指南。
+本手册面向负责 OpenClaw 生产环境部署和维护的运维工程师，提供全面的运维指南。
 
 ## 运维概述
 
-Moltbot 是一个长期运行的服务，需要可靠的运维策略来确保高可用性和稳定性。
+OpenClaw 是一个长期运行的服务，需要可靠的运维策略来确保高可用性和稳定性。
 
 ### 核心运维任务
 
@@ -25,7 +25,7 @@ Moltbot 是一个长期运行的服务，需要可靠的运维策略来确保高
 ┌─────────────────────────────────────┐
 │              服务器                  │
 │  ┌─────────────────────────────┐   │
-│  │     Moltbot Gateway         │   │
+│  │     OpenClaw Gateway         │   │
 │  │     (systemd/launchd)       │   │
 │  │     Port: 18789             │   │
 │  └─────────────────────────────┘   │
@@ -43,24 +43,24 @@ Moltbot 是一个长期运行的服务，需要可靠的运维策略来确保高
 # docker-compose.yml
 version: '3.8'
 services:
-  moltbot:
-    image: ghcr.io/moltbot/moltbot:latest
+  openclaw:
+    image: ghcr.io/openclaw/openclaw:latest
     ports:
       - "18789:18789"
     volumes:
-      - moltbot-data:/root/.clawdbot
+      - openclaw-data:/root/.clawdbot
     restart: unless-stopped
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - CLAWDBOT_GATEWAY_TOKEN=${GATEWAY_TOKEN}
     healthcheck:
-      test: ["CMD", "moltbot", "health"]
+      test: ["CMD", "openclaw", "health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
 volumes:
-  moltbot-data:
+  openclaw-data:
 ```
 
 ### 云平台部署
@@ -78,19 +78,19 @@ volumes:
 
 ```bash
 # 查看状态
-systemctl --user status moltbot-gateway
+systemctl --user status openclaw-gateway
 
 # 启动服务
-systemctl --user start moltbot-gateway
+systemctl --user start openclaw-gateway
 
 # 停止服务
-systemctl --user stop moltbot-gateway
+systemctl --user stop openclaw-gateway
 
 # 重启服务
-systemctl --user restart moltbot-gateway
+systemctl --user restart openclaw-gateway
 
 # 查看日志
-journalctl --user -u moltbot-gateway -f
+journalctl --user -u openclaw-gateway -f
 
 # 开机自启
 loginctl enable-linger $USER
@@ -100,19 +100,19 @@ loginctl enable-linger $USER
 
 ```bash
 # 查看状态
-moltbot service status
+openclaw service status
 
 # 启动服务
-moltbot service start
+openclaw service start
 
 # 停止服务
-moltbot service stop
+openclaw service stop
 
 # 重启服务
-moltbot service restart
+openclaw service restart
 
 # 查看日志
-tail -f /tmp/moltbot/moltbot-$(date +%Y-%m-%d).log
+tail -f /tmp/openclaw/openclaw-$(date +%Y-%m-%d).log
 ```
 
 ## 监控
@@ -121,13 +121,13 @@ tail -f /tmp/moltbot/moltbot-$(date +%Y-%m-%d).log
 
 ```bash
 # 基础健康检查
-moltbot health
+openclaw health
 
 # 深度健康检查
-moltbot status --deep
+openclaw status --deep
 
 # 只读状态报告（适合粘贴分享）
-moltbot status --all
+openclaw status --all
 ```
 
 ### 健康检查端点
@@ -151,13 +151,13 @@ curl http://127.0.0.1:18789/health
 
 ```bash
 # 实时日志
-moltbot logs --tail 100
+openclaw logs --tail 100
 
 # 查看特定日期日志
-cat /tmp/moltbot/moltbot-2026-01-30.log
+cat /tmp/openclaw/openclaw-2026-01-30.log
 
 # 搜索错误
-grep -i error /tmp/moltbot/moltbot-*.log
+grep -i error /tmp/openclaw/openclaw-*.log
 ```
 
 ### 告警配置
@@ -167,10 +167,10 @@ grep -i error /tmp/moltbot/moltbot-*.log
 ```yaml
 # alertmanager 示例规则
 groups:
-  - name: moltbot
+  - name: openclaw
     rules:
-      - alert: MoltbotDown
-        expr: up{job="moltbot"} == 0
+      - alert: OpenClawDown
+        expr: up{job="openclaw"} == 0
         for: 5m
         labels:
           severity: critical
@@ -182,7 +182,7 @@ groups:
 
 | 类型 | 路径 |
 |------|------|
-| 应用日志 | `/tmp/moltbot/moltbot-YYYY-MM-DD.log` |
+| 应用日志 | `/tmp/openclaw/openclaw-YYYY-MM-DD.log` |
 | 系统日志 | `journalctl` / `log stream` |
 | 会话日志 | `~/.clawdbot/agents/<id>/sessions/` |
 
@@ -192,7 +192,7 @@ groups:
 {
   logging: {
     level: "info",           // debug, info, warn, error
-    file: "/var/log/moltbot/moltbot.log",
+    file: "/var/log/openclaw/openclaw.log",
     consoleLevel: "warn",
     consoleStyle: "compact", // pretty, compact, json
     redactSensitive: "tools" // off, tools
@@ -205,8 +205,8 @@ groups:
 使用 logrotate (Linux)：
 
 ```
-# /etc/logrotate.d/moltbot
-/tmp/moltbot/moltbot-*.log {
+# /etc/logrotate.d/openclaw
+/tmp/openclaw/openclaw-*.log {
     daily
     rotate 7
     compress
@@ -222,7 +222,7 @@ groups:
 
 | 数据 | 路径 | 重要性 |
 |------|------|--------|
-| 配置文件 | `~/.clawdbot/moltbot.json` | 高 |
+| 配置文件 | `~/.clawdbot/openclaw.json` | 高 |
 | WhatsApp 会话 | `~/.clawdbot/credentials/whatsapp/` | 高 |
 | OAuth 凭证 | `~/.clawdbot/credentials/oauth.json` | 高 |
 | 代理数据 | `~/.clawdbot/agents/` | 中 |
@@ -232,35 +232,35 @@ groups:
 
 ```bash
 #!/bin/bash
-# backup-moltbot.sh
+# backup-openclaw.sh
 
-BACKUP_DIR="/backup/moltbot/$(date +%Y%m%d)"
+BACKUP_DIR="/backup/openclaw/$(date +%Y%m%d)"
 mkdir -p "$BACKUP_DIR"
 
 # 备份关键数据
 tar -czf "$BACKUP_DIR/clawdbot.tar.gz" \
-  ~/.clawdbot/moltbot.json \
+  ~/.clawdbot/openclaw.json \
   ~/.clawdbot/credentials/ \
   ~/.clawdbot/agents/
 
 # 保留最近 7 天
-find /backup/moltbot -maxdepth 1 -mtime +7 -type d -exec rm -rf {} \;
+find /backup/openclaw -maxdepth 1 -mtime +7 -type d -exec rm -rf {} \;
 ```
 
 ### 恢复流程
 
 1. 停止 Gateway
 2. 恢复备份文件
-3. 运行 `moltbot doctor --fix`
+3. 运行 `openclaw doctor --fix`
 4. 启动 Gateway
 5. 验证状态
 
 ```bash
-moltbot service stop
-tar -xzf /backup/moltbot/20260130/clawdbot.tar.gz -C ~/
-moltbot doctor --fix
-moltbot service start
-moltbot health
+openclaw service stop
+tar -xzf /backup/openclaw/20260130/clawdbot.tar.gz -C ~/
+openclaw doctor --fix
+openclaw service start
+openclaw health
 ```
 
 ## 版本更新
@@ -269,37 +269,37 @@ moltbot health
 
 ```bash
 # 查看当前版本
-moltbot --version
+openclaw --version
 
 # 检查可用更新
-npm view moltbot version
+npm view openclaw version
 
 # 备份配置
-cp ~/.clawdbot/moltbot.json ~/.clawdbot/moltbot.json.bak
+cp ~/.clawdbot/openclaw.json ~/.clawdbot/openclaw.json.bak
 ```
 
 ### 执行更新
 
 ```bash
 # 更新到最新版
-moltbot update
+openclaw update
 
 # 或手动更新
-npm install -g moltbot@latest
+npm install -g openclaw@latest
 
 # 更新后验证
-moltbot doctor
-moltbot health
+openclaw doctor
+openclaw health
 ```
 
 ### 回滚
 
 ```bash
 # 回滚到指定版本
-npm install -g moltbot@2026.1.15
+npm install -g openclaw@2026.1.15
 
 # 恢复配置（如需要）
-cp ~/.clawdbot/moltbot.json.bak ~/.clawdbot/moltbot.json
+cp ~/.clawdbot/openclaw.json.bak ~/.clawdbot/openclaw.json
 ```
 
 ## 安全加固
@@ -331,10 +331,10 @@ cp ~/.clawdbot/moltbot.json.bak ~/.clawdbot/moltbot.json
 
 ```bash
 # 深度安全审计
-moltbot security audit --deep
+openclaw security audit --deep
 
 # 检查文件权限
-moltbot doctor
+openclaw doctor
 ```
 
 ### 定期检查清单
@@ -353,49 +353,49 @@ moltbot doctor
 
 ```bash
 # 检查配置
-moltbot doctor
+openclaw doctor
 
 # 检查端口占用
 lsof -i :18789
 
 # 查看详细日志
-moltbot gateway --verbose
+openclaw gateway --verbose
 ```
 
 #### WhatsApp 断开连接
 
 ```bash
 # 检查状态
-moltbot channels status whatsapp
+openclaw channels status whatsapp
 
 # 重新登录
-moltbot channels login
+openclaw channels login
 ```
 
 #### 内存泄漏
 
 ```bash
 # 检查内存使用
-moltbot status
+openclaw status
 
 # 重启服务
-moltbot service restart
+openclaw service restart
 ```
 
 ### 诊断命令
 
 ```bash
 # 综合诊断
-moltbot doctor
+openclaw doctor
 
 # 健康检查
-moltbot health
+openclaw health
 
 # 状态报告
-moltbot status --all
+openclaw status --all
 
 # 查看日志
-moltbot logs --tail 200
+openclaw logs --tail 200
 ```
 
 ## 性能调优
