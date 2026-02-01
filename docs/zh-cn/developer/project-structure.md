@@ -314,7 +314,7 @@ dist/
 
 ## 相关文档
 
-- [开发指南](/zh-cn/developer)
-- [测试指南](/zh-cn/developer/testing)
-- [贡献指南](/zh-cn/developer/contributing)
-- [插件开发](/zh-cn/developer/plugin-development)
+- [开发指南](/zh-CN/developer)
+- [测试指南](/zh-CN/developer/testing)
+- [贡献指南](/zh-CN/developer/contributing)
+- [插件开发](/zh-CN/developer/plugin-development)

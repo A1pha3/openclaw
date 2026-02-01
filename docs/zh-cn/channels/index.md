@@ -10,13 +10,13 @@ OpenClaw 支持连接多种消息平台，让您的 AI 代理能够通过用户�
 
 | 渠道 | 类型 | 状态 | 说明 |
 |------|------|------|------|
-| [WhatsApp](/zh-cn/channels/whatsapp) | Web 协议 | 稳定 | 通过 Baileys 库实现 WhatsApp Web |
-| [Telegram](/zh-cn/channels/telegram) | Bot API | 稳定 | 支持私聊和群组 |
-| [Discord](/zh-cn/channels/discord) | Gateway + REST | 稳定 | 支持服务器和私信 |
-| [Slack](/zh-cn/channels/slack) | Socket Mode | 稳定 | 支持频道和私信 |
-| [Signal](/zh-cn/channels/signal) | signal-cli | 稳定 | 通过 signal-cli 实现安全通信 |
-| [iMessage](/zh-cn/channels/imessage) | 本地 CLI | 稳定 | 仅 macOS |
-| [Google Chat](/zh-cn/channels/googlechat) | Webhook | 稳定 | 需要服务账号 |
+| [WhatsApp](/zh-CN/channels/whatsapp) | Web 协议 | 稳定 | 通过 Baileys 库实现 WhatsApp Web |
+| [Telegram](/zh-CN/channels/telegram) | Bot API | 稳定 | 支持私聊和群组 |
+| [Discord](/zh-CN/channels/discord) | Gateway + REST | 稳定 | 支持服务器和私信 |
+| [Slack](/zh-CN/channels/slack) | Socket Mode | 稳定 | 支持频道和私信 |
+| [Signal](/zh-CN/channels/signal) | signal-cli | 稳定 | 通过 signal-cli 实现安全通信 |
+| [iMessage](/zh-CN/channels/imessage) | 本地 CLI | 稳定 | 仅 macOS |
+| [Google Chat](/zh-CN/channels/googlechat) | Webhook | 稳定 | 需要服务账号 |
 
 ### 插件渠道
 
@@ -29,12 +29,12 @@ openclaw plugins install @openclaw/mattermost
 
 | 渠道 | 插件包 | 状态 | 说明 |
 |------|--------|------|------|
-| [Matrix](/zh-cn/channels/matrix) | `@openclaw/matrix` | 稳定 | 去中心化协议 |
-| [Microsoft Teams](/zh-cn/channels/msteams) | `@openclaw/msteams` | 稳定 | 企业协作 |
-| [Mattermost](/zh-cn/channels/mattermost) | `@openclaw/mattermost` | 稳定 | 开源团队协作 |
-| [Twitch](/zh-cn/channels/twitch) | `@openclaw/twitch` | Beta | 直播聊天 |
-| [Nostr](/zh-cn/channels/nostr) | `@openclaw/nostr` | Beta | 去中心化社交 |
-| [Zalo](/zh-cn/channels/zalo) | `@openclaw/zalo` | Beta | 越南通信应用 |
+| [Matrix](/zh-CN/channels/matrix) | `@openclaw/matrix` | 稳定 | 去中心化协议 |
+| [Microsoft Teams](/zh-CN/channels/msteams) | `@openclaw/msteams` | 稳定 | 企业协作 |
+| [Mattermost](/zh-CN/channels/mattermost) | `@openclaw/mattermost` | 稳定 | 开源团队协作 |
+| [Twitch](/zh-CN/channels/twitch) | `@openclaw/twitch` | Beta | 直播聊天 |
+| [Nostr](/zh-CN/channels/nostr) | `@openclaw/nostr` | Beta | 去中心化社交 |
+| [Zalo](/zh-CN/channels/zalo) | `@openclaw/zalo` | Beta | 越南通信应用 |
 
 ## 渠道功能对比
 
@@ -231,13 +231,13 @@ openclaw channels status --probe
 
 ### 内置渠道
 
-- [WhatsApp 配置](/zh-cn/channels/whatsapp)
-- [Telegram 配置](/zh-cn/channels/telegram)
-- [Discord 配置](/zh-cn/channels/discord)
-- [Slack 配置](/zh-cn/channels/slack)
-- [Signal 配置](/zh-cn/channels/signal)
-- [iMessage 配置](/zh-cn/channels/imessage)
+- [WhatsApp 配置](/zh-CN/channels/whatsapp)
+- [Telegram 配置](/zh-CN/channels/telegram)
+- [Discord 配置](/zh-CN/channels/discord)
+- [Slack 配置](/zh-CN/channels/slack)
+- [Signal 配置](/zh-CN/channels/signal)
+- [iMessage 配置](/zh-CN/channels/imessage)
 
 ### 插件渠道
 
-- [Matrix 配置](/zh-cn/channels/matrix)
+- [Matrix 配置](/zh-CN/channels/matrix)

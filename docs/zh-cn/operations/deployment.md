@@ -371,6 +371,5 @@ curl -f http://127.0.0.1:18789/health || alert "OpenClaw is down"
 
 ## 下一步
 
-- [监控与日志](/zh-cn/operations/monitoring)
-- [故障排除](/zh-cn/operations/troubleshooting)
-- [备份恢复](/zh-cn/operations/backup)
+- [监控与日志](/zh-CN/operations/monitoring)
+- [故障排除](/zh-CN/operations/troubleshooting)

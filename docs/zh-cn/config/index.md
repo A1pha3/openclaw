@@ -322,6 +322,6 @@ openclaw gateway call config.apply --params '{
 
 ## 下一步
 
-- [配置参考](/zh-cn/config/reference) - 完整配置项说明
-- [配置示例](/zh-cn/config/examples) - 更多配置示例
-- [安全配置](/zh-cn/config/security) - 安全相关设置
+- [配置参考](/zh-CN/config/reference) - 完整配置项说明
+- [配置示例](/zh-CN/config/examples) - 更多配置示例
+- [安全配置](/zh-CN/config/security) - 安全相关设置

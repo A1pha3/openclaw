@@ -501,6 +501,6 @@
 
 ## 下一步
 
-- [配置示例](/zh-cn/config/examples)
-- [配置概述](/zh-cn/config/index)
-- [快速入门](/zh-cn/start/quick-start)
+- [配置示例](/zh-CN/config/examples)
+- [配置概述](/zh-CN/config/index)
+- [快速入门](/zh-CN/start/quick-start)

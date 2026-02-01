@@ -131,7 +131,7 @@ DISCORD_BOT_TOKEN=...
 }
 ```
 
-多账号支持：使用 `channels.discord.accounts` 配置每个账号的 Token 和可选的 `name`。详见 [网关配置](/zh-cn/config/reference)。
+多账号支持：使用 `channels.discord.accounts` 配置每个账号的 Token 和可选的 `name`。详见 [网关配置](/zh-CN/config/reference)。
 
 #### 白名单 + 频道路由
 
@@ -202,7 +202,7 @@ DISCORD_BOT_TOKEN=...
 
 ## 重试策略
 
-出站 Discord API 调用在速率限制（429）时重试，使用 Discord 的 `retry_after`（可用时），带指数退避和抖动。通过 `channels.discord.retry` 配置。详见 [重试策略](/zh-cn/concepts/routing)。
+出站 Discord API 调用在速率限制（429）时重试，使用 Discord 的 `retry_after`（可用时），带指数退避和抖动。通过 `channels.discord.retry` 配置。详见 [重试策略](/zh-CN/concepts/routing)。
 
 ## 配置参考
 
@@ -338,6 +338,6 @@ DISCORD_BOT_TOKEN=...
 
 ## 相关文档
 
-- [网关配置](/zh-cn/config/reference)
-- [消息路由](/zh-cn/concepts/routing)
-- [故障排除](/zh-cn/operations/troubleshooting)
+- [网关配置](/zh-CN/config/reference)
+- [消息路由](/zh-CN/concepts/routing)
+- [故障排除](/zh-CN/operations/troubleshooting)

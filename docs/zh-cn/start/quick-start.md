@@ -208,15 +208,15 @@ openclaw health
 
 恭喜！您已经成功完成了 OpenClaw 的基础配置。接下来您可以：
 
-- 📖 阅读 [安装指南](/zh-cn/start/installation) 了解更多安装选项
-- 🔧 查看 [配置参考](/zh-cn/config/reference) 进行高级配置
-- 🌐 配置更多 [消息渠道](/zh-cn/channels/index)
-- 🏗️ 了解 [系统架构](/zh-cn/concepts/architecture) 深入理解工作原理
+- 📖 阅读 [安装指南](/zh-CN/start/installation) 了解更多安装选项
+- 🔧 查看 [配置参考](/zh-CN/config/reference) 进行高级配置
+- 🌐 配置更多 [消息渠道](/zh-CN/channels/index)
+- 🏗️ 了解 [系统架构](/zh-CN/concepts/architecture) 深入理解工作原理
 
 ## 获取帮助
 
 如果遇到问题：
 
 1. 运行 `openclaw doctor` 诊断问题
-2. 查看 [故障排除](/zh-cn/operations/troubleshooting) 文档
+2. 查看 [故障排除](/zh-CN/operations/troubleshooting) 文档
 3. 在 [GitHub Issues](https://github.com/openclaw/openclaw/issues) 提交问题

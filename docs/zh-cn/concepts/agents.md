@@ -538,6 +538,6 @@ openclaw gateway --verbose
 
 ## 下一步
 
-- [消息路由](/zh-cn/concepts/routing) - 路由配置详解
-- [会话管理](/zh-cn/concepts/sessions) - 会话系统详解
-- [配置参考](/zh-cn/config/reference) - 完整配置选项
+- [消息路由](/zh-CN/concepts/routing) - 路由配置详解
+- [会话管理](/zh-CN/concepts/sessions) - 会话系统详解
+- [配置参考](/zh-CN/config/reference) - 完整配置选项

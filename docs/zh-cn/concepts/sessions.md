@@ -399,6 +399,6 @@ openclaw gateway --verbose
 
 ## 下一步
 
-- [消息路由](/zh-cn/concepts/routing) - 路由配置
-- [AI 代理](/zh-cn/concepts/agents) - 代理系统
-- [配置参考](/zh-cn/config/reference) - 完整配置
+- [消息路由](/zh-CN/concepts/routing) - 路由配置
+- [AI 代理](/zh-CN/concepts/agents) - 代理系统
+- [配置参考](/zh-CN/config/reference) - 完整配置

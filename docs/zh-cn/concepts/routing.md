@@ -370,6 +370,6 @@ agent:<agentId>:<channel>:<type>:<id>
 
 ## 下一步
 
-- [AI 代理](/zh-cn/concepts/agents) - 代理配置详解
-- [会话管理](/zh-cn/concepts/sessions) - 会话系统
-- [配置参考](/zh-cn/config/reference) - 完整配置
+- [AI 代理](/zh-CN/concepts/agents) - 代理配置详解
+- [会话管理](/zh-CN/concepts/sessions) - 会话系统
+- [配置参考](/zh-CN/config/reference) - 完整配置

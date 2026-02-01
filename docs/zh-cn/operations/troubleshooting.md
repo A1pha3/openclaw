@@ -423,6 +423,6 @@ openclaw logs --tail 200 > logs.txt
 
 ## 下一步
 
-- [运维手册](/zh-cn/operations/index) - 运维最佳实践
-- [配置参考](/zh-cn/config/reference) - 配置选项
-- [快速入门](/zh-cn/start/quick-start) - 重新开始
+- [运维手册](/zh-CN/operations/index) - 运维最佳实践
+- [配置参考](/zh-CN/config/reference) - 配置选项
+- [快速入门](/zh-CN/start/quick-start) - 重新开始

@@ -350,6 +350,6 @@ journalctl --user -u openclaw-gateway
 
 ## 下一步
 
-- [系统架构](/zh-cn/concepts/architecture) - 整体架构
-- [配置参考](/zh-cn/config/reference) - 完整配置
-- [远程访问](/zh-cn/operations/deployment) - 部署指南
+- [系统架构](/zh-CN/concepts/architecture) - 整体架构
+- [配置参考](/zh-CN/config/reference) - 完整配置
+- [远程访问](/zh-CN/operations/deployment) - 部署指南

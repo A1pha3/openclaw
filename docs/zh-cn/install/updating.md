@@ -82,9 +82,9 @@ openclaw doctor
 
 ## 相关文档
 
-- [配置参考](/zh-cn/config/reference)
-- [故障排除](/zh-cn/operations/troubleshooting)
-- [配置示例](/zh-cn/config/examples)
+- [配置参考](/zh-CN/config/reference)
+- [故障排除](/zh-CN/operations/troubleshooting)
+- [配置示例](/zh-CN/config/examples)
 ```
 
 ## 下一步- 查看版本变更：`git log` 或 [变更日志](https://github.com/openclaw/openclaw/commits/main)

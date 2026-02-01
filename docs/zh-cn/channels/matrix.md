@@ -410,7 +410,7 @@ Beeper 是一个流行的 Matrix 客户端，但它要求启用 E2EE：
 
 ## 相关文档
 
-- [渠道概述](/zh-cn/channels)
-- [配置参考](/zh-cn/config/reference)
-- [插件系统](/zh-cn/developer/plugin-development)
-- [故障排除](/zh-cn/operations/troubleshooting)
+- [渠道概述](/zh-CN/channels)
+- [配置参考](/zh-CN/config/reference)
+- [插件系统](/zh-CN/developer/plugin-development)
+- [故障排除](/zh-CN/operations/troubleshooting)

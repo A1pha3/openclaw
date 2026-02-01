@@ -321,6 +321,6 @@ nvm use 22
 
 安装完成后，继续阅读：
 
-- [初次配置](/zh-cn/start/first-setup) - 完成基础配置
-- [快速入门](/zh-cn/start/quick-start) - 发送第一条消息
-- [配置参考](/zh-cn/config/reference) - 详细配置选项
+- [新手上路](/zh-CN/start/getting-started) - 从零开始完整指南
+- [快速入门](/zh-CN/start/quick-start) - 发送第一条消息
+- [配置参考](/zh-CN/config/reference) - 详细配置选项

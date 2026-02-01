@@ -39,7 +39,7 @@
 7. 如果使用 `channels.slack.slashCommand`，在 Slash Commands 中创建 `/clawd`。
 8. **App Home** → 启用 **Messages Tab** 让用户可以私信机器人。
 
-多账号支持：使用 `channels.slack.accounts` 配置每个账号的 Token 和可选的 `name`。详见 [网关配置](/zh-cn/config/reference)。
+多账号支持：使用 `channels.slack.accounts` 配置每个账号的 Token 和可选的 `name`。详见 [网关配置](/zh-CN/config/reference)。
 
 ### OpenClaw 配置（最小）
 
@@ -386,6 +386,6 @@ Slack 工具操作可以通过 `channels.slack.actions.*` 门控：
 
 ## 相关文档
 
-- [网关配置](/zh-cn/config/reference)
-- [消息路由](/zh-cn/concepts/routing)
-- [故障排除](/zh-cn/operations/troubleshooting)
+- [网关配置](/zh-CN/config/reference)
+- [消息路由](/zh-CN/concepts/routing)
+- [故障排除](/zh-CN/operations/troubleshooting)

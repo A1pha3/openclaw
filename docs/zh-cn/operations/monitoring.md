@@ -355,7 +355,7 @@ cp -r ~/.clawdbot/sessions/ ~/backups/
 
 ## 相关文档
 
-- [网关配置](/zh-cn/concepts/gateway)
-- [故障排除](/zh-cn/operations/troubleshooting)
-- [部署指南](/zh-cn/operations/deployment)
-- [安全指南](/zh-cn/concepts/architecture#安全模型)
+- [网关配置](/zh-CN/concepts/gateway)
+- [故障排除](/zh-CN/operations/troubleshooting)
+- [部署指南](/zh-CN/operations/deployment)
+- [安全指南](/zh-CN/concepts/architecture#安全模型)

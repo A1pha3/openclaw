@@ -388,6 +388,6 @@ openclaw pairing approve telegram <code>
 
 ## 下一步
 
-- [Discord 配置](/zh-cn/channels/discord)
-- [渠道概述](/zh-cn/channels/index)
-- [配置参考](/zh-cn/config/reference)
+- [Discord 配置](/zh-CN/channels/discord)
+- [渠道概述](/zh-CN/channels/index)
+- [配置参考](/zh-CN/config/reference)

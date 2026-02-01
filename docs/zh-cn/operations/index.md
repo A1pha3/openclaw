@@ -444,8 +444,6 @@ openclaw logs --tail 200
 
 ## 下一步
 
-- [部署指南](/zh-cn/operations/deployment) - 详细部署步骤
-- [监控与日志](/zh-cn/operations/monitoring) - 监控配置
-- [故障排除](/zh-cn/operations/troubleshooting) - 问题诊断
-- [备份恢复](/zh-cn/operations/backup) - 数据保护
-- [安全加固](/zh-cn/operations/security-hardening) - 安全最佳实践
+- [部署指南](/zh-CN/operations/deployment) - 详细部署步骤
+- [监控与日志](/zh-CN/operations/monitoring) - 监控配置
+- [故障排除](/zh-CN/operations/troubleshooting) - 问题诊断

@@ -29,26 +29,26 @@ OpenClaw 是一个强大的多渠道 AI 代理网关，可以将 AI 代理连接
 
 如果您是第一次使用 OpenClaw：
 
-1. **[快速入门](/zh-cn/start/quick-start)** - 5 分钟完成安装和基础配置
-2. **[安装指南](/zh-cn/start/installation)** - 详细的安装选项说明
-3. **[WhatsApp 配置](/zh-cn/channels/whatsapp)** - 连接最常用的消息渠道
+1. **[快速入门](/zh-CN/start/quick-start)** - 5 分钟完成安装和基础配置
+2. **[安装指南](/zh-CN/start/installation)** - 详细的安装选项说明
+3. **[WhatsApp 配置](/zh-CN/channels/whatsapp)** - 连接最常用的消息渠道
 
 ### 进阶学习
 
 理解 OpenClaw 的工作原理：
 
-1. **[系统架构](/zh-cn/concepts/architecture)** - 整体架构概述
-2. **[Gateway 网关](/zh-cn/concepts/gateway)** - 核心服务详解
-3. **[AI 代理](/zh-cn/concepts/agents)** - 代理配置和管理
-4. **[配置参考](/zh-cn/config/reference)** - 完整配置选项
+1. **[系统架构](/zh-CN/concepts/architecture)** - 整体架构概述
+2. **[Gateway 网关](/zh-CN/concepts/gateway)** - 核心服务详解
+3. **[AI 代理](/zh-CN/concepts/agents)** - 代理配置和管理
+4. **[配置参考](/zh-CN/config/reference)** - 完整配置选项
 
 ### 高级使用
 
 发挥 OpenClaw 的全部潜力：
 
-1. **[消息路由](/zh-cn/concepts/routing)** - 多代理智能路由
-2. **[插件开发](/zh-cn/developer/plugin-development)** - 扩展 OpenClaw
-3. **[运维指南](/zh-cn/operations/index)** - 生产环境最佳实践
+1. **[消息路由](/zh-CN/concepts/routing)** - 多代理智能路由
+2. **[插件开发](/zh-CN/developer/plugin-development)** - 扩展 OpenClaw
+3. **[运维指南](/zh-CN/operations/index)** - 生产环境最佳实践
 
 ## 快速开始
 
@@ -97,7 +97,7 @@ openclaw dashboard
 
 ## 获取帮助
 
-- 📖 **[故障排除](/zh-cn/operations/troubleshooting)** - 常见问题解答
+- 📖 **[故障排除](/zh-CN/operations/troubleshooting)** - 常见问题解答
 - 🩺 **诊断工具**: `openclaw doctor`
 - 📋 **状态检查**: `openclaw status --all`
 - 🐛 **问题反馈**: [GitHub Issues](https://github.com/openclaw/openclaw/issues)
@@ -106,15 +106,15 @@ openclaw dashboard
 
 | 章节 | 说明 |
 |------|------|
-| [入门指南](/zh-cn/start/quick-start) | 安装和基础配置 |
-| [核心概念](/zh-cn/concepts/architecture) | 架构和原理 |
-| [渠道集成](/zh-cn/channels/index) | 连接消息平台 |
-| [配置指南](/zh-cn/config/index) | 配置选项详解 |
-| [开发者手册](/zh-cn/developer/index) | 开发和扩展 |
-| [运维手册](/zh-cn/operations/index) | 部署和维护 |
+| [入门指南](/zh-CN/start/quick-start) | 安装和基础配置 |
+| [核心概念](/zh-CN/concepts/architecture) | 架构和原理 |
+| [渠道集成](/zh-CN/channels/index) | 连接消息平台 |
+| [配置指南](/zh-CN/config/index) | 配置选项详解 |
+| [开发者手册](/zh-CN/developer/index) | 开发和扩展 |
+| [运维手册](/zh-CN/operations/index) | 部署和维护 |
 
 ---
 
 准备好了吗？让我们开始吧！
 
-👉 [快速入门](/zh-cn/start/quick-start)
+👉 [快速入门](/zh-CN/start/quick-start)

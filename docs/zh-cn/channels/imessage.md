@@ -508,7 +508,7 @@ openclaw message send --to "imessage:+15551234567" --message "你好"
 
 ## 相关文档
 
-- [渠道概述](/zh-cn/channels)
-- [配置参考](/zh-cn/config/reference)
-- [配对机制](/zh-cn/start/quick-start#配对)
-- [故障排除](/zh-cn/operations/troubleshooting)
+- [渠道概述](/zh-CN/channels)
+- [配置参考](/zh-CN/config/reference)
+- [配对机制](/zh-CN/start/quick-start#配对)
+- [故障排除](/zh-CN/operations/troubleshooting)

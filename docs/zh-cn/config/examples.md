@@ -571,7 +571,7 @@
 
 ## 相关文档
 
-- [配置概述](/zh-cn/config)
-- [配置参考](/zh-cn/config/reference)
-- [渠道概述](/zh-cn/channels)
-- [网关配置](/zh-cn/concepts/gateway)
+- [配置概述](/zh-CN/config)
+- [配置参考](/zh-CN/config/reference)
+- [渠道概述](/zh-CN/channels)
+- [网关配置](/zh-CN/concepts/gateway)

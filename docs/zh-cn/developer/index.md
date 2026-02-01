@@ -344,8 +344,7 @@ pnpm plugins:sync
 
 ## 下一步
 
-- [项目结构](/zh-cn/developer/project-structure) - 详细代码组织
-- [插件开发](/zh-cn/developer/plugin-development) - 创建自定义插件
-- [API 参考](/zh-cn/developer/api-reference) - 接口文档
-- [测试指南](/zh-cn/developer/testing) - 测试最佳实践
-- [贡献指南](/zh-cn/developer/contributing) - 如何贡献代码
+- [项目结构](/zh-CN/developer/project-structure) - 详细代码组织
+- [插件开发](/zh-CN/developer/plugin-development) - 创建自定义插件
+- [测试指南](/zh-CN/developer/testing) - 测试最佳实践
+- [贡献指南](/zh-CN/developer/contributing) - 如何贡献代码

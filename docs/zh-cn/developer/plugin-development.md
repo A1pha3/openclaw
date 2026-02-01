@@ -507,6 +507,6 @@ async execute(params: MyToolParams, context: ToolExecuteContext) {
 
 ## 下一步
 
-- [API 参考](/zh-cn/developer/api-reference) - 完整 API 文档
-- [测试指南](/zh-cn/developer/testing) - 测试最佳实践
-- [开发者手册](/zh-cn/developer/index) - 开发环境搭建
+- [测试指南](/zh-CN/developer/testing) - 测试最佳实践
+- [开发者手册](/zh-CN/developer/index) - 开发环境搭建
+- [项目结构](/zh-CN/developer/project-structure) - 代码组织结构

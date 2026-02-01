@@ -373,6 +373,6 @@ openclaw channels login
 
 ## 下一步
 
-- [Telegram 配置](/zh-cn/channels/telegram)
-- [Discord 配置](/zh-cn/channels/discord)
-- [渠道概述](/zh-cn/channels/index)
+- [Telegram 配置](/zh-CN/channels/telegram)
+- [Discord 配置](/zh-CN/channels/discord)
+- [渠道概述](/zh-CN/channels/index)
