@@ -1,3 +1,12 @@
+---
+summary: 介绍 iMessage 渠道配置，包括概述、快速开始、工作原理、访问控制、白名单格式、群组类线程、独立机器人身份、远程 Mac 配置、媒体和附件
+read_when:
+  - 配置 iMessage 渠道时
+  - 设置访问控制时
+  - 配置远程 Mac 时
+title: iMessage 配置
+---
+
 # iMessage 配置
 
 iMessage 是 Apple 生态系统中的即时通讯服务，OpenClaw 通过 `imsg` 工具在 macOS 上支持 iMessage 渠道。

@@ -1,3 +1,12 @@
+---
+summary: 介绍 Telegram Bot 配置，包括创建 Bot、配置选项、DM 策略、群组配置、自定义命令、消息设置、流式输出、反应通知、多账号和 Webhook 模式
+read_when:
+  - 配置 Telegram Bot 时
+  - 设置群组或话题时
+  - 需要自定义命令时
+title: Telegram 配置
+---
+
 # Telegram 配置
 
 本文档介绍如何配置 OpenClaw 连接 Telegram Bot。

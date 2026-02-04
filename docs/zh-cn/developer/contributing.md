@@ -1,3 +1,12 @@
+---
+summary: 介绍 OpenClaw 贡献指南，涵盖环境搭建、开发工作流、提交规范、PR 指南、代码风格、添加新功能、Changelog 更新和获取帮助
+read_when:
+  - 首次贡献代码前
+  - 创建 Pull Request 时
+  - 了解项目贡献流程时
+title: 贡献指南
+---
+
 # 贡献指南
 
 感谢您对 OpenClaw 的贡献兴趣！本文档介绍如何为项目做出贡献。

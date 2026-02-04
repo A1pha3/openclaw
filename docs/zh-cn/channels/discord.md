@@ -1,4 +1,13 @@
-# Discord (Bot API)
+---
+summary: 介绍 Discord Bot 配置，包括快速设置、工作原理、白名单、速率限制、配置参考、回复标签和安全运维
+read_when:
+  - 配置 Discord Bot 时
+  - 设置服务器频道时
+  - 调试机器人行为时
+title: Discord 配置
+---
+
+# Discord 配置
 
 状态：通过官方 Discord Bot Gateway 支持私信和服务器文字频道。
 

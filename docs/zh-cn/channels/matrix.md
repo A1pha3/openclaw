@@ -1,3 +1,12 @@
+---
+summary: 介绍 Matrix 渠道配置，包括概述、插件安装、快速开始、E2EE 加密、访问控制、线程支持、功能支持、多账号和 Beeper 客户端
+read_when:
+  - 配置 Matrix 渠道时
+  - 设置 E2EE 加密时
+  - 配置多账号时
+title: Matrix 配置
+---
+
 # Matrix 配置
 
 Matrix 是一个开放的、去中心化的消息协议。OpenClaw 通过插件支持 Matrix 渠道，可以作为 Matrix 用户连接到任何 homeserver。

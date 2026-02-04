@@ -1,3 +1,12 @@
+---
+summary: 介绍 OpenClaw 核心服务 Gateway，包括概述、启动、网络配置、认证、服务管理、状态检查、配置管理、RPC API、Canvas Host、日志、远程访问和多实例
+read_when:
+  - 配置网关时
+  - 启动网关时
+  - 使用 RPC API 时
+title: Gateway 网关
+---
+
 # Gateway 网关
 
 Gateway 是 OpenClaw 的核心服务，负责管理所有消息渠道和 AI 代理的通信。

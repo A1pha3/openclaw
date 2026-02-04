@@ -1,3 +1,12 @@
+---
+summary: 介绍 WhatsApp 渠道配置，包括工作原理、快速开始、基础配置、DM 策略、群组配置、提及触发、自聊模式、多账号和消息设置
+read_when:
+  - 配置 WhatsApp 渠道时
+  - 设置 DM 或群组策略时
+  - 需要多账号支持时
+title: WhatsApp 配置
+---
+
 # WhatsApp 配置
 
 WhatsApp 是 OpenClaw 最常用的消息渠道之一，通过 Baileys 库实现 WhatsApp Web 协议。

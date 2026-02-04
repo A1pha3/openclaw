@@ -1,3 +1,12 @@
+---
+summary: 介绍 Signal 渠道配置，包括概述、快速开始、号码模型、访问控制、守护进程模式、消息和媒体、已读回执、反应、投递目标和多账号
+read_when:
+  - 配置 Signal 渠道时
+  - 设置访问控制时
+  - 配置多账号时
+title: Signal 配置
+---
+
 # Signal 配置
 
 Signal 是一个以隐私和安全为核心的通信应用，OpenClaw 通过 `signal-cli` 工具支持 Signal 渠道。

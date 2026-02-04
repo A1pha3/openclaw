@@ -1,3 +1,12 @@
+---
+summary: 详细介绍 Slack 渠道配置，包括 Socket 模式设置、Token 认证、多账号支持、用户 Token、历史上下文、HTTP 模式、权限范围和配置参考
+read_when:
+  - 配置 Slack 渠道时
+  - 设置 Socket 或 HTTP 模式时
+  - 配置频道和私信时
+title: Slack 配置
+---
+
 # Slack
 
 ## Socket 模式（默认）
