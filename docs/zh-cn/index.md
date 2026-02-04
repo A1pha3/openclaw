@@ -45,9 +45,7 @@ title: "OpenClaw 中文文档"
 - [**快速入门**](/zh-CN/start/quick-start) - 5分钟快速上手（已有基础者）
 - [**安装指南**](/zh-CN/start/installation) - 详细安装步骤和环境准备
 - [**向导模式详解**](/zh-CN/start/wizard) - 深入理解引导向导
-- [配对与安全](/zh-CN/start/pairing) - DM 安全和配对机制
-- [Onboarding 流程](/zh-CN/start/onboarding) - 完整初始化流程
-- [OpenClaw 助手设置](/zh-CN/start/openclaw) - 配置 AI 助手
+- [核心概念](/zh-CN/concepts/architecture) - 系统架构理解
 
 ### 🧠 核心概念 (Concepts)
 
@@ -61,12 +59,11 @@ title: "OpenClaw 中文文档"
 - [**消息路由**](/zh-CN/concepts/routing) - 智能消息分发
 
 **深入机制：**
-- [代理循环](/zh-CN/concepts/agent-loop) - 消息处理流程
-- [上下文管理](/zh-CN/concepts/context) - 如何保持对话连贯
+- [代理循环](/zh-CN/concepts/agents) - 消息处理流程
+- [上下文管理](/zh-CN/concepts/sessions) - 会话与上下文机制
 - [记忆系统](/zh-CN/concepts/memory) - 短期与长期记忆
 - [流式响应](/zh-CN/concepts/streaming) - 实时回复机制
 - [模型配置](/zh-CN/concepts/models) - AI 模型选择策略
-- [OAuth 认证](/zh-CN/concepts/oauth) - 认证原理
 
 ### 📱 渠道集成 (Channels)
 
@@ -80,11 +77,6 @@ title: "OpenClaw 中文文档"
 - [**Signal**](/zh-CN/channels/signal) - 隐私优先
 - [**iMessage**](/zh-CN/channels/imessage) - Apple 生态
 - [**Matrix**](/zh-CN/channels/matrix) - 去中心化
-- [Google Chat](/zh-CN/channels/googlechat)
-- [Line](/zh-CN/channels/line)
-- [Mattermost](/zh-CN/channels/mattermost)
-- [BlueBubbles](/zh-CN/channels/bluebubbles)
-- [故障排除](/zh-CN/channels/troubleshooting)
 
 ### ⚙️ 配置指南 (Config)
 
@@ -116,25 +108,16 @@ title: "OpenClaw 中文文档"
 - [sessions](/zh-CN/cli/sessions) - 会话管理
 - [memory](/zh-CN/cli/memory) - 记忆管理
 
-**其他：**
-- [skills](/zh-CN/cli/skills) - 技能管理
-- [plugins](/zh-CN/cli/plugins) - 插件管理
-- [cron](/zh-CN/cli/cron) - 定时任务
-- [logs](/zh-CN/cli/logs) - 日志查看
-- [update](/zh-CN/cli/update) - 更新检查
-
 ### 🔧 工具与技能 (Tools)
 
 扩展 AI 能力的工具系统。
 
 - [**技能概述**](/zh-CN/tools) - 技能系统入门
-- [**创建技能**](/zh-CN/tools/creating-skills) - 开发自定义技能
 - [浏览器工具](/zh-CN/tools/browser) - 网页自动化
 - [执行工具](/zh-CN/tools/exec) - 命令执行
 - [Web 工具](/zh-CN/tools/web) - 网页搜索和抓取
 - [思考模式](/zh-CN/tools/thinking) - 深度思考
 - [子代理](/zh-CN/tools/subagents) - 任务分发
-- [斜杠命令](/zh-CN/tools/slash-commands) - 快捷指令
 
 ### 🌐 网关与协议 (Gateway)
 
@@ -142,28 +125,17 @@ title: "OpenClaw 中文文档"
 
 **基础配置：**
 - [**网关概述**](/zh-CN/gateway) - 网关系统入门
-- [**配置详解**](/zh-CN/gateway/configuration) - 所有配置选项
-- [**配置示例**](/zh-CN/gateway/configuration-examples) - 实用模板
-- [**认证机制**](/zh-CN/gateway/authentication) - 安全配置
+- [**配置详解**](/zh-CN/concepts/gateway) - 所有配置选项
 
 **网络与连接：**
 - [远程访问](/zh-CN/gateway/remote) - 从外部连接
 - [Tailscale 集成](/zh-CN/gateway/tailscale) - 安全组网
-- [服务发现](/zh-CN/gateway/discovery) - 自动发现
-- [配对流程](/zh-CN/gateway/pairing) - 设备配对
 
 **运维：**
 - [后台服务](/zh-CN/gateway/background-process) - 守护进程
 - [健康检查](/zh-CN/gateway/health) - 监控健康
 - [日志系统](/zh-CN/gateway/logging) - 日志管理
 - [诊断工具](/zh-CN/gateway/doctor) - 问题诊断
-- [故障排除](/zh-CN/gateway/troubleshooting) - 问题解决
-
-**高级：**
-- [协议说明](/zh-CN/gateway/protocol) - WebSocket 协议
-- [多网关](/zh-CN/gateway/multiple-gateways) - 部署多个网关
-- [沙箱安全](/zh-CN/gateway/sandboxing) - 安全隔离
-- [本地模型](/zh-CN/gateway/local-models) - 离线 AI
 
 ### 🤖 AI 提供商 (Providers)
 
@@ -177,9 +149,6 @@ title: "OpenClaw 中文文档"
 - [**GLM**](/zh-CN/providers/glm) - 智谱 AI
 - [**MiniMax**](/zh-CN/providers/minimax) - MiniMax 模型
 - [**Ollama**](/zh-CN/providers/ollama) - 本地模型
-- [GitHub Copilot](/zh-CN/providers/github-copilot)
-- [Deepgram](/zh-CN/providers/deepgram)
-- [更多...](/zh-CN/providers)
 
 ### 💻 部署平台 (Platforms)
 
@@ -193,17 +162,9 @@ title: "OpenClaw 中文文档"
 - [**Android**](/zh-CN/platforms/android) - 移动节点
 
 **云服务：**
-- [Docker](/zh-CN/platforms/docker)
+- [Docker](/zh-CN/install/docker)
 - [Fly.io](/zh-CN/platforms/fly)
-- [Google Cloud](/zh-CN/platforms/gcp)
-- [DigitalOcean](/zh-CN/platforms/digitalocean)
-- [Hetzner](/zh-CN/platforms/hetzner)
-- [Oracle Cloud](/zh-CN/platforms/oracle)
-- [VPS 通用](/zh-CN/vps)
-
-**特殊平台：**
 - [树莓派](/zh-CN/platforms/raspberry-pi)
-- [macOS VM](/zh-CN/platforms/macos-vm)
 
 ### 📱 移动节点 (Nodes)
 
@@ -221,9 +182,7 @@ title: "OpenClaw 中文文档"
 定时任务和自动化工作流。
 
 - [**Cron 任务**](/zh-CN/automation/cron-jobs) - 定时执行
-- [Cron vs 心跳](/zh-CN/automation/cron-vs-heartbeat) - 选择策略
 - [Webhook](/zh-CN/automation/webhook) - HTTP 触发
-- [轮询](/zh-CN/automation/poll) - 定期检查
 
 ### 🖥️ Web 界面 (Web)
 
@@ -231,8 +190,6 @@ title: "OpenClaw 中文文档"
 
 - [**Web 概述**](/zh-CN/web) - Web 界面介绍
 - [**仪表盘**](/zh-CN/web/dashboard) - 浏览器聊天
-- [**控制界面**](/zh-CN/web/control-ui) - 管理控制台
-- [WebChat](/zh-CN/web/webchat) - 网页聊天
 
 ### 👨‍💻 开发者文档 (Developer)
 

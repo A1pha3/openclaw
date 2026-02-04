@@ -67,5 +67,5 @@ openclaw cron remove backup
 
 ## 📖 相关文档
 
-- [CLI Cron 命令](/zh-CN/cli/index#定时任务)
+- [CLI Cron 命令](/zh-CN/cli/index#cron)
 - [配置参考](/zh-CN/config/reference)

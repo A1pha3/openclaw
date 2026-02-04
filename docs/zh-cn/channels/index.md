@@ -241,3 +241,13 @@ openclaw channels status --probe
 ### 插件渠道
 
 - [Matrix 配置](/zh-CN/channels/matrix)
+- [Microsoft Teams 配置](/zh-CN/channels/msteams)
+- [Mattermost 配置](/zh-CN/channels/mattermost)
+
+---
+
+## 相关文档
+
+- [新手上路](/zh-CN/start/getting-started) - 首次配置指南
+- [CLI 参考](/zh-CN/cli) - 渠道管理命令
+- [故障排除](/zh-CN/help/troubleshooting) - 问题解决
