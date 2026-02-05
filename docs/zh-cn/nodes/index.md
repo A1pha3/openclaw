@@ -9,342 +9,388 @@ title: "节点系统"
 
 # 📱 节点系统
 
-本文档详细介绍 OpenClaw 的节点系统，包括配对流程、功能特性和 CLI 命令。
+## 学习目标
 
-## 🎯 什么是节点？
+完成本章节学习后，你将能够：
 
-**节点（Node）** 是连接到网关的配套设备，提供额外的硬件能力：
+### 基础目标（必掌握）
 
-```
-网关 ←—— WebSocket ——→ 节点设备
-          │
-          ├── 相机控制
-          ├── 屏幕截图
-          ├── 位置获取
-          └── 系统命令
-```
+- [ ] 理解 **节点（Node）** 的核心概念及其在 OpenClaw 架构中的角色
+- [ ] 掌握四种节点类型的特点和适用场景
+- [ ] 理解节点与网关的区别与协作关系
+- [ ] 完成节点配对流程
 
-### 节点类型
+### 进阶目标（建议掌握）
 
-| 类型 | 说明 | 示例 |
-|------|------|------|
-| **iOS 节点** | iPhone/iPad | 相机、麦克风、位置 |
-| **Android 节点** | Android 手机 | 相机、麦克风、位置、SMS |
-| **macOS 节点** | Mac 电脑 | 画布、相机、系统命令 |
-| **无头节点** | Linux/Windows 服务器 | 系统命令执行 |
+- [ ] 配置节点的画布、相机、位置等功能
+- [ ] 管理节点权限和安全策略
+- [ ] 排查节点连接和功能问题
 
-### 节点与网关的区别
+### 专家目标（挑战）
 
-| 特性 | 网关 | 节点 |
-|------|------|------|
-| 角色 | 服务端 | 客户端 |
-| 运行服务 | ✅ | ❌ |
-| 消息处理 | ✅ | ❌ |
-| 硬件访问 | ❌ | ✅ |
-| WebSocket 连接 | 监听 | 建立 |
+- [ ] 设计多节点协作架构
+- [ ] 优化节点性能和资源利用
+- [ ] 开发自定义节点能力
 
 ---
 
-## 🔗 配对与状态
+## 为什么需要节点系统？
 
-### 快速配对
+在理解具体用法之前，我们需要先理解**设计者为什么引入节点系统**。这不仅帮助你更好地使用节点功能，还能让你在遇到问题时做出更好的设计决策。
 
-```bash
-# 查看待配对设备
-openclaw devices list
+### 设计决策背景
 
-# 审批设备
-openclaw devices approve <requestId>
+**问题**：OpenClaw 网关运行在服务器上，但需要访问移动设备特有的硬件能力（相机、麦克风、位置等）
 
-# 拒绝设备
-openclaw devices reject <requestId>
+**可选方案**：
 
-# 查看节点状态
-openclaw nodes status
+1. 方案 A - 远程调用 API：复杂且延迟高
+2. 方案 B - 设备直连：安全性和管理困难
+3. 方案 C（最终选择）- 节点架构：平衡了功能和管理
 
-# 查看节点详情
-openclaw nodes describe --node <idOrNameOrIp>
+**选择理由**：
+
+- 理由一：网关负责消息处理和路由，节点负责硬件访问，职责分离清晰
+- 理由二：WebSocket 通信保证实时性和低延迟
+- 理由三：权限模型确保用户对设备资源的控制权
+
+### 节点与网关的架构关系
+
 ```
-
-### 配对流程
-
-```
-1. 节点设备安装 OpenClaw 应用
-2. 打开应用，选择"作为节点"
-3. 输入网关地址和端口
-4. 网关端收到配对请求
-5. 管理员审批配对请求
-6. 配对成功，节点上线
-```
-
-### 节点状态
-
-| 状态 | 说明 |
-|------|------|
-| **pending** | 待审批 |
-| **paired** | 已配对 |
-| **online** | 在线 |
-| **offline** | 离线 |
-
----
-
-## 🎨 画布功能（Canvas）
-
-### 屏幕截图
-
-如果节点正在显示画布（WebView），可以获取截图：
-
-```bash
-# 获取 PNG 截图
-openclaw nodes canvas snapshot --node <idOrNameOrIp> --format png
-
-# 获取 JPG 截图（压缩）
-openclaw nodes canvas snapshot --node <idOrNameOrIp> --format jpg --max-width 1200 --quality 0.9
-```
-
-### 画布控制
-
-```bash
-# 显示网页
-openclaw nodes canvas present --node <idOrNameOrIp> --target https://example.com
-
-# 隐藏画布
-openclaw nodes canvas hide --node <idOrNameOrIp>
-
-# 导航到 URL
-openclaw nodes canvas navigate --node <idOrNameOrIp> https://example.com
-
-# 执行 JavaScript
-openclaw nodes canvas eval --node <idOrNameOrIp> --js "document.title"
-```
-
-### A2UI 画布
-
-```bash
-# 推送文本
-openclaw nodes canvas a2ui push --node <idOrNameOrIp> --text "Hello"
-
-# 推送 JSONL 数据
-openclaw nodes canvas a2ui push --node <idOrNameOrIp> --jsonl ./payload.jsonl
-
-# 重置画布
-openclaw nodes canvas a2ui reset --node <idOrNameOrIp>
+┌─────────────────────────────────────────────────────────────┐
+│                        OpenClaw 架构                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│    ┌─────────────────────────────────────────────────┐      │
+│    │                    网关服务                       │      │
+│    │   (WebSocket 服务端，消息路由，工具调用)           │      │
+│    └─────────────────────┬───────────────────────────┘      │
+│                          │                                    │
+│              WebSocket 双向通信                               │
+│                          │                                    │
+│    ┌─────────────────────┴───────────────────────────┐      │
+│    │                     │                           │      │
+│    ▼                     ▼                           ▼      │
+│ ┌──────────┐        ┌──────────┐              ┌──────────┐   │
+│ │ iOS 节点  │        │Android 节点│           │macOS 节点│   │
+│ │          │        │          │              │         │   │
+│ │ 相机     │        │ 相机     │              │ 画布    │   │
+│ │ 麦克风   │        │ 麦克风   │              │ 相机    │   │
+│ │ 位置     │        │ 位置     │              │ 系统命令│   │
+│ │          │        │ SMS      │              │         │   │
+│ └──────────┘        └──────────┘              └──────────┘   │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📷 相机功能
+## 核心概念速查
 
-### 拍照
-
-```bash
-# 列出可用相机
-openclaw nodes camera list --node <idOrNameOrIp>
-
-# 拍照（默认使用前后摄像头）
-openclaw nodes camera snap --node <idOrNameOrIp>
-
-# 指定前置摄像头
-openclaw nodes camera snap --node <idOrNameOrIp> --facing front
-
-# 指定后置摄像头
-openclaw nodes camera snap --node <idOrNameOrIp> --facing back
-```
-
-### 录像
-
-```bash
-# 录制 10 秒视频
-openclaw nodes camera clip --node <idOrNameOrIp> --duration 10s
-
-# 录制 3 秒视频（毫秒）
-openclaw nodes camera clip --node <idOrNameOrIp> --duration 3000
-
-# 禁用音频录制
-openclaw nodes camera clip --node <idOrNameOrIp> --duration 10s --no-audio
-```
-
-> **注意**：节点应用必须在前台运行，`canvas.*` 和 `camera.*` 调用才有效。
+| 概念 | 定义 | 关键特性 |
+|------|------|---------|
+| **节点（Node）** | 连接到网关的配套设备，提供额外的硬件能力 | WebSocket 连接、权限管理、命令执行 |
+| **网关（Gateway）** | OpenClaw 控制平面，负责消息路由和工具调用 | WS 服务端、配置管理、权限验证 |
+| **配对（Pairing）** | 建立节点与网关之间信任关系的过程 | 审批机制、状态管理、Token 交换 |
+| **画布（Canvas）** | 节点上的可视化界面 | WebView 渲染、JavaScript 执行、截图 |
 
 ---
 
-## 🖥️ 屏幕录制
+## 适用场景分析
 
-```bash
-# 录制屏幕（10秒，10fps）
-openclaw nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10
+### 场景一：移动设备作为 AI 的"眼睛"
 
-# 禁用音频
-openclaw nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10 --no-audio
+**需求**：让 AI 能够查看物理世界，理解用户拍摄的内容
 
-# 指定屏幕（多显示器时）
-openclaw nodes screen record --node <idOrNameOrIp> --duration 10s --screen 0
+**解决方案**：
+
+```
+用户需求 → 节点相机捕获 → 图片上传 → AI 模型分析 → 结果反馈
 ```
 
-> **注意**：屏幕录制最长 60 秒，Android 会显示系统录屏提示。
+**实际案例**：
+
+- 拍摄文档让 AI 提取关键信息
+- 拍摄商品图片让 AI 比价
+- 拍摄场景让 AI 描述环境
+
+### 场景二：移动设备作为 AI 的"耳朵"
+
+**需求**：让 AI 能够听取用户的语音输入
+
+**解决方案**：
+
+```
+用户语音 → 节点麦克风捕获 → 语音转文字 → AI 处理 → 语音合成回复
+```
+
+**实际案例**：
+
+- 免提语音对话（Talk 模式）
+- 语音指令控制
+- 会议录音转文字
+
+### 场景三：位置感知应用
+
+**需求**：让 AI 了解用户的位置，提供位置相关的服务
+
+**解决方案**：
+
+```
+节点定位 → 位置信息 → AI 上下文理解 → 位置服务
+```
+
+**实际案例**：
+
+- 根据位置提供天气信息
+- 位置触发的自动化任务
+- 地理围栏提醒
+
+### 场景四：服务器节点作为执行环境
+
+**需求**：在远程服务器上执行系统命令
+
+**解决方案**：
+
+```
+CLI 命令 → 无头节点执行 → 结果返回 → AI 处理
+```
+
+**实际案例**：
+
+- CI/CD 自动化
+- 服务器监控
+- 远程脚本执行
 
 ---
 
-## 📍 位置功能
+## 专家思维模型：节点问题排查框架
 
-```bash
-# 获取位置
-openclaw nodes location get --node <idOrNameOrIp>
+当节点出现问题时，专家会采用以下思维框架快速定位问题：
 
-# 精确位置
-openclaw nodes location get --node <idOrNameOrIp> --accuracy precise
+### 排查流程图
 
-# 自定义参数
-openclaw nodes location get --node <idOrNameOrIp> \
-  --max-age 15000 \
-  --location-timeout 10000
+```
+节点问题
+    │
+    ├─→ 连接问题？
+    │   ├─→ 检查节点状态
+    │   ├─→ 检查 WebSocket 连接
+    │   └─→ 检查网络配置
+    │
+    ├─→ 功能问题？
+    │   ├─→ 检查权限设置
+    │   ├─→ 检查节点状态
+    │   └─→ 检查命令语法
+    │
+    └─→ 性能问题？
+        ├─→ 检查资源使用
+        ├─→ 检查网络延迟
+        └─→ 检查并发限制
 ```
 
-> **注意**：位置功能默认关闭，需要在设置中启用。
+### 常见问题速查表
+
+| 问题症状 | 可能原因 | 排查步骤 |
+|---------|---------|---------|
+| 节点无法连接 | 网络不通、Token 过期 | 1. ping 节点 IP<br>2. 检查 Token<br>3. 重启节点应用 |
+| 相机无法使用 | 权限未授予、节点未在前台 | 1. 检查系统权限<br>2. 确保节点在前台<br>3. 重启节点应用 |
+| 命令超时 | 网络延迟、节点负载高 | 1. 测试网络延迟<br>2. 检查节点资源<br>3. 减少同时执行的命令 |
+| 位置不准确 | GPS 信号弱、网络定位 | 1. 移动到开阔地带<br>2. 尝试精确位置模式<br>3. 检查网络连接 |
 
 ---
 
-## 📱 SMS 功能（Android）
+## 学习路径规划
 
-Android 节点支持发送短信：
+### 阶段一：基础概念（1-2 小时）
 
-```bash
-# 发送 SMS（需要 SMS 权限）
-openclaw nodes invoke --node <idOrNameOrIp> \
-  --command sms.send \
-  --params '{"to":"+15555550123","message":"Hello from OpenClaw"}'
-```
+**目标**：建立节点系统的认知框架
 
----
+1. 阅读本教程，建立整体架构认知
+2. 完成第一个节点的配对
+3. 测试基本功能（相机、位置）
 
-## 🖥️ 系统命令（macOS/无头节点）
+### 阶段二：核心功能（2-4 小时）
 
-### macOS 节点
+**目标**：掌握实际开发中最常用的功能
 
-```bash
-# 执行命令
-openclaw nodes run --node <idOrNameOrIp> -- echo "Hello from mac node"
+4. 配置画布功能，实现网页展示
+5. 使用相机捕获图片和视频
+6. 集成语音功能
 
-# 发送通知
-openclaw nodes notify --node <idOrNameOrIp> \
-  --title "Ping" \
-  --body "Gateway ready"
-```
+### 阶段三：高级应用（4-8 小时）
 
-### 无头节点主机
+**目标**：解决复杂场景和高级需求
 
-```bash
-# 启动无头节点
-openclaw node run --host <gateway-host> --port 18789
+7. 多节点管理
+8. 权限和安全策略
+9. 自定义节点能力开发
 
-# 作为服务安装
-openclaw node install --host <gateway-host> --port 18789
-openclaw node restart
-```
+### 阶段四：专家实战（8+ 小时）
+
+**目标**：解决真实世界的复杂问题
+
+10. 节点集群架构设计
+11. 性能优化和故障恢复
+12. 自定义节点开发
 
 ---
 
-## 🔐 执行审批
+## 渐进式复杂度：功能对比
 
-### 添加白名单
+### 节点类型功能矩阵
 
-```bash
-# 添加命令到白名单
-openclaw approvals allowlist add --node <id|name|ip> "/usr/bin/uname"
-openclaw approvals allowlist add --node <id|name|ip> "/usr/bin/sw_vers"
-```
+| 功能 | iOS 节点 | Android 节点 | macOS 节点 | 无头节点 |
+|-----|---------|-------------|-----------|---------|
+| 相机拍照 | ✅ | ✅ | ✅ | ❌ |
+| 相机录像 | ✅ | ✅ | ✅ | ❌ |
+| 屏幕录制 | ❌ | ✅ | ✅ | ❌ |
+| 麦克风 | ✅ | ✅ | ✅ | ❌ |
+| 位置获取 | ✅ | ✅ | ❌ | ❌ |
+| 画布显示 | ✅ | ✅ | ✅ | ❌ |
+| JavaScript 执行 | ✅ | ✅ | ✅ | ❌ |
+| 系统命令 | ❌ | ❌ | ✅ | ✅ |
+| 发送通知 | ❌ | ❌ | ✅ | ❌ |
+| SMS 发送 | ❌ | ✅ | ❌ | ❌ |
 
-### 查看审批状态
+### 复杂度等级说明
 
-```bash
-# 查看节点审批配置
-openclaw approvals status --node <idOrNameOrIp>
-```
-
----
-
-## ⚙️ 节点配置
-
-### 绑定执行节点
-
-当有多个节点时，可以绑定执行到特定节点：
-
-```bash
-# 全局默认
-openclaw config set tools.exec.node "node-id-or-name"
-
-# 按代理配置
-openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
-
-# 允许任何节点
-openclaw config unset tools.exec.node
-```
-
-### 重命名节点
-
-```bash
-openclaw nodes rename --node <id|name|ip> --name "Build Node"
-```
+| 等级 | 描述 | 示例任务 |
+|-----|------|---------|
+| **Level 1 ⭐** | 基础配对和状态查看 | 配对第一个节点，查看状态 |
+| **Level 2 ⭐⭐** | 使用相机和位置功能 | 拍照、获取位置 |
+| **Level 3 ⭐⭐⭐** | 配置画布和高级功能 | 网页展示、JavaScript 执行 |
+| **Level 4 ⭐⭐⭐⭐** | 多节点管理和自定义开发 | 集群管理、权限策略 |
 
 ---
 
-## 📊 权限状态
+## 故障排查实战
 
-查看节点权限状态：
+### 场景一：节点无法连接到网关
 
-```bash
-openclaw nodes permissions --node <idOrNameOrIp>
-```
+**问题描述**：节点启动后显示"连接失败"
 
-| 权限 | 说明 |
-|------|------|
-| `screenRecording` | 屏幕录制 |
-| `camera` | 相机 |
-| `microphone` | 麦克风 |
-| `location` | 位置 |
-| `accessibility` | 辅助功能 |
+**排查步骤**：
+
+1. **检查网关是否运行**
+
+   ```bash
+   # 在网关主机上执行
+   openclaw gateway status
+   ```
+
+2. **检查网络连通性**
+
+   ```bash
+   # 从节点设备 ping 网关
+   ping <gateway-host>
+   
+   # 测试特定端口
+   nc -zv <gateway-host> 18789
+   ```
+
+3. **检查 Token 配置**
+
+   ```bash
+   # 查看节点应用中的 Token
+   # 确认与网关配置一致
+   ```
+
+4. **检查防火墙设置**
+
+   ```bash
+   # 在网关主机上
+   # 确保 18789 端口允许访问
+   sudo ufw status
+   ```
+
+**解决方案**：
+
+- 启动网关服务
+- 修复网络连接
+- 重新配置 Token
+- 开放防火墙端口
+
+### 场景二：相机功能无法使用
+
+**问题描述**：调用相机命令时返回错误
+
+**排查步骤**：
+
+1. **检查节点状态**
+
+   ```bash
+   openclaw nodes status --node <node-id>
+   ```
+
+2. **检查相机权限**
+
+   ```bash
+   # iOS: 设置 → 隐私 → 相机
+   # Android: 应用权限
+   # macOS: 系统偏好设置 → 安全性与隐私
+   ```
+
+3. **检查节点是否在前台**
+
+   - iOS/Android 节点要求应用在前台
+   - 后台调用会返回 `NODE_BACKGROUND_UNAVAILABLE`
+
+4. **查看详细日志**
+
+   ```bash
+   openclaw logs --verbose | grep camera
+   ```
+
+**解决方案**：
+
+- 授予相机权限
+- 将节点应用切换到前台
+- 重启节点应用
+
+### 场景三：位置信息不准确
+
+**问题描述**：获取的位置与实际位置偏差较大
+
+**排查步骤**：
+
+1. **检查位置权限**
+
+   ```bash
+   # 确保已授予位置权限
+   # iOS: 设置 → 隐私 → 位置
+   # Android: 应用权限
+   ```
+
+2. **尝试精确位置**
+
+   ```bash
+   openclaw nodes location get --node <node-id> --accuracy precise
+   ```
+
+3. **移动到开阔地带**
+
+   - GPS 在室内或城市峡谷环境信号较差
+   - 室外环境定位更准确
+
+4. **检查网络连接**
+
+   - 网络定位需要网络连接
+   - 离线时可能使用缓存的旧位置
+
+**解决方案**：
+
+- 授予精确位置权限
+- 在开阔地带使用
+- 确保网络连接正常
 
 ---
 
-## 🐛 故障排除
+## 最佳实践
 
-### 节点无法连接
+### 实践一：移动节点权限配置
 
-```bash
-# 检查节点状态
-openclaw nodes status
-
-# 查看节点详情
-openclaw nodes describe --node <idOrNameOrIp>
-
-# 测试 WebSocket 连接
-curl ws://<gateway-host>:18789
-```
-
-### 权限被拒绝
-
-```bash
-# 检查权限状态
-openclaw nodes permissions --node <idOrNameOrIp>
-
-# 重启节点应用
-openclaw nodes restart --node <idOrNameOrIp>
-```
-
-### 相机无法使用
-
-```bash
-# 检查相机列表
-openclaw nodes camera list --node <idOrNameOrIp>
-
-# 确保节点应用在前台
-```
-
----
-
-## 📝 最佳实践
-
-### 移动节点使用
+**目标**：平衡功能可用性和隐私保护
 
 ```json5
 {
@@ -353,54 +399,148 @@ openclaw nodes camera list --node <idOrNameOrIp>
     "permissions": {
       "camera": true,
       "microphone": true,
-      "location": "always"
+      "location": "always",  // 使用 "whileUsing" 降低隐私风险
+      "screenRecording": false  // 按需启用
     }
   }
 }
 ```
 
-### 服务器节点配置
+**最佳实践要点**：
+
+- 只启用必要的权限
+- 考虑使用"使用时"而非"始终"授权
+- 定期审查权限设置
+
+### 实践二：服务器节点安全配置
+
+**目标**：保证服务器节点的安全性
 
 ```json5
 {
   "tools": {
     "exec": {
       "host": "node",
-      "security": "allowlist",
-      "node": "build-server"
+      "security": "allowlist",  // 使用白名单模式
+      "node": "build-server",
+      "allowedCommands": [
+        "/usr/bin/git",
+        "/usr/bin/npm",
+        "/usr/bin/docker"
+      ]
     }
   }
 }
 ```
 
+**最佳实践要点**：
+
+- 使用命令白名单
+- 限制可执行的命令范围
+- 记录所有执行的命令
+
+### 实践三：多节点管理
+
+**目标**：高效管理多个节点设备
+
+```bash
+# 查看所有节点状态
+openclaw nodes status
+
+# 为节点设置别名
+openclaw nodes rename --node <id> --name "Office iPhone"
+
+# 绑定特定功能到节点
+openclaw config set tools.exec.node "build-server"
+openclaw config set tools.camera.node "office-iphone"
+```
+
+**最佳实践要点**：
+
+- 为节点设置有意义的名称
+- 根据功能分配专用节点
+- 定期检查节点状态
+
 ---
 
-## 🔧 相关命令
+## CLI 命令参考
+
+### 节点管理命令
 
 | 命令 | 说明 |
 |------|------|
-| `openclaw nodes list` | 列出节点 |
-| `openclaw nodes status` | 节点状态 |
-| `openclaw nodes describe` | 节点详情 |
-| `openclaw nodes approve` | 审批节点 |
-| `openclaw nodes canvas` | 画布控制 |
-| `openclaw nodes camera` | 相机控制 |
-| `openclaw nodes screen` | 屏幕录制 |
-| `openclaw nodes location` | 位置获取 |
-| `openclaw node run` | 启动节点 |
-| `openclaw devices` | 设备管理 |
+| `openclaw nodes list` | 列出所有节点 |
+| `openclaw nodes status` | 查看节点状态 |
+| `openclaw nodes describe` | 查看节点详情 |
+| `openclaw nodes rename` | 重命名节点 |
+| `openclaw nodes restart` | 重启节点 |
+
+### 设备审批命令
+
+| 命令 | 说明 |
+|------|------|
+| `openclaw devices list` | 查看待配对设备 |
+| `openclaw devices approve` | 审批设备配对 |
+| `openclaw devices reject` | 拒绝设备配对 |
+
+### 画布控制命令
+
+| 命令 | 说明 |
+|------|------|
+| `openclaw nodes canvas present` | 显示网页 |
+| `openclaw nodes canvas hide` | 隐藏画布 |
+| `openclaw nodes canvas navigate` | 导航到 URL |
+| `openclaw nodes canvas eval` | 执行 JavaScript |
+| `openclaw nodes canvas snapshot` | 获取截图 |
+
+### 相机控制命令
+
+| 命令 | 说明 |
+|------|------|
+| `openclaw nodes camera list` | 列出可用相机 |
+| `openclaw nodes camera snap` | 拍照 |
+| `openclaw nodes camera clip` | 录像 |
+
+### 位置获取命令
+
+| 命令 | 说明 |
+|------|------|
+| `openclaw nodes location get` | 获取当前位置 |
+| `openclaw nodes location get --accuracy precise` | 获取精确位置 |
 
 ---
 
-## 📚 相关文档
+## 总结
 
-- [移动节点概述](/zh-CN/nodes) - 节点简介
-- [相机节点](/zh-CN/nodes/camera) - 相机详细使用
-- [音频节点](/zh-CN/nodes/audio) - 音频功能
-- [位置命令](/zh-CN/nodes/location-command) - 位置服务
-- [语音对话](/zh-CN/nodes/talk) - 语音交互
-- [语音唤醒](/zh-CN/nodes/voicewake) - 免提唤醒
-- [配置参考](/zh-CN/config/reference) - 完整配置
+节点系统是 OpenClaw 架构中的关键组件，它将设备硬件能力与 AI 助手无缝集成。通过节点系统，你可以：
+
+- 让 AI"看见"世界（相机功能）
+- 让 AI"听见"声音（麦克风功能）
+- 让 AI"知道"位置（位置服务）
+- 让 AI"执行"任务（系统命令）
+
+掌握节点系统的使用，将极大地扩展 AI 助手的能力边界。
+
+---
+
+## 进阶学习路径
+
+| 级别 | 主题 | 资源 |
+|-----|------|-----|
+| ⭐ | 节点配对和基础使用 | [快速开始](/zh-CN/start/quick-start) |
+| ⭐⭐ | 相机和画布功能 | [相机节点](/zh-CN/nodes/camera)、[画布功能](/zh-CN/nodes/canvas) |
+| ⭐⭐⭐ | 高级功能和权限管理 | [配置参考](/zh-CN/config/reference) |
+| ⭐⭐⭐⭐ | 自定义节点开发 | [开发者文档](/zh-CN/developers) |
+
+---
+
+## 相关文档
+
+- [快速入门](/zh-CN/start/quick-start) - OpenClaw 快速上手指南
+- [相机节点](/zh-CN/nodes/camera) - 相机功能详解
+- [音频节点](/zh-CN/nodes/audio) - 音频处理
+- [配置参考](/zh-CN/config/reference) - 完整配置选项
+- [故障排除](/zh-CN/help/troubleshooting) - 常见问题解答
 
 ---
 

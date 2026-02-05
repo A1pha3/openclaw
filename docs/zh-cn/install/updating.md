@@ -1,5 +1,5 @@
 ---
-summary: "安全更新 OpenClaw：全局安装或源码安装的更新方式，以及回滚策略"
+summary: "安全更新 OpenClaw：全局安装或源码安装的更新方式，以及回滚策略的完整指南"
 read_when:
   - 更新 OpenClaw
   - 更新后出现问题需要回滚
@@ -8,22 +8,56 @@ title: "更新指南"
 
 # 🔄 更新指南
 
-OpenClaw 发展迅速（尚未达到"1.0"）。请将更新视为基础设施变更：**更新 → 运行检查 → 重启 → 验证**。
+OpenClaw 发展迅速（尚未达到「1.0」）。请将更新视为基础设施变更：**更新 → 运行检查 → 重启 → 验证**。遵循正确的更新流程可以避免大多数更新问题。
 
 ---
 
-## 🚀 推荐：重新运行网站安装器
+## 🎯 学习目标
 
-**首选**的更新方式是重新运行安装器。它会：
-- 检测现有安装
-- 原地升级
-- 需要时运行 `openclaw doctor`
+完成本章节学习后，你将能够：
+
+### 基础目标（必掌握）
+
+- [ ] 理解更新前准备的重要性
+- [ ] 掌握不同的更新方法
+- [ ] 理解回滚策略
+- [ ] 能够执行安全的更新流程
+
+### 进阶目标（建议掌握）
+
+- [ ] 掌握源码安装的更新方式
+- [ ] 理解 `openclaw doctor` 的作用
+- [ ] 能够设计团队的更新策略
+- [ ] 掌握版本锁定方法
+
+### 专家目标（挑战）
+
+- [ ] 能够建立自动化的更新流程
+- [ ] 理解更新机制的实现原理
+- [ ] 能够定制更新行为
+- [ ] 能够处理复杂的更新场景
+
+---
+
+## 🚀 第一部分：推荐更新方式
+
+### 1.1 重新运行安装器
+
+**首选**的更新方式是重新运行安装器：
 
 ```bash
 curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
-### 选项说明
+**安装器会自动**：
+
+| 功能 | 说明 |
+|------|------|
+| 检测现有安装 | 识别当前安装方式 |
+| 原地升级 | 更新到最新版本 |
+| 运行 doctor | 必要的迁移和修复 |
+
+### 1.2 选项说明
 
 | 场景 | 命令 |
 |------|------|
@@ -34,23 +68,30 @@ curl -fsSL https://openclaw.ai/install.sh | bash
 
 ---
 
-## 📋 更新前准备
+## 📋 第二部分：更新前准备
 
-### 1. 确认安装方式
+### 2.1 确认安装方式
 
 | 安装方式 | 特征 |
 |---------|------|
 | **全局安装**（npm/pnpm） | 通过 `npm install -g` 或 `pnpm add -g` 安装 |
 | **源码安装**（git clone） | 有 `.git` 目录 |
 
-### 2. 确认网关运行方式
+**确认命令**：
+
+```bash
+# 检查是否是源码安装
+ls -la ~/.openclaw/.git 2>/dev/null && echo "源码安装" || echo "全局安装"
+```
+
+### 2.2 确认网关运行方式
 
 | 运行方式 | 特征 |
 |---------|------|
 | **前台终端** | 手动运行 `openclaw gateway` |
 | **后台服务** | launchd（macOS）/ systemd（Linux）管理 |
 
-### 3. 备份重要文件（推荐）
+### 2.3 备份重要文件（推荐）
 
 ```bash
 # 配置文件
@@ -63,11 +104,19 @@ cp -r ~/.openclaw/credentials ~/.openclaw/credentials.bak
 cp -r ~/.openclaw/workspace ~/.openclaw/workspace.bak
 ```
 
+**备份原则**：
+
+| 备份项 | 重要性 | 原因 |
+|--------|--------|------|
+| 配置 | ⭐⭐⭐⭐⭐ | 恢复设置 |
+| 凭证 | ⭐⭐⭐⭐⭐ | 恢复认证 |
+| 工作区 | ⭐⭐⭐⭐ | 恢复记忆 |
+
 ---
 
-## 📦 更新方法
+## 📦 第三部分：更新方法
 
-### 方法一：全局安装更新
+### 3.1 方法一：全局安装更新
 
 ```bash
 # npm
@@ -77,9 +126,9 @@ npm i -g openclaw@latest
 pnpm add -g openclaw@latest
 ```
 
-⚠️ **不推荐** Bun 作为网关运行时（WhatsApp/Telegram 存在兼容问题）。
+**⚠️ 注意**：不推荐 Bun 作为网关运行时（WhatsApp/Telegram 存在兼容问题）。
 
-### 方法二：切换更新渠道
+### 3.2 方法二：切换更新渠道
 
 ```bash
 # 切换到 beta 渠道
@@ -92,9 +141,17 @@ openclaw update --channel dev
 openclaw update --channel stable
 ```
 
-详见 [开发渠道](/zh-CN/install/development-channels)。
+**渠道说明**：
 
-### 方法三：`openclaw update` 命令
+| 渠道 | 更新频率 | 稳定性 | 适合人群 |
+|------|----------|--------|----------|
+| stable | 正式发布后 | ⭐⭐⭐⭐⭐ | 大多数用户 |
+| beta | 每次发布前 | ⭐⭐⭐⭐ | 测试用户 |
+| dev | 每次提交 | ⭐⭐⭐ | 开发者 |
+
+**详细文档**：[开发渠道文档](/zh-CN/install/development-channels)
+
+### 3.3 方法三：`openclaw update` 命令
 
 对于**源码安装**（git checkout），推荐使用：
 
@@ -102,15 +159,18 @@ openclaw update --channel stable
 openclaw update
 ```
 
-此命令执行安全更新流程：
-1. ✅ 要求干净的工作目录
-2. ✅ 切换到选定渠道（标签或分支）
-3. ✅ Fetch + rebase 到上游（dev 渠道）
-4. ✅ 安装依赖、构建、构建 Control UI
-5. ✅ 运行 `openclaw doctor`
-6. ✅ 默认重启网关（使用 `--no-restart` 跳过）
+**此命令执行安全更新流程**：
 
-### 方法四：Control UI / RPC 更新
+| 步骤 | 操作 |
+|------|------|
+| 1 | 要求干净的工作目录 |
+| 2 | 切换到选定渠道（标签或分支） |
+| 3 | Fetch + rebase 到上游（dev 渠道） |
+| 4 | 安装依赖、构建、构建 Control UI |
+| 5 | 运行 `openclaw doctor` |
+| 6 | 默认重启网关（使用 `--no-restart` 跳过） |
+
+### 3.4 方法四：Control UI / RPC 更新
 
 Control UI 有 **Update & Restart** 功能（RPC: `update.run`）：
 
@@ -118,9 +178,9 @@ Control UI 有 **Update & Restart** 功能（RPC: `update.run`）：
 2. 写入重启哨兵，包含结构化报告
 3. 重启网关并向最后活跃的会话发送报告
 
-如果 rebase 失败，网关会中止并在不应用更新的情况下重启。
+**如果 rebase 失败**：网关会中止并在不应用更新的情况下重启。
 
-### 方法五：手动源码更新
+### 3.5 方法五：手动源码更新
 
 从 repo checkout 目录：
 
@@ -135,27 +195,31 @@ openclaw health
 
 ---
 
-## 🩺 必须运行：`openclaw doctor`
+## 🩺 第四部分：必须运行——`openclaw doctor`
 
-Doctor 是"安全更新"命令。它执行：修复 + 迁移 + 警告。
+### 4.1 Doctor 的重要性
 
-**注意**：如果是**源码安装**，`openclaw doctor` 会首先询问是否运行 `openclaw update`。
+Doctor 是「安全更新」命令。它执行：**修复 + 迁移 + 警告**。
 
-### Doctor 的功能
+**⚠️ 注意**：如果是**源码安装**，`openclaw doctor` 会首先询问是否运行 `openclaw update`。
+
+### 4.2 Doctor 的功能
 
 | 功能 | 说明 |
 |------|------|
 | 配置迁移 | 迁移已弃用的配置键和旧配置文件位置 |
-| DM 策略审计 | 警告有风险的"open"设置 |
+| DM 策略审计 | 警告有风险的「open」设置 |
 | 网关健康检查 | 检查并可选重启 |
 | 服务迁移 | 将旧版网关服务迁移到当前版本 |
 | Linux lingering | 确保 systemd 用户 lingering（网关在登出后继续运行） |
 
-详见 [Doctor 命令](/zh-CN/gateway/doctor)。
+**详细文档**：[Doctor 命令文档](/zh-CN/gateway/doctor)
 
 ---
 
-## 🔄 网关启动/停止/重启
+## 🔄 第五部分：网关启动/停止/重启
+
+### 5.1 基本命令
 
 ```bash
 # 查看状态
@@ -174,32 +238,35 @@ openclaw gateway --port 18789
 openclaw logs --follow
 ```
 
-### 系统服务管理
+### 5.2 系统服务管理
 
 **macOS（launchd）**：
+
 ```bash
 launchctl kickstart -k gui/$UID/bot.molt.gateway
 ```
 
 **Linux（systemd）**：
+
 ```bash
 systemctl --user restart openclaw-gateway.service
 ```
 
 **Windows（WSL2）**：
+
 ```bash
 systemctl --user restart openclaw-gateway.service
 ```
 
-运行手册和服务标签详情：[网关运行手册](/zh-CN/gateway)
+**详细文档**：[网关运行手册](/zh-CN/gateway)
 
 ---
 
-## ⏪ 回滚/锁定版本
+## ⏪ 第六部分：回滚/锁定版本
 
-### 全局安装：锁定特定版本
+### 6.1 全局安装：锁定特定版本
 
-安装已知可用的版本（将 `<version>` 替换为上一个工作版本）：
+安装已知可用的版本：
 
 ```bash
 # npm
@@ -210,26 +277,28 @@ pnpm add -g openclaw@<version>
 ```
 
 **查看当前发布版本**：
+
 ```bash
 npm view openclaw version
 ```
 
-然后重启并运行 doctor：
+**然后重启并运行 doctor**：
+
 ```bash
 openclaw doctor
 openclaw gateway restart
 ```
 
-### 源码安装：按日期锁定
+### 6.2 源码安装：按日期锁定
 
-选择特定日期的提交（例如：2026-01-01 的 main 状态）：
+选择特定日期的提交：
 
 ```bash
 git fetch origin
-git checkout "$(git rev-list -n 1 --before=\"2026-01-01\" origin/main)"
+git checkout "$(git rev-list -n 1 --before="2026-01-01" origin/main)"
 ```
 
-重新安装依赖并重启：
+**重新安装依赖并重启**：
 
 ```bash
 pnpm install
@@ -238,18 +307,28 @@ openclaw gateway restart
 ```
 
 **恢复到最新版本**：
+
 ```bash
 git checkout main
 git pull
 ```
 
+### 6.3 回滚策略对比
+
+| 场景 | 推荐方法 | 说明 |
+|------|----------|------|
+| 快速回滚 | 全局安装锁定版本 | 简单直接 |
+| 精细控制 | 源码按日期锁定 | 精确到提交 |
+| 临时测试 | channel beta | 易于切换 |
+
 ---
 
-## 🔔 更新提示设置
+## 🔔 第七部分：更新提示设置
 
 npm 安装的网关会在启动时检查更新并显示提示。
 
 **禁用更新检查**：
+
 ```json5
 {
   update: {
@@ -260,17 +339,66 @@ npm 安装的网关会在启动时检查更新并显示提示。
 
 ---
 
-## 🆘 遇到问题？
+## 🆘 第八部分：遇到问题？
 
 1. **再次运行 `openclaw doctor`** 并仔细阅读输出（它通常会告诉你如何修复）
-2. **查看**：[故障排除](/zh-CN/gateway/troubleshooting)
+2. **查看**：[故障排除文档](/zh-CN/gateway/troubleshooting)
 3. **Discord 求助**：https://discord.gg/clawd
 
 ---
 
-## 📝 相关文档
+## 🎓 章节总结
+
+### 学习目标完成检查
+
+#### 基础目标（必掌握）
+
+- [ ] 理解更新前准备的重要性
+- [ ] 掌握不同的更新方法
+- [ ] 理解回滚策略
+- [ ] 能够执行安全的更新流程
+
+#### 进阶目标（建议掌握）
+
+- [ ] 掌握源码安装的更新方式
+- [ ] 理解 `openclaw doctor` 的作用
+- [ ] 能够设计团队的更新策略
+- [ ] 掌握版本锁定方法
+
+#### 专家目标（挑战）
+
+- [ ] 能够建立自动化的更新流程
+- [ ] 理解更新机制的实现原理
+- [ ] 能够定制更新行为
+- [ ] 能够处理复杂的更新场景
+
+### 更新流程检查清单
+
+| 步骤 | 操作 | 命令 |
+|------|------|------|
+| 1 | 备份配置 | `cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak` |
+| 2 | 执行更新 | `curl -fsSL https://openclaw.ai/install.sh | bash` |
+| 3 | 运行 doctor | `openclaw doctor` |
+| 4 | 重启网关 | `openclaw gateway restart` |
+| 5 | 验证状态 | `openclaw status` |
+
+### 版本选择指南
+
+| 使用场景 | 推荐渠道 | 说明 |
+|----------|----------|------|
+| 生产环境 | stable | 最稳定 |
+| 测试新功能 | beta | 新功能预览 |
+| 开发/贡献 | dev | 最新代码 |
+
+---
+
+## 📚 相关文档
 
 - [开发渠道](/zh-CN/install/development-channels) - stable/beta/dev 渠道说明
 - [迁移指南](/zh-CN/install/migrating) - 迁移到新机器
 - [Doctor 命令](/zh-CN/gateway/doctor) - 详细了解 doctor
 - [卸载指南](/zh-CN/install/uninstall) - 完全移除 OpenClaw
+
+---
+
+**保持更新！** 定期检查更新可以让你获得最新功能和安全性修复。

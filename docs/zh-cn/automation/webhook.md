@@ -1,157 +1,611 @@
 ---
-summary: "用于唤醒和独立代理运行的 Webhook 入口"
+summary: "用于唤醒和独立代理运行的 Webhook 入口 - 添加或更改 webhook 端点"
 read_when:
-  - "添加或更改 webhook 端点"
-  - "将外部系统连接到 OpenClaw"
-title: "Webhook"
+  - 添加或更改 webhook 端点
+  - 将外部系统连接到 OpenClaw
+title: "Webhook 自动化"
 ---
 
-# Webhook
+# Webhook 自动化
 
-网关可以为外部触发器暴露一个小型 HTTP webhook 端点。
+## 学习目标
 
-## 启用
+完成本章节学习后，你将能够：
+
+### 基础目标（必掌握）
+
+- [ ] 理解 **Webhook** 的工作原理和设计理念
+- [ ] 掌握启用和配置 Webhook 的方法
+- [ ] 理解认证机制和请求验证
+- [ ] 完成基础的 Webhook 配置
+
+### 进阶目标（建议掌握）
+
+- [ ] 配置自定义映射和转换
+- [ ] 集成外部服务
+- [ ] 实现复杂的触发逻辑
+
+### 专家目标（挑战）
+
+- [ ] 设计大规模 Webhook 系统
+- [ ] 自定义转换逻辑
+- [ ] 实现高级路由策略
+
+---
+
+## 为什么需要 Webhook？
+
+在理解具体用法之前，我们需要先理解**设计者为什么引入 Webhook 功能**。这不仅帮助你更好地使用自动化功能，还能让你在设计集成方案时做出更好的设计决策。
+
+### 设计决策背景
+
+**问题**：AI 助手需要支持外部系统触发，实现与其他工具和服务的集成
+
+**可选方案**：
+
+1. 方案 A - 轮询检查：资源消耗高，延迟大
+2. 方案 B - 消息队列：复杂度高，部署困难
+3. 方案 C（最终选择）- Webhook 推送：实时性好，集成简单
+
+**选择理由**：
+
+- 理由一：HTTP 协议广泛支持
+- 理由二：实时推送，延迟低
+- 理由三：灵活的映射和转换机制
+
+### Webhook 架构图
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Webhook 系统架构                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │                    外部系统                           │  │
+│  │                                                     │  │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐          │  │
+│  │  │  GitHub │  │  Gmail  │  │ 自定义  │          │  │
+│  │  │ Webhook │  │  Pub/Sub│  │  系统   │          │  │
+│  │  └────┬────┘  └────┬────┘  └────┬────┘          │  │
+│  │       │            │            │                  │  │
+│  │       └────────────┼────────────┘                  │  │
+│  │                    │                                │  │
+│  └────────────────────┼────────────────────────────────┘  │
+│                       │                                     │
+│                       ▼                                     │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │                    网关接收层                          │  │
+│  │                                                     │  │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐          │  │
+│  │  │  认证   │  │  验证   │  │  解析   │          │  │
+│  │  │ Bearer  │  │ Token   │  │ Payload │          │  │
+│  │  └─────────┘  └─────────┘  └─────────┘          │  │
+│  └────────────────────┼────────────────────────────────┘  │
+│                       │                                     │
+│                       ▼                                     │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │                    路由引擎                            │  │
+│  │                                                     │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌───────────┐ │  │
+│  │  │ /hooks/wake │  │/hooks/agent │  │/hooks/<name>│ │  │
+│  │  │  唤醒触发   │  │  代理运行   │  │ 自定义映射 │ │  │
+│  │  └──────┬──────┘  └──────┬──────┘  └─────┬─────┘ │  │
+│  │         │                 │                │       │  │
+│  │         └─────────────────┼────────────────┘       │  │
+│  │                          │                        │  │
+│  └──────────────────────────┼────────────────────────┘  │
+│                             │                              │
+│                             ▼                              │
+│  ┌─────────────────────────────────────────────────────┐│
+│  │                    执行引擎                           ││
+│  │                                                     ││
+│  │  ┌─────────────────────────────────────────────┐  ││
+│  │  │               任务执行                         │  ││
+│  │  │                                             │  ││
+│  │  │  ┌─────────────────┐  ┌─────────────────┐│  ││
+│  │  心跳触发  │  │      │  │  独立代理运行   ││  ││
+│  │  │  │                 │  │                 ││  ││
+│  │  │  │ systemEvent    │  │ agentTurn      ││  ││
+│  │  │  └─────────────────┘  └─────────────────┘│  ││
+│  │  └─────────────────────────────────────────┘  ││
+│  └─────────────────────────┬───────────────────────────┘│
+│                            │                             │
+│                            ▼                             │
+│  ┌─────────────────────────────────────────────────────┐│
+│  │                    响应返回                          ││
+│  │                                                     ││
+│  │  200: 唤醒成功  │  202: 运行启动  │  401/400: 错误 ││
+│  └─────────────────────────────────────────────────────┘│
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 核心概念速查
+
+| 概念 | 定义 | 关键特性 |
+|------|------|---------|
+| **Webhook** | HTTP 回调接口 | 外部触发、实时响应 |
+| **端点** | Webhook 接收地址 | /hooks/wake、/hooks/agent |
+| **映射** | 请求到操作的转换 | match、action、模板 |
+| **转换** | 自定义处理逻辑 | transformsDir、module |
+
+---
+
+## 适用场景分析
+
+### 场景一：外部系统触发
+
+**需求**：从外部系统触发 AI 助手
+
+**解决方案**：
+
+```
+外部系统 → Webhook → 唤醒/代理运行 → 结果返回
+```
+
+**实际案例**：
+
+- GitHub Issue 更新触发
+- Jira 状态变更通知
+- 自定义监控告警
+
+### 场景二：服务集成
+
+**需求**：将 AI 助手集成到现有工作流
+
+**解决方案**：
+
+```
+业务系统 → Webhook → 代理处理 → 回调通知
+```
+
+**实际案例**：
+
+- 工单自动处理
+- 审批流程集成
+- 数据同步触发
+
+### 场景三：实时响应
+
+**需求**：快速响应外部事件
+
+**解决方案**：
+
+```
+事件发生 → 立即推送 → 即时处理 → 快速响应
+```
+
+**实际案例**：
+
+- 即时通知处理
+- 实时数据分析
+- 快速决策支持
+
+---
+
+## 专家思维模型：Webhook 集成框架
+
+当设计 Webhook 集成方案时，专家会采用以下思维框架：
+
+### 集成复杂度矩阵
+
+| 复杂度 | 端点使用 | 配置复杂度 | 适用场景 |
+|-------|---------|-----------|---------|
+| ⭐ | /hooks/wake | 低 | 简单唤醒 |
+| ⭐⭐ | /hooks/agent | 中 | 代理处理 |
+| ⭐⭐⭐ | 自定义映射 | 高 | 复杂转换 |
+
+### 设计决策流程
+
+```
+需要 Webhook 集成？
+    │
+    ├── 简单触发 → /hooks/wake
+    │
+    ├── 代理处理 → /hooks/agent
+    │
+    └── 复杂转换 → 自定义映射
+```
+
+---
+
+## 学习路径规划
+
+### 阶段一：基础概念（1-2 小时）
+
+**目标**：建立 Webhook 的认知框架
+
+1. 阅读本教程，理解系统架构
+2. 启用 Webhook 功能
+3. 测试基础触发
+
+### 阶段二：核心功能（2-4 小时）
+
+**目标**：掌握实际使用中最常用的功能
+
+4. 配置认证和权限
+5. 使用标准端点
+6. 实现基础映射
+
+### 阶段三：高级应用（4-8 小时）
+
+**目标**：解决复杂场景和高级需求
+
+7. 自定义转换逻辑
+8. 集成外部服务
+9. 优化性能
+
+### 阶段四：专家实战（8+ 小时）
+
+**目标**：解决真实世界的复杂问题
+
+10. 大规模集成
+11. 自定义协议
+12. 高级路由
+
+---
+
+## 渐进式复杂度：端点对比
+
+### 端点功能矩阵
+
+| 端点 | 用途 | 复杂度 | 响应 |
+|-----|------|-------|------|
+| /hooks/wake | 唤醒主会话 | ⭐ | 200 |
+| /hooks/agent | 运行代理 | ⭐⭐ | 202 |
+| /hooks/&lt;name&gt; | 自定义映射 | ⭐⭐⭐ | 200/202 |
+
+### 复杂度等级说明
+
+| 等级 | 描述 | 示例任务 |
+|-----|------|---------|
+| **Level 1 ⭐** | 基础唤醒 | 触发系统事件 |
+| **Level 2 ⭐⭐** | 代理运行 | 执行任务处理 |
+| **Level 3 ⭐⭐⭐** | 自定义映射 | 复杂数据转换 |
+
+---
+
+## 故障排查实战
+
+### 场景一：请求被拒绝
+
+**问题描述**：Webhook 请求返回 401 错误
+
+**排查步骤**：
+
+1. **检查认证头**
+
+   ```bash
+   # 正确格式
+   curl -X POST http://127.0.0.1:18789/hooks/wake \
+     -H 'Authorization: Bearer SECRET'
+   ```
+
+2. **检查 Token 配置**
+
+   ```bash
+   openclaw config get hooks.token
+   ```
+
+3. **验证 Token**
+
+   ```bash
+   # 确认 Token 一致
+   ```
+
+**解决方案**：
+
+- 使用正确的认证头
+- 配置正确的 Token
+- 检查 Token 是否过期
+
+### 场景二：负载无效
+
+**问题描述**：请求返回 400 错误
+
+**排查步骤**：
+
+1. **检查 JSON 格式**
+
+   ```bash
+   # 验证 JSON 有效
+   echo '{"text":"test"}' | jq .
+   ```
+
+2. **检查必需字段**
+
+   ```bash
+   # /hooks/wake 需要 text 字段
+   # /hooks/agent 需要 message 字段
+   ```
+
+3. **查看详细错误**
+
+   ```bash
+   openclaw logs --verbose | grep webhook
+   ```
+
+**解决方案**：
+
+- 修复 JSON 格式
+- 添加必需字段
+- 检查数据类型
+
+### 场景三：请求超时
+
+**问题描述**：请求长时间无响应
+
+**排查步骤**：
+
+1. **检查网关状态**
+
+   ```bash
+   openclaw gateway status
+   ```
+
+2. **检查任务执行**
+
+   ```bash
+   openclaw sessions list
+   ```
+
+3. **检查代理状态**
+
+   ```bash
+   openclaw agents list
+   ```
+
+**解决方案**：
+
+- 重启网关
+- 优化任务执行时间
+- 增加超时设置
+
+---
+
+## 最佳实践
+
+### 实践一：基础唤醒配置
+
+**目标**：启用 Webhook 唤醒功能
 
 ```json5
 {
   hooks: {
     enabled: true,
-    token: "shared-secret",
-    path: "/hooks",
-  },
+    token: "your-shared-secret",
+    path: "/hooks"
+  }
 }
 ```
 
-注意：
-
-- 当 `hooks.enabled=true` 时，`hooks.token` 是必需的。
-- `hooks.path` 默认为 `/hooks`。
-
-## 认证
-
-每个请求必须包含 hook 令牌。优先使用标头：
-
-- `Authorization: Bearer <token>`（推荐）
-- `x-openclaw-token: <token>`
-- `?token=<token>`（已弃用；记录警告并在未来主要版本中移除）
-
-## 端点
-
-### `POST /hooks/wake`
-
-负载：
-
-```json
-{ "text": "System line", "mode": "now" }
-```
-
-- `text` **必填**（字符串）：事件的描述（例如，"收到新邮件"）。
-- `mode` 可选（`now` | `next-heartbeat`）：是触发即时心跳（默认 `now`）还是等待下一次定期检查。
-
-效果：
-
-- 为**主**会话排队系统事件
-- 如果 `mode=now`，触发即时心跳
-
-### `POST /hooks/agent`
-
-负载：
-
-```json
-{
-  "message": "Run this",
-  "name": "Email",
-  "sessionKey": "hook:email:msg-123",
-  "wakeMode": "now",
-  "deliver": true,
-  "channel": "last",
-  "to": "+15551234567",
-  "model": "openai/gpt-5.2-mini",
-  "thinking": "low",
-  "timeoutSeconds": 120
-}
-```
-
-- `message` **必填**（字符串）：供代理处理的提示或消息。
-- `name` 可选（字符串）：hook 的人类可读名称（例如，"GitHub"），用作会话摘要的前缀。
-- `sessionKey` 可选（字符串）：用于识别代理会话的键。默认为随机的 `hook:<uuid>`。使用一致的键允许在 hook 上下文中进行多轮对话。
-- `wakeMode` 可选（`now` | `next-heartbeat`）：是触发即时心跳（默认 `now`）还是等待下一次定期检查。
-- `deliver` 可选（布尔值）：如果 `true`，代理的响应将发送到消息通道。默认为 `true`。仅作为心跳确认的响应会自动跳过。
-- `channel` 可选（字符串）：消息传递的通道。选项之一：`last`、`whatsapp`、`telegram`、`discord`、`slack`、`mattermost`（插件）、`signal`、`imessage`、`msteams`。默认为 `last`。
-- `to` 可选（字符串）：通道的收件人标识符（例如，WhatsApp/Signal 的电话号码，Telegram 的聊天 ID，Discord/Slack/Mattermost（插件）的频道 ID，MS Teams 的对话 ID）。默认为最后收件人。
-- `model` 可选（字符串）：模型覆盖（例如，`anthropic/claude-3-5-sonnet` 或别名）。如果受限，必须在允许的模型列表中。
-- `thinking` 可选（字符串）：思考级别覆盖（例如，`low`、`medium`、`high`）。
-- `timeoutSeconds` 可选（数字）：代理运行的最大持续时间（秒）。
-
-效果：
-
-- 运行**独立**的代理回合（自己的会话键）
-- 始终将摘要发布到**主**会话
-- 如果 `wakeMode=now`，触发即时心跳
-
-### `POST /hooks/<name>`（映射）
-
-自定义 hook 名称通过 `hooks.mappings` 解析（请参阅配置）。映射可以将任意负载转换为 `wake` 或 `agent` 操作，带有可选模板或代码转换。
-
-映射选项（摘要）：
-
-- `hooks.presets: ["gmail"]` 启用内置的 Gmail 映射。
-- `hooks.mappings` 允许你在配置中定义 `match`、`action` 和模板。
-- `hooks.transformsDir` + `transform.module` 加载 JS/TS 模块以进行自定义逻辑。
-- 使用 `match.source` 保留通用摄入端点（负载驱动路由）。
-- TS 转换需要 TS 加载器（例如 `bun` 或 `tsx`）或运行时预编译的 `.js`。
-- 在映射上设置 `deliver: true` + `channel`/`to` 以将回复路由到聊天界面（`channel` 默认为 `last` 并回退到 WhatsApp）。
-- `allowUnsafeExternalContent: true` 为该 hook 禁用外部内容安全包装（危险；仅用于受信任的内部源）。
-- `openclaw webhooks gmail setup` 为 `openclaw webhooks gmail run` 编写 `hooks.gmail` 配置。请参阅 [Gmail Pub/Sub](/automation/gmail-pubsub) 了解完整的 Gmail 监控流程。
-
-## 响应
-
-- `200` 表示 `/hooks/wake`
-- `202` 表示 `/hooks/agent`（异步运行已启动）
-- `401` 认证失败
-- `400` 负载无效
-- `413` 负载过大
-
-## 示例
+**使用示例**：
 
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/wake \
-  -H 'Authorization: Bearer SECRET' \
+  -H 'Authorization: Bearer your-shared-secret' \
   -H 'Content-Type: application/json' \
   -d '{"text":"New email received","mode":"now"}'
 ```
 
-```bash
-curl -X POST http://127.0.0.1:18789/hooks/agent \
-  -H 'x-openclaw-token: SECRET' \
-  -H 'Content-Type: application/json' \
-  -d '{"message":"Summarize inbox","name":"Email","wakeMode":"next-heartbeat"}'
+**最佳实践要点**：
+
+- 使用强密码 Token
+- 限制访问来源
+- 记录请求日志
+
+### 实践二：代理运行配置
+
+**目标**：通过 Webhook 执行代理任务
+
+```json5
+{
+  hooks: {
+    enabled: true,
+    token: "your-shared-secret"
+  }
+}
 ```
 
-### 使用不同的模型
-
-在代理负载（或映射）中添加 `model` 以覆盖该运行的模型：
+**使用示例**：
 
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/agent \
-  -H 'x-openclaw-token: SECRET' \
+  -H 'Authorization: Bearer your-shared-secret' \
   -H 'Content-Type: application/json' \
-  -d '{"message":"Summarize inbox","name":"Email","model":"openai/gpt-5.2-mini"}'
+  -d '{
+    "message":"Summarize inbox",
+    "name":"Email",
+    "wakeMode":"next-heartbeat"
+  }'
 ```
 
-如果你强制执行 `agents.defaults.models`，请确保覆盖模型包含在其中。
+**最佳实践要点**：
+
+- 设置合理的超时
+- 使用 wakeMode 控制触发
+- 配置传递选项
+
+### 实践三：自定义映射配置
+
+**目标**：实现复杂的数据转换
+
+```json5
+{
+  hooks: {
+    enabled: true,
+    token: "your-shared-secret",
+    mappings: {
+      "gmail": {
+        "match": {
+          "source": "gmail"
+        },
+        "action": "agent",
+        "message": "处理新邮件：{{subject}}",
+        "deliver": true,
+        "channel": "whatsapp"
+      }
+    },
+    transformsDir: "./hooks/transforms",
+    presets: ["gmail"]
+  }
+}
+```
+
+**最佳实践要点**：
+
+- 使用模板变量
+- 配置安全映射
+- 限制外部内容
+
+---
+
+## CLI 命令参考
+
+### Webhook 测试命令
 
 ```bash
-curl -X POST http://127.0.0.1:18789/hooks/gmail \
+# 测试唤醒端点
+curl -X POST http://127.0.0.1:18789/hooks/wake \
   -H 'Authorization: Bearer SECRET' \
   -H 'Content-Type: application/json' \
-  -d '{"source":"gmail","messages":[{"from":"Ada","subject":"Hello","snippet":"Hi"}]}'
+  -d '{"text":"System line","mode":"now"}'
+
+# 测试代理端点
+curl -X POST http://127.0.0.1:18789/hooks/agent \
+  -H 'Authorization: Bearer SECRET' \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"Run this","name":"Test"}'
+
+# 使用 x-openclaw-token
+curl -X POST http://127.0.0.1:18789/hooks/agent \
+  -H 'x-openclaw-token: SECRET' \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"Run this","name":"Test"}'
 ```
 
-## 安全性
+### 响应码说明
 
-- 将 hook 端点保持在环回、网络或受信任的反向代理后面。
-- 使用专用的 hook 令牌；不要重复使用网关认证令牌。
-- 避免在 webhook 日志中包含敏感的原始负载。
-- Hook 负载被视为不受信任，默认用安全边界包装。
-  如果必须为特定 hook 禁用此功能，在该 hook 的映射中设置 `allowUnsafeExternalContent: true`（危险）。
+| 响应码 | 含义 | 说明 |
+|-------|------|------|
+| 200 | 成功 | /hooks/wake 成功 |
+| 202 | 已接受 | /hooks/agent 异步运行已启动 |
+| 400 | 错误 | 负载无效 |
+| 401 | 未授权 | 认证失败 |
+| 413 | 负载过大 | 请求体超过限制 |
+
+---
+
+## 原理解析：请求处理流程
+
+### 请求处理流程图
+
+```
+HTTP 请求
+    │
+    ▼
+┌─────────────────────┐
+│  接收请求            │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  认证检查            │  ← Authorization Header
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  端点路由            │  ← /hooks/wake | /hooks/agent | /hooks/<name>
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  负载解析            │  ← JSON Parse
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  映射转换            │  ← 可选
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  任务执行            │  ← Wake | AgentRun
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  响应返回            │  ← 200/202/400/401/413
+└─────────────────────┘
+```
+
+### 认证优先级
+
+| 优先级 | 方式 | 说明 |
+|-------|------|------|
+| 1 | Authorization: Bearer | 推荐使用 |
+| 2 | x-openclaw-token | 兼容旧版 |
+| 3 | ?token= | 已废弃 |
+
+---
+
+## 安全最佳实践
+
+### 安全配置
+
+```json5
+{
+  hooks: {
+    enabled: true,
+    token: "strong-random-secret",
+    path: "/hooks",
+    allowedSources: ["192.168.1.0/24", "10.0.0.0/8"]
+  }
+}
+```
+
+### 安全建议
+
+- 使用强密码 Token
+- 限制访问来源
+- 避免日志敏感信息
+- 定期轮换 Token
+
+---
+
+## 总结
+
+Webhook 是 OpenClaw 实现外部系统集成的关键功能。通过灵活的 Webhook 接口，你可以：
+
+- 从外部系统触发 AI 助手
+- 执行复杂的自动化任务
+- 集成各种第三方服务
+- 实现实时响应机制
+
+掌握 Webhook 的配置和使用，将帮助你更好地将 AI 助手集成到现有工作流中。
+
+---
+
+## 进阶学习路径
+
+| 级别 | 主题 | 资源 |
+|-----|------|-----|
+| ⭐ | 基础配置 | [快速开始](/zh-CN/start/quick-start) |
+| ⭐⭐ | 高级映射 | [定时任务](/zh-CN/automation/cron-jobs) |
+| ⭐⭐⭐ | 复杂集成 | [自动化指南](/zh-CN/automation) |
+| ⭐⭐⭐⭐ | 企业集成 | [运维指南](/zh-CN/operators) |
+
+---
+
+## 相关文档
+
+- [定时任务](/zh-CN/automation/cron-jobs) - 定时任务调度
+- [自动化概述](/zh-CN/automation) - 自动化指南
+- [CLI 参考](/zh-CN/cli) - 命令行工具
+- [配置参考](/zh-CN/config/reference) - 完整配置选项
+
+---
+
+**Webhook 让 OpenClaw 与外部系统无缝集成！** 🦞

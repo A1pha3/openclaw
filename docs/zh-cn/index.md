@@ -1,275 +1,482 @@
 ---
-summary: "OpenClaw 中文文档主页 - 从零基础到精通的完整学习路径"
+summary: "OpenClaw 中文文档主页——从零基础到精通的完整学习路径，涵盖安装配置、核心概念、渠道集成、开发者指南等全方位内容"
 read_when:
-  - 寻找中文文档入口
-  - 了解 OpenClaw 是什么
-  - 决定从哪里开始学习
+  - 首次访问 OpenClaw 中文文档
+  - 了解 OpenClaw 是什么以及能做什么
+  - 确定适合自己的学习起点和路径
+  - 查找特定功能的文档入口
 title: "OpenClaw 中文文档"
 ---
 
 # 🦞 OpenClaw 中文文档
 
-欢迎来到 OpenClaw 中文文档！本文档专为**中文用户**和**完全新手**设计，帮助你从零开始，逐步掌握这个强大的 AI 助手系统。
+欢迎来到 OpenClaw 中文文档！本指南专为**中文用户**和**完全新手**设计，帮助你从零开始，逐步掌握这个强大的个人 AI 助手系统。在深入学习之前，让我们先建立对 OpenClaw 的整体认知框架。
 
-> **什么是 OpenClaw？** 
-> 
-> OpenClaw 是**你的个人 AI 助手网关**，连接 WhatsApp、Telegram、Discord 等你常用的聊天应用，与 Claude、GPT 等 AI 大脑对接，让 AI 通过你熟悉的聊天界面为你服务。
-
----
-
-## 🎯 新手起步（推荐路径）
-
-**完全不懂？从这里开始！**
-
-| 步骤 | 文档 | 预计时间 | 目标 |
-|------|------|----------|------|
-| 1 | [**新手上路**](/zh-CN/start/getting-started) | 30分钟 | 完成安装并发送第一条消息 |
-| 2 | [**向导模式详解**](/zh-CN/start/wizard) | 20分钟 | 理解配置流程和原理 |
-| 3 | [**安装指南**](/zh-CN/install) | 15分钟 | 掌握多种安装方式 |
-| 4 | [**常见问题**](/zh-CN/help/faq) | 随时查阅 | 解决疑惑 |
-
-**快速导航**：
-- 🚀 [5分钟快速入门](/zh-CN/start/quick-start)
-- ❓ [遇到问题？查看故障排除](/zh-CN/help/troubleshooting)
-- 💬 [加入 Discord 社区](https://discord.gg/clawd)
+> **什么是 OpenClaw？**
+>
+> OpenClaw 是**你的个人 AI 助手网关**，它像一座桥梁，连接 WhatsApp、Telegram、Discord、Slack 等你日常使用的聊天应用，与 Claude、GPT、DeepSeek 等 AI 大脑进行对接。OpenClaw 的核心理念是：**让 AI 通过你最熟悉的聊天界面为你服务**，而不是强迫你适应新的界面或工作流程。你可以把它想象成一个智能中枢——所有消息渠道都接入到这里，AI 代理在这里统一处理你的请求，然后通过对应的渠道返回结果。这种架构设计使得 AI 能够真正融入你的日常生活和工作场景，无论你使用什么沟通工具，AI 助手都随时待命。
 
 ---
 
-## 📚 文档结构
+## 🎯 学习目标
 
-### 🚀 入门指南 (Start)
+在开始使用 OpenClaw 之前，明确你的学习目标能够帮助选择最合适的学习路径。以下是针对不同用户群体的学习目标设计：
 
-适合刚接触 OpenClaw 的新用户，从安装到发送第一条消息。
+### 新手用户（首次接触 AI 助手）
 
-- [**新手上路**](/zh-CN/start/getting-started) - **新手必读！** 从零到第一条消息的完整指南
-- [**快速入门**](/zh-CN/start/quick-start) - 5分钟快速上手（已有基础者）
-- [**安装指南**](/zh-CN/start/installation) - 详细安装步骤和环境准备
-- [**向导模式详解**](/zh-CN/start/wizard) - 深入理解引导向导
-- [核心概念](/zh-CN/concepts/architecture) - 系统架构理解
+完成本阶段学习后，你将能够：理解 OpenClaw 的基本概念和架构设计；完成 OpenClaw 的安装和基础配置；连接至少一个消息渠道（如 Telegram 或 WhatsApp）；与 AI 代理进行第一次对话；理解消息如何在系统中流转。
 
-### 🧠 核心概念 (Concepts)
+### 进阶用户（想要深度使用）
 
-深入理解 OpenClaw 的**架构和工作原理**。
+完成本阶段学习后，你将能够：配置多个消息渠道并理解路由规则；自定义 AI 代理的行为和提示词；使用工具系统扩展 AI 的能力；配置自动化任务和 Webhook；优化 AI 响应的质量和性能。
 
-**架构理解：**
-- [**系统架构**](/zh-CN/concepts/architecture) - **必读！** 整体架构和设计哲学
-- [**Gateway 网关**](/zh-CN/concepts/gateway) - 核心控制中心详解
-- [**AI 代理**](/zh-CN/concepts/agents) - 代理系统工作原理
-- [**会话管理**](/zh-CN/concepts/sessions) - 会话与上下文机制
-- [**消息路由**](/zh-CN/concepts/routing) - 智能消息分发
+### 开发者（想要扩展或贡献）
 
-**深入机制：**
-- [代理循环](/zh-CN/concepts/agents) - 消息处理流程
-- [上下文管理](/zh-CN/concepts/sessions) - 会话与上下文机制
-- [记忆系统](/zh-CN/concepts/memory) - 短期与长期记忆
-- [流式响应](/zh-CN/concepts/streaming) - 实时回复机制
-- [模型配置](/zh-CN/concepts/models) - AI 模型选择策略
+完成本阶段学习后，你将能够：搭建本地开发环境并运行开发版本；理解 OpenClaw 的项目结构和代码组织；开发自定义渠道插件；开发自定义工具和技能；理解钩子系统并开发自定义钩子；阅读和理解核心模块的实现代码。
 
-### 📱 渠道集成 (Channels)
+### 运维用户（想要生产部署）
 
-连接各种消息平台的详细指南。
-
-- [**渠道概述**](/zh-CN/channels) - 所有支持的渠道对比
-- [**WhatsApp**](/zh-CN/channels/whatsapp) - 最热门的移动消息
-- [**Telegram**](/zh-CN/channels/telegram) - 简单快速的 Bot 集成
-- [**Discord**](/zh-CN/channels/discord) - 社区和团队协作
-- [**Slack**](/zh-CN/channels/slack) - 工作场景首选
-- [**Signal**](/zh-CN/channels/signal) - 隐私优先
-- [**iMessage**](/zh-CN/channels/imessage) - Apple 生态
-- [**Matrix**](/zh-CN/channels/matrix) - 去中心化
-
-### ⚙️ 配置指南 (Config)
-
-全面的配置参考和最佳实践。
-
-- [**配置概述**](/zh-CN/config) - 配置系统入门
-- [**配置参考**](/zh-CN/config/reference) - 所有配置项详解
-- [**配置示例**](/zh-CN/config/examples) - 常见场景配置模板
-
-### 🛠️ 命令行工具 (CLI)
-
-掌握 `openclaw` 命令行工具的所有功能。
-
-**核心命令：**
-- [CLI 概述](/zh-CN/cli) - 命令结构和帮助
-- [onboard](/zh-CN/cli/onboard) - 引导配置
-- [gateway](/zh-CN/cli/gateway) - 网关管理
-- [config](/zh-CN/cli/config) - 配置操作
-- [status](/zh-CN/cli/status) - 状态查看
-- [doctor](/zh-CN/cli/doctor) - 诊断工具
-
-**渠道管理：**
-- [channels](/zh-CN/cli/channels) - 渠道管理
-- [pairing](/zh-CN/cli/pairing) - 配对管理
-- [message](/zh-CN/cli/message) - 发送消息
-
-**代理管理：**
-- [agent/agents](/zh-CN/cli/agents) - 代理管理
-- [sessions](/zh-CN/cli/sessions) - 会话管理
-- [memory](/zh-CN/cli/memory) - 记忆管理
-
-### 🔧 工具与技能 (Tools)
-
-扩展 AI 能力的工具系统。
-
-- [**技能概述**](/zh-CN/tools) - 技能系统入门
-- [浏览器工具](/zh-CN/tools/browser) - 网页自动化
-- [执行工具](/zh-CN/tools/exec) - 命令执行
-- [Web 工具](/zh-CN/tools/web) - 网页搜索和抓取
-- [思考模式](/zh-CN/tools/thinking) - 深度思考
-- [子代理](/zh-CN/tools/subagents) - 任务分发
-
-### 🌐 网关与协议 (Gateway)
-
-掌握核心网关的配置和运维。
-
-**基础配置：**
-- [**网关概述**](/zh-CN/gateway) - 网关系统入门
-- [**配置详解**](/zh-CN/concepts/gateway) - 所有配置选项
-
-**网络与连接：**
-- [远程访问](/zh-CN/gateway/remote) - 从外部连接
-- [Tailscale 集成](/zh-CN/gateway/tailscale) - 安全组网
-
-**运维：**
-- [后台服务](/zh-CN/gateway/background-process) - 守护进程
-- [健康检查](/zh-CN/gateway/health) - 监控健康
-- [日志系统](/zh-CN/gateway/logging) - 日志管理
-- [诊断工具](/zh-CN/gateway/doctor) - 问题诊断
-
-### 🤖 AI 提供商 (Providers)
-
-配置各种 AI 模型提供商。
-
-- [**提供商概述**](/zh-CN/providers) - 所有支持的 AI 服务
-- [**Anthropic (Claude)**](/zh-CN/providers/anthropic) - 最推荐的 AI
-- [**OpenAI (GPT)**](/zh-CN/providers/openai) - GPT 系列
-- [**OpenRouter**](/zh-CN/providers/openrouter) - 多模型聚合
-- [**Moonshot (Kimi)**](/zh-CN/providers/moonshot) - 国产大模型
-- [**GLM**](/zh-CN/providers/glm) - 智谱 AI
-- [**MiniMax**](/zh-CN/providers/minimax) - MiniMax 模型
-- [**Ollama**](/zh-CN/providers/ollama) - 本地模型
-
-### 💻 部署平台 (Platforms)
-
-在不同平台上运行 OpenClaw。
-
-**操作系统：**
-- [**macOS**](/zh-CN/platforms/macos) - Mac 用户指南
-- [**Linux**](/zh-CN/platforms/linux) - Linux 部署
-- [**Windows (WSL2)**](/zh-CN/platforms/windows) - Windows 用户
-- [**iOS**](/zh-CN/platforms/ios) - 移动节点
-- [**Android**](/zh-CN/platforms/android) - 移动节点
-
-**云服务：**
-- [Docker](/zh-CN/install/docker)
-- [Fly.io](/zh-CN/platforms/fly)
-- [树莓派](/zh-CN/platforms/raspberry-pi)
-
-### 📱 移动节点 (Nodes)
-
-将手机变为 AI 助手节点。
-
-- [**节点概述**](/zh-CN/nodes) - 移动设备集成
-- [音频节点](/zh-CN/nodes/audio) - 语音输入
-- [相机节点](/zh-CN/nodes/camera) - 图像理解
-- [位置服务](/zh-CN/nodes/location-command) - 地理信息
-- [语音对话](/zh-CN/nodes/talk) - 语音交互
-- [语音唤醒](/zh-CN/nodes/voicewake) - 免提唤醒
-
-### ⏰ 自动化 (Automation)
-
-定时任务和自动化工作流。
-
-- [**Cron 任务**](/zh-CN/automation/cron-jobs) - 定时执行
-- [Webhook](/zh-CN/automation/webhook) - HTTP 触发
-
-### 🖥️ Web 界面 (Web)
-
-浏览器控制界面。
-
-- [**Web 概述**](/zh-CN/web) - Web 界面介绍
-- [**仪表盘**](/zh-CN/web/dashboard) - 浏览器聊天
-
-### 👨‍💻 开发者文档 (Developer)
-
-面向开发者的技术文档。
-
-- [**开发概述**](/zh-CN/developer) - 环境搭建
-- [**项目结构**](/zh-CN/developer/project-structure) - 代码组织
-- [**插件开发**](/zh-CN/developer/plugin-development) - 扩展系统
-- [**测试指南**](/zh-CN/developer/testing) - 测试最佳实践
-- [**贡献指南**](/zh-CN/developer/contributing) - 如何贡献
-
-### 🔧 运维手册 (Operations)
-
-生产环境部署和维护。
-
-- [**运维概述**](/zh-CN/operations) - 最佳实践
-- [**部署指南**](/zh-CN/operations/deployment) - 生产部署
-- [**监控与日志**](/zh-CN/operations/monitoring) - 系统监控
-- [**故障排除**](/zh-CN/operations/troubleshooting) - 问题诊断
-
-### ❓ 帮助中心 (Help)
-
-快速解决问题。
-
-- [**常见问题**](/zh-CN/help/faq) - **随时查阅！** 最常见的问题和解答
-- [**故障排除**](/zh-CN/help/troubleshooting) - 系统诊断和修复
-- [帮助首页](/zh-CN/help)
+完成本阶段学习后，你将能够：在服务器上部署 OpenClaw；配置高可用和负载均衡；设置监控和日志系统；处理常见故障和性能问题；制定备份和恢复策略。
 
 ---
 
 ## 🗺️ 学习路径推荐
 
-### 🔰 完全新手
+OpenClaw 的学习可以沿着多条路径进行，每条路径都针对特定的用户需求和目标进行优化。选择最适合你的路径，按照顺序学习，能够事半功倍。
 
-1. [新手上路](/zh-CN/start/getting-started) - 理解基础并安装
-2. [系统架构](/zh-CN/concepts/architecture) - 理解系统如何工作
-3. [配置一个渠道](/zh-CN/channels/telegram) - 推荐 Telegram（最简单）
-4. [常见问题](/zh-CN/help/faq) - 解决疑惑
+### 路径一：新手快速上手
 
-### 💻 开发者
+这是为完全新手设计的路径，从概念理解到实际使用，循序渐进：
 
-1. [开发概述](/zh-CN/developer)
-2. [项目结构](/zh-CN/developer/project-structure)
-3. [插件开发](/zh-CN/developer/plugin-development)
-4. [贡献指南](/zh-CN/developer/contributing)
+| 阶段 | 文档 | 预计时间 | 核心收获 |
+|------|------|----------|----------|
+| 第一步 | [新手上路](/zh-CN/start/getting-started) | 30 分钟 | 完成安装并发送第一条消息 |
+| 第二步 | [向导模式详解](/zh-CN/start/wizard) | 20 分钟 | 理解配置流程和背后的原理 |
+| 第三步 | [安装指南](/zh-CN/install) | 15 分钟 | 掌握多种安装方式和环境准备 |
+| 第四步 | [系统架构](/zh-CN/concepts/architecture) | 30 分钟 | 理解整体架构和设计哲学 |
+| 第五步 | [渠道配置](/zh-CN/channels) | 45 分钟 | 连接你需要的消息渠道 |
 
-### 🚀 生产部署
+**学习建议**：如果你是第一次使用这类工具，建议按照顺序完整学习，每完成一步都动手实践。不要跳过基础概念的理解，因为它们会在后续的高级配置中反复出现。
 
-1. [运维概述](/zh-CN/operations)
-2. [部署指南](/zh-CN/operations/deployment)
-3. [监控与日志](/zh-CN/operations/monitoring)
-4. [故障排除](/zh-CN/operations/troubleshooting)
+### 路径二：开发者贡献
+
+这是为想要参与 OpenClaw 开发的工程师设计的路径：
+
+| 阶段 | 文档 | 预计时间 | 核心收获 |
+|------|------|----------|----------|
+| 第一步 | [开发者概述](/zh-CN/developer) | 15 分钟 | 了解开发环境和贡献流程 |
+| 第二步 | [项目结构](/zh-CN/developer/project-structure) | 30 分钟 | 理解代码组织和模块划分 |
+| 第三步 | [插件开发](/zh-CN/developer/plugin-development) | 2 小时 | 开发自定义渠道或功能 |
+| 第四步 | [测试指南](/zh-CN/developer/testing) | 1 小时 | 掌握测试方法和最佳实践 |
+| 第五步 | [贡献指南](/zh-CN/developer/contributing) | 30 分钟 | 了解代码规范和提交流程 |
+
+**学习建议**：在开始开发之前，建议先作为用户使用一段时间 OpenClaw，这样你能更好地理解用户需求和系统设计理念。
+
+### 路径三：生产运维
+
+这是为需要在生产环境部署 OpenClaw 的运维人员设计的路径：
+
+| 阶段 | 文档 | 预计时间 | 核心收获 |
+|------|------|----------|----------|
+| 第一步 | [运维概述](/zh-CN/operations) | 20 分钟 | 了解生产部署的最佳实践 |
+| 第二步 | [部署指南](/zh-CN/operations/deployment) | 1 小时 | 掌握生产环境的部署流程 |
+| 第三步 | [监控与日志](/zh-CN/operations/monitoring) | 45 分钟 | 建立完善的监控体系 |
+| 第四步 | [故障排除](/zh-CN/operations/troubleshooting) | 1 小时 | 掌握常见问题的诊断和修复 |
+| 第五步 | [安全指南](/zh-CN/gateway/security) | 1 小时 | 确保系统的安全性 |
+
+---
+
+## 📚 文档体系结构
+
+OpenClaw 的文档按照功能主题进行组织，每个部分都有明确的学习目标和内容范围。以下是完整的文档结构概览，帮助你快速定位需要的内容：
+
+### 第一部分：入门指南
+
+**适用场景**：首次接触 OpenClaw，需要从零开始学习
+
+[新手上路](/zh-CN/start/getting-started)——这是每位新用户必读的入门指南，从零到完成第一次 AI 对话的完整教程。它涵盖环境准备、安装步骤、初始配置以及如何发送第一条消息。文档中包含大量的截图和步骤说明，即使你完全不熟悉命令行也能顺利完成安装。完成本指南后，你将拥有一个可以正常运行的 OpenClaw 环境，并能够通过选定的渠道与 AI 助手进行对话。
+
+[快速入门](/zh-CN/start/quick-start)——如果你已经有一定的技术背景，想要快速体验 OpenClaw 的核心功能，这个 5 分钟快速上手指南是最佳选择。它以最精简的步骤展示 OpenClaw 的核心工作流程，让你在最短时间内理解系统的基本概念。
+
+[向导模式详解](/zh-CN/start/wizard)——OpenClaw 提供了交互式的配置向导，帮助用户完成初始设置。这个文档详细解释了向导模式的每一步，以及每一步背后的设计原理。理解向导模式有助于你在需要手动配置时能够更好地理解各个选项的含义。
+
+[安装指南](/zh-CN/start/installation)——针对不同操作系统和环境提供详细的安装步骤，包括 macOS、Linux、Windows（WSL2）以及 Docker 容器化部署。每种安装方式都有完整的依赖说明、前置条件和常见问题的解决方案。
+
+### 第二部分：核心概念
+
+**适用场景**：想要深入理解 OpenClaw 的工作原理
+
+[系统架构](/zh-CN/concepts/architecture)——这是理解 OpenClaw 的核心文档，详细介绍了系统的整体架构设计。它解释了 Gateway（网关）、代理（Agent）、渠道（Channel）、工具（Tool）之间的关系，以及消息在系统中的完整流转路径。理解架构设计对于后续的高级配置和问题诊断至关重要。
+
+[Gateway 网关](/zh-CN/concepts/gateway)——Gateway 是 OpenClaw 的核心控制中心，负责消息路由、认证管理、渠道连接和代理协调。这个文档深入介绍了 Gateway 的设计原理、配置选项和运维最佳实践。
+
+[AI 代理](/zh-CN/concepts/agents)——AI 代理是实际处理用户请求的组件。文档介绍了代理的工作原理、提示词工程、上下文管理和会话机制。你将学习如何配置和定制 AI 代理的行为，使其更好地适应你的需求。
+
+[会话管理](/zh-CN/concepts/sessions)——会话是代理与用户之间的一次对话交互。这个文档介绍了会话的生命周期管理、上下文机制和状态保持，帮助你理解 AI 如何在对话中保持连贯性。
+
+[消息路由](/zh-CN/concepts/routing)——当消息从多个渠道涌入时，路由规则决定了消息如何被处理和转发。这个文档详细介绍了路由配置、优先级规则和自定义路由逻辑。
+
+### 第三部分：渠道集成
+
+**适用场景**：连接你最常用的消息平台
+
+OpenClaw 支持众多消息渠道，从主流的 WhatsApp、Telegram 到专业的 Slack、Discord，每个渠道都有其特点和配置要求：
+
+[渠道概述](/zh-CN/channels)——提供了所有支持渠道的对比表，帮助你根据需求选择合适的渠道。每个渠道的功能特性、配置复杂度、适用场景都有详细说明。
+
+[Telegram](/zh-CN/channels/telegram)——Telegram 是最受欢迎的渠道之一，其 Bot API 成熟稳定，配置相对简单。这个文档详细介绍了 Bot Token 的获取、Webhook 配置和群组管理等功能。
+
+[WhatsApp](/zh-CN/channels/whatsapp)——WhatsApp 是全球使用最广泛的消息应用。这个文档介绍了如何使用 Baileys 库连接 WhatsApp，包括设备登录、消息收发和群组处理。
+
+[Discord](/zh-CN/channels/discord)——Discord 是社区和团队协作的首选平台。这个文档介绍了如何创建 Discord 应用、配置 Bot 权限以及处理服务器和频道中的消息。
+
+[Slack](/zh-CN/channels/slack)——Slack 是企业协作的标准工具。这个文档介绍了 Slack App 的创建、工作空间配置和事件订阅等高级功能。
+
+[iMessage](/zh-CN/channels/imessage)——对于 macOS 用户，iMessage 是一个便捷的渠道选择。这个文档介绍了如何配置 iMessage 连接和消息收发。
+
+[Signal](/zh-CN/channels/signal)——Signal 以隐私保护著称。这个文档介绍了 signal-cli 的配置和使用方法。
+
+### 第四部分：配置参考
+
+**适用场景**：需要详细配置参数和选项
+
+[配置概述](/zh-CN/config)——配置系统的入门介绍，帮助你理解 OpenClaw 的配置层次结构和配置文件的组织方式。
+
+[配置参考](/zh-CN/config/reference)——完整的配置参数手册，涵盖 Gateway、渠道、代理、工具等所有可配置的选项。每个配置项都有类型说明、默认值和示例。
+
+[配置示例](/zh-CN/config/examples)——常见场景的配置模板，你可以直接使用或根据需要修改。示例包括个人使用、团队协作、生产部署等多种场景。
+
+### 第五部分：命令行工具
+
+**适用场景**：通过命令行管理 OpenClaw
+
+[CLI 概述](/zh-CN/cli)——命令行工具的整体介绍，包括命令结构、帮助系统和常用操作。
+
+[onboard](/zh-CN/cli/onboard)——引导配置的 CLI 命令，用于完成初始设置和向导式配置。
+
+[gateway](/zh-CN/cli/gateway)——网关管理命令，包括启动、停止、状态查看和配置重载。
+
+[config](/zh-CN/cli/config)——配置操作的 CLI 命令，支持查看、修改、导入和导出配置。
+
+[status](/zh-CN/cli/status)——状态查看命令，显示当前系统的运行状态和资源使用情况。
+
+[doctor](/zh-CN/cli/doctor)——诊断工具，自动检测常见配置问题和潜在风险。
+
+[channels](/zh-CN/cli/channels)——渠道管理命令，用于添加、删除、配置和测试各个渠道。
+
+[pairing](/zh-CN/cli/pairing)——配对管理命令，处理新设备和新渠道的认证配对。
+
+[message](/zh-CN/cli/message)——消息发送命令，支持通过 CLI 直接发送消息。
+
+[agent 和 agents](/zh-CN/cli/agents)——代理管理命令，用于创建、配置和删除 AI 代理。
+
+[sessions](/zh-CN/cli/sessions)——会话管理命令，查看和操作活动会话。
+
+[memory](/zh-CN/cli/memory)——记忆管理命令，管理代理的长期记忆和知识库。
+
+### 第六部分：工具与技能
+
+**适用场景**：扩展 AI 的能力边界
+
+[工具概述](/zh-CN/tools)——工具系统的整体介绍，理解工具如何增强 AI 的能力。
+
+[浏览器工具](/zh-CN/tools/browser)——浏览器自动化工具，让 AI 能够访问网页、提取信息和执行网页操作。
+
+[执行工具](/zh-CN/tools/exec)——命令执行工具，允许 AI 运行系统命令和脚本。
+
+[Web 工具](/zh-CN/tools/web)——Web 搜索和抓取工具，为 AI 提供互联网访问能力。
+
+[思考模式](/zh-CN/tools/thinking)——深度思考工具，让 AI 能够进行复杂的多步推理。
+
+[子代理](/zh-CN/tools/subagents)——子代理工具，支持任务分发和并行处理。
+
+### 第七部分：网关运维
+
+**适用场景**：部署和运维 Gateway 服务
+
+[网关概述](/zh-CN/gateway)——Gateway 系统的入门介绍，理解网关的角色和职责。
+
+[配置详解](/zh-CN/concepts/gateway)——Gateway 的详细配置选项和最佳实践。
+
+[远程访问](/zh-CN/gateway/remote)——配置从外部网络访问 Gateway 的方法，包括 Tailscale 集成和 SSH 隧道。
+
+[Tailscale 集成](/zh-CN/gateway/tailscale)——使用 Tailscale 实现安全组网和远程访问。
+
+[后台服务](/zh-CN/gateway/background-process)——将 Gateway 配置为系统服务，确保开机自启动和稳定运行。
+
+[健康检查](/zh-CN/gateway/health)——健康检查端点和监控配置。
+
+[日志系统](/zh-CN/gateway/logging)——日志配置和管理，帮助问题诊断。
+
+[诊断工具](/zh-CN/gateway/doctor)——集成的诊断工具，自动检测和修复常见问题。
+
+### 第八部分：AI 提供商
+
+**适用场景**：配置和使用不同的 AI 模型
+
+[提供商概述](/zh-CN/providers)——所有支持的 AI 服务提供商的对比和选择指南。
+
+[Anthropic Claude](/zh-CN/providers/anthropic)——OpenClaw 最推荐的 AI 提供商，详细介绍配置和使用方法。
+
+[OpenAI GPT](/zh-CN/providers/openai)——GPT 系列的配置和使用，包括 API Key 配置和模型选择。
+
+[OpenRouter](/zh-CN/providers/openrouter)——多模型聚合平台，统一接口访问多个 AI 模型。
+
+[Moonshot Kimi](/zh-CN/providers/moonshot)——国产大模型，中文优化和长文本处理能力强。
+
+[GLM](/zh-CN/providers/glm)——智谱 AI 的 GLM 系列模型配置。
+
+[MiniMax](/zh-CN/providers/minimax)——MiniMax 模型配置和优化。
+
+[Ollama](/zh-CN/providers/ollama)——本地模型部署方案，保护隐私和降低成本。
+
+### 第九部分：部署平台
+
+**适用场景**：在不同操作系统和云平台上运行 OpenClaw
+
+[macOS](/zh-CN/platforms/macos)——macOS 平台的完整指南，包括原生应用、菜单栏集成和 iMessage 支持。
+
+[Linux](/zh-CN/platforms/linux)——Linux 服务器部署指南，推荐 Ubuntu 和其他主流发行版。
+
+[Windows WSL2](/zh-CN/platforms/windows)——Windows 用户通过 WSL2 运行 OpenClaw 的完整指南。
+
+[iOS](/zh-CN/platforms/ios)——iOS 移动节点配置，使用 iOS 设备作为 AI 的眼睛和耳朵。
+
+[Android](/zh-CN/platforms/android)——Android 移动节点配置，类似的移动设备集成。
+
+[Docker](/zh-CN/install/docker)——容器化部署方案，便于移植和扩展。
+
+[Fly.io](/zh-CN/platforms/fly)——边缘部署方案，全球低延迟访问。
+
+### 第十部分：移动节点
+
+**适用场景**：利用移动设备的硬件能力
+
+[节点概述](/zh-CN/nodes)——移动设备节点系统的介绍，理解节点如何扩展 AI 的能力。
+
+[音频节点](/zh-CN/nodes/audio)——语音输入和音频处理，让 AI 能够听和说。
+
+[相机节点](/zh-CN/nodes/camera)——图像捕捉和视觉理解，赋予 AI 视觉能力。
+
+[位置服务](/zh-CN/nodes/location-command)——GPS 位置信息，让 AI 知道你在哪里。
+
+[语音对话](/zh-CN/nodes/talk)——实时语音对话模式，自然的语言交互体验。
+
+[语音唤醒](/zh-CN/nodes/voicewake)——语音唤醒功能，免提激活 AI 助手。
+
+### 第十一部分：自动化
+
+**适用场景**：定时任务和事件驱动自动化
+
+[Cron 任务](/zh-CN/automation/cron-jobs)——定时执行任务，例如每日报告、定时提醒等。
+
+[Webhook](/zh-CN/automation/webhook)——HTTP 触发方式，接收外部系统的通知和事件。
+
+### 第十二部分：Web 界面
+
+**适用场景**：通过浏览器与 OpenClaw 交互
+
+[Web 概述](/zh-CN/web)——Web 界面的整体介绍。
+
+[仪表盘](/zh-CN/web/dashboard)——浏览器中的聊天界面，随时随地与 AI 对话。
+
+### 第十三部分：开发者文档
+
+**适用场景**：参与 OpenClaw 开发
+
+[开发概述](/zh-CN/developer)——开发环境的搭建和配置。
+
+[项目结构](/zh-CN/developer/project-structure)——代码库的目录结构和模块组织。
+
+[插件开发](/zh-CN/developer/plugin-development)——开发自定义插件，扩展 OpenClaw 的功能。
+
+[测试指南](/zh-CN/developer/testing)——单元测试、集成测试和端到端测试的最佳实践。
+
+[贡献指南](/zh-CN/developer/contributing)——如何为 OpenClaw 项目贡献代码。
+
+### 第十四部分：运维手册
+
+**适用场景**：生产环境运维
+
+[运维概述](/zh-CN/operations)——生产部署的最佳实践清单。
+
+[部署指南](/zh-CN/operations/deployment)——生产环境的详细部署流程。
+
+[监控与日志](/zh-CN/operations/monitoring)——监控指标和日志分析。
+
+[故障排除](/zh-CN/operations/troubleshooting)——常见问题和解决方案。
+
+### 第十五部分：帮助中心
+
+**适用场景**：解决问题
+
+[常见问题](/zh-CN/help/faq)——最常见问题的详细解答，80% 的问题都能在这里找到答案。
+
+[故障排除](/zh-CN/help/troubleshooting)——系统化的故障诊断流程和解决方案。
+
+---
+
+## 🧠 原理解释：OpenClaw 的核心设计理念
+
+理解 OpenClaw 的设计理念对于高效使用和深度定制至关重要。以下从多个维度解析 OpenClaw 的核心设计思想：
+
+### 设计理念一：网关架构的中心化控制
+
+OpenClaw 采用**网关中心化架构**，所有消息都通过 Gateway 进行路由和处理。这种设计有几个关键优势：首先，统一的消息处理简化了复杂系统的管理——你不需要为每个渠道单独配置，而是通过 Gateway 进行集中管理；其次，状态管理变得简单——所有会话、上下文和状态都在 Gateway 层面统一维护；最后，安全控制更加集中——认证、授权和审计都在一个地方完成。
+
+为什么选择这种架构？想象一下，如果你需要管理多个消息渠道，没有网关架构的情况下，每个渠道都需要独立的连接、独立的认证、独立的重试逻辑。当某个渠道出现问题时，你需要逐个排查。而有了 Gateway，这一切都变得简单：渠道连接是即插即用的模块，认证是统一配置的，监控是集中查看的。
+
+### 设计理念二：工具系统的可扩展性
+
+OpenClaw 的工具系统设计遵循**最小核心加可扩展插件**的理念。核心系统只包含最基本的功能——消息收发、对话管理、基础工具调用。所有的高级能力，如浏览器控制、Web 搜索、文件操作，都通过工具系统的扩展实现。
+
+这种设计带来了极大的灵活性。你可以选择性地安装需要的工具，不需要的功能不会占用资源。你也可以开发自定义工具来满足特殊需求，工具的接口是标准化的，开发门槛相对较低。
+
+### 设计理念三：对话上下文的智能管理
+
+AI 对话的质量很大程度上取决于上下文管理。OpenClaw 实现了**分层上下文机制**：短期上下文保存在活动会话中，随对话动态更新；长期记忆可以持久化到磁盘，跨会话保持；系统提示词定义了代理的基本行为和约束。
+
+这种分层设计平衡了效果和成本。短期上下文确保当前对话的连贯性，长期记忆保存重要的信息和偏好，而系统提示词则设定了代理的"性格"和能力边界。
+
+### 设计理念四：安全优先的设计原则
+
+由于 OpenClaw 处理的是真实的消息渠道和敏感数据，安全是不可妥协的底线。系统采用**纵深防御策略**：默认拒绝所有未知来源的消息，要求显式配置才能接收外部消息；工具调用有明确的权限控制，高风险工具需要额外授权；敏感操作需要确认，防止意外执行破坏性命令。
+
+---
+
+## 👨‍💻 专家思维模型
+
+以下是使用 OpenClaw 时应该建立的核心思维模型，这些模型来自实践经验总结，能够帮助你更高效地使用和故障排查：
+
+### 思维模型一：消息流追踪
+
+当消息出现问题时（如没有响应、响应错误、延迟过高），使用**消息流追踪思维模型**进行排查：明确消息来源——消息来自哪个渠道？该渠道是否正确连接？检查消息入口——Gateway 是否收到了消息？日志中是否有记录？追踪处理流程——消息被路由到了哪个代理？代理是否正在运行？检查响应输出——代理的响应是否正确？响应是否被发送回正确渠道？通过这种系统化的追踪，可以快速定位问题发生的环节。
+
+### 思维模型二：配置优先级理解
+
+OpenClaw 的配置系统支持多层次配置，理解**配置优先级**对于调试配置问题至关重要。优先级从高到低依次是：命令行参数（最高优先级，覆盖所有其他配置）；环境变量（用于敏感信息和环境特定配置）；用户配置文件（`~/.openclaw/openclaw.json`）；工作区配置文件（工作区目录下的配置）；默认配置（最低优先级，作为兜底值）。
+
+当配置不生效时，按照这个优先级顺序检查。
+
+### 思维模型三：故障隔离
+
+遇到复杂问题时，使用**故障隔离思维模型**：将问题拆分为独立组件，逐一验证。OpenClaw 的核心组件包括：渠道连接（验证渠道是否正常连接）；网关服务（验证 Gateway 是否运行正常）；代理服务（验证 AI 代理是否响应）；工具系统（验证特定工具是否可用）；网络连接（验证网络是否通畅）。
+
+通过禁用部分功能，逐步缩小问题范围，直到找到根本原因。
+
+### 思维模型四：资源预算管理
+
+运行 AI 代理涉及多个资源维度：**Token 预算**——每次对话的上下文长度有限制，需要合理管理；**API 调用预算**——AI 提供商的调用次数和速率有限制；**计算资源**——本地处理需要 CPU 和内存资源；**存储资源**——日志、记忆和附件需要磁盘空间。
+
+建立资源预算意识，在性能和成本之间找到平衡点。
+
+---
+
+## 🔧 故障排查指南
+
+以下是使用 OpenClaw 过程中最常见的问题和解决方案：
+
+### 常见问题一：Gateway 无法启动
+
+**症状表现**：运行 `openclaw gateway run` 命令后，提示端口被占用或连接拒绝。
+
+**诊断步骤**：首先检查端口是否被其他进程占用，使用命令 `lsof -i :18789` 查看占用端口的进程；然后检查 Gateway 是否已经在后台运行，使用 `openclaw gateway status` 查看状态；最后查看详细日志，使用 `openclaw logs --follow` 追踪实时日志。
+
+**常见原因与解决方案**：端口被占用时，可以停止占用端口的进程，或者修改 Gateway 端口配置。Gateway 未运行时，使用 `openclaw gateway start` 启动服务。配置文件错误时，使用 `openclaw doctor` 自动检测和修复配置问题。
+
+### 常见问题二：渠道连接失败
+
+**症状表现**：渠道显示"已连接"状态，但消息收发失败。
+
+**诊断步骤**：检查渠道凭证是否正确——API Key、Token 等是否有效且未过期；检查网络连接——目标服务的网络是否通畅；查看渠道特定日志——使用 `openclaw logs | grep <channel>` 过滤渠道日志。
+
+**常见原因与解决方案**：凭证过期或无效时，需要重新获取并更新凭证。网络不稳定时，考虑使用代理或检查防火墙设置。API 限流时，减少请求频率或升级服务套餐。
+
+### 常见问题三：AI 代理无响应
+
+**症状表现**：发送消息后，代理没有响应或响应非常慢。
+
+**诊断步骤**：检查 AI 提供商的 API 状态页面，确认服务是否正常；检查代理配置，确认模型选择和 API Key 是否正确；查看代理日志，使用 `openclaw logs | grep agent` 查看代理运行日志。
+
+**常见原因与解决方案**：AI 服务故障时，等待服务恢复或切换到备用提供商。API Key 配置错误时，检查 key 的格式和权限。模型不支持时，确认所选模型是否可用。
+
+### 常见问题四：工具调用失败
+
+**症状表现**：代理尝试使用工具时，返回错误或工具不工作。
+
+**诊断步骤**：检查工具是否已安装和启用，使用 `openclaw tools list` 查看可用工具；检查工具配置，确认必要参数是否正确；测试工具直接运行，使用 `openclaw tools exec <tool> --test` 测试工具功能。
+
+**常见原因与解决方案**：工具未安装时，按照文档安装对应工具。权限不足时，检查文件权限或系统权限设置。参数错误时，查看工具文档确认正确用法。
+
+---
+
+## 📋 适用场景分析
+
+OpenClaw 适用于多种使用场景，以下是典型场景分析和配置建议：
+
+### 场景一：个人 AI 助手
+
+**场景描述**：将 OpenClaw 作为个人的专属 AI 助手，通过最常用的消息渠道随时随地与 AI 对话。
+
+**推荐配置**：选择一到两个主要渠道（如 Telegram 和微信）；配置质量优先的 AI 模型（如 Claude Opus）；安装常用的工具（浏览器、搜索、文件操作）；设置长期记忆，保存个人偏好和重要信息。
+
+**使用技巧**：设置快捷命令加速常用操作；配置常用提示词模板；利用上下文窗口保持对话连贯性。
+
+### 场景二：团队协作助手
+
+**场景描述**：在团队中使用 OpenClaw，提供工作流自动化和信息查询能力。
+
+**推荐配置**：选择团队正在使用的协作平台（如 Slack 或 Discord）；配置多个专用代理处理不同任务；设置权限控制，限制敏感操作的访问；集成团队常用的第三方服务。
+
+**使用技巧**：建立标准化的提示词库；设置频道特定的响应规则；利用 Webhook 与 CI/CD 系统集成。
+
+### 场景三：自动化工作流
+
+**场景描述**：使用 OpenClaw 自动化日常任务，如定时报告、数据收集、通知推送等。
+
+**推荐配置**：配置 Cron 定时任务；设置 Webhook 接收外部事件；开发自定义钩子处理特定逻辑；选择成本较低的模型或本地模型。
+
+**使用技巧**：将复杂任务分解为多个步骤；设置错误处理和通知机制；定期优化自动化脚本。
+
+### 场景四：客户服务集成
+
+**场景描述**：将 OpenClaw 集成到客户服务流程，提供智能客服能力。
+
+**推荐配置**：配置多个渠道接入（网站、公众号、APP）；设置白名单限制访问范围；训练领域特定的提示词；配置对话转人工规则。
+
+**使用技巧**：建立常见问题知识库；设置服务时间规则；监控对话质量并持续优化。
 
 ---
 
 ## 🆘 获取帮助
 
-**遇到问题？**
+在使用 OpenClaw 过程中遇到问题，可以通过以下渠道获取帮助：
 
-1. 🔍 [常见问题](/zh-CN/help/faq) - 80% 的问题已有答案
-2. 🔧 [故障排除](/zh-CN/help/troubleshooting) - 系统诊断指南
-3. 💬 [Discord 社区](https://discord.gg/clawd) - 实时交流
-4. 🐛 [GitHub Issues](https://github.com/openclaw/openclaw/issues) - 提交问题
+### 自助解决（推荐优先尝试）
 
----
+[常见问题](/zh-CN/help/faq)——80% 的问题都能在这里找到答案，建议先查阅。
 
-## 📝 关于本文档
+[故障排除](/zh-CN/help/troubleshooting)——系统化的故障诊断流程，引导你逐步排查问题。
 
-本文档是官方英文文档的中文翻译和增强版本，专为中文用户优化：
+[文档搜索](/zh-CN/search)——全文搜索文档，快速定位相关内容。
 
-- ✅ 深入浅出的原理解释
-- ✅ 丰富的中文类比和例子
-- ✅ 完整的配置示例
-- ✅ 常见问题详细解答
-- ✅ 从新手到专家的学习路径
+### 社区支持
 
-**英文文档**：[docs.openclaw.ai](https://docs.openclaw.ai)
+[Discord 社区](https://discord.gg/clawd)——活跃的社区讨论，可以实时交流和获取帮助。
 
----
+[GitHub Issues](https://github.com/openclaw/openclaw/issues)——报告 bug 和提出功能建议。
 
-> 💡 **提示**：文档持续更新中！如果发现错误或有建议，欢迎通过 GitHub Issues 反馈。
-> 
+### 文档反馈
+
+本文档持续更新中。如果发现错误或有改进建议，欢迎通过 GitHub Issues 反馈。
+
 > *"最好的学习方式就是动手做。安装它，使用它，你会理解的。"*
+
+---
+
+## 📖 相关链接
+
+- **英文文档**：[docs.openclaw.ai](https://docs.openclaw.ai)
+- **项目主页**：[openclaw.ai](https://openclaw.ai)
+- **GitHub 仓库**：[github.com/openclaw/openclaw](https://github.com/openclaw/openclaw)
+- **更新日志**：[更新指南](/zh-CN/install/updating)

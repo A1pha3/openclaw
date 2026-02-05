@@ -1,34 +1,487 @@
 ---
-summary: "网关调度器的 Cron 作业 + 唤醒"
+summary: "网关调度器的 Cron 作业 + 唤醒 - 调度后台作业或唤醒代理"
 read_when:
-  - "调度后台作业或唤醒"
-  - "连接应该与心跳一起或旁边运行的自动化"
-  - "在心跳和 cron 之间为计划任务做出选择"
-title: "Cron 作业"
+  - 调度后台作业或唤醒代理
+  - 连接心跳和自动化的配合使用
+  - 在心跳和 cron 之间为计划任务做出选择
+title: "定时任务"
 ---
 
-# Cron 作业（网关调度器）
+# 定时任务（网关调度器）
 
-> **Cron vs Heartbeat？** 有关何时使用每种的指导，请参阅 [Cron vs Heartbeat](/automation/cron-vs-heartbeat)。
+## 学习目标
 
-Cron 是网关的内置调度器。它持久化作业，在正确的时间唤醒代理，并且可以选择性地将输出传递回聊天。
+完成本章节学习后，你将能够：
 
-如果你想要_"每天早上运行这个"_ 或 _"20 分钟后戳代理"`，cron 就是这个机制。
+### 基础目标（必掌握）
 
-## TL;DR
+- [ ] 理解 **Cron 作业** 的工作原理和设计理念
+- [ ] 掌握三种计划类型的配置方法
+- [ ] 理解主执行与隔离执行的差异
+- [ ] 完成基础的定时任务配置
 
-- Cron 在**网关内部**运行（不在模型中）。
-- 作业持久化在 `~/.openclaw/cron/` 下，因此重启不会丢失计划。
-- 两种执行风格：
-  - **主会话**：将系统事件加入队列，然后在下次心跳时运行。
-  - **隔离**：在 `cron:<jobId>` 中运行专用的代理回合，可选择传递输出。
-- 唤醒是一等的：作业可以请求"立即唤醒"与"下次心跳"。
+### 进阶目标（建议掌握）
 
-## 快速开始（可操作）
+- [ ] 配置复杂的任务路由和传递
+- [ ] 优化任务调度性能
+- [ ] 实现多代理任务管理
 
-创建一次性提醒，验证它存在，并立即运行：
+### 专家目标（挑战）
+
+- [ ] 设计大规模任务调度系统
+- [ ] 自定义调度策略
+- [ ] 集成外部调度系统
+
+---
+
+## 为什么需要定时任务？
+
+在理解具体用法之前，我们需要先理解**设计者为什么引入 Cron 作业系统**。这不仅帮助你更好地使用调度功能，还能让你在优化任务管理时做出更好的设计决策。
+
+### 设计决策背景
+
+**问题**：AI 助手需要支持定时触发的自动化任务，如定时提醒、周期性报告等
+
+**可选方案**：
+
+1. 方案 A - 外部 cron 服务：集成复杂，状态管理困难
+2. 方案 B - 简单定时器：功能有限，难以管理
+3. 方案 C（最终选择）- 内置调度器：与网关深度集成，状态持久化
+
+**选择理由**：
+
+- 理由一：任务持久化，重启不丢失
+- 理由二：支持主执行和隔离执行两种模式
+- 理由三：完善的传递机制支持多渠道输出
+
+### 定时任务架构图
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    定时任务系统架构                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │                    作业管理层                          │  │
+│  │                                                     │  │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐          │  │
+│  │  │  添加   │  │  更新   │  │  删除   │          │  │
+│  │  └─────────┘  └─────────┘  └─────────┘          │  │
+│  └─────────────────────────┬───────────────────────────┘  │
+│                            │                               │
+│                            ▼                               │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │                    调度引擎                          │  │
+│  │                                                     │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌───────────┐ │  │
+│  │  │ at（一次性） │  │every（间隔）│  │cron（周期）│ │  │
+│  │  └──────┬──────┘  └──────┬──────┘  └─────┬─────┘ │  │
+│  │         │                 │                │       │  │
+│  │         └─────────────────┼────────────────┘       │  │
+│  │                          │                        │  │
+│  └──────────────────────────┼────────────────────────┘  │
+│                             │                          │
+│                             ▼                          │
+│  ┌─────────────────────────────────────────────────────┐│
+│  │                    执行引擎                           ││
+│  │                                                     ││
+│  │  ┌─────────────────────────────────────────────┐  ││
+│  │  │               作业执行                       │  ││
+│  │  │                                             │  ││
+│  │  │  ┌─────────────────┐  ┌─────────────────┐│  ││
+│  │  │  │  主执行模式      │  │  隔离执行模式    ││  ││
+│  │  │  │                 │  │                 ││  ││
+│  │  │  │ systemEvent    │  │ agentTurn      ││  ││
+│  │  │  │ 心跳触发       │  │ 独立会话        ││  ││
+│  │  │  └─────────────────┘  └─────────────────┘│  ││
+│  │  └─────────────────────────────────────────┘  ││
+│  └─────────────────────────┬───────────────────────────┘│
+│                            │                             │
+│                            ▼                             │
+│  ┌─────────────────────────────────────────────────────┐│
+│  │                    传递引擎                          ││
+│  │                                                     ││
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐         ││
+│  │  │  渠道   │  │  目标   │  │  格式   │         ││
+│  │  │ 选择    │  │ 解析    │  │ 转换    │         ││
+│  │  └─────────┘  └─────────┘  └─────────┘         ││
+│  └─────────────────────────────────────────────────────┘│
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 核心概念速查
+
+| 概念 | 定义 | 关键特性 |
+|------|------|---------|
+| **Cron 作业** | 网关内置的定时任务系统 | 持久化、调度、执行、传递 |
+| **计划类型** | 任务执行的时间规则 | at、every、cron |
+| **主执行** | 在主会话上下文中执行 | 共享上下文、心跳触发 |
+| **隔离执行** | 在独立会话中执行 | 新上下文、独立执行 |
+| **任务传递** | 将执行结果发送到渠道 | 渠道选择、目标解析 |
+
+---
+
+## 适用场景分析
+
+### 场景一：定时提醒
+
+**需求**：在指定时间发送提醒消息
+
+**解决方案**：
+
+```
+定时触发 → 主执行 → 系统事件 → 用户收到提醒
+```
+
+**实际案例**：
+
+- 会议提醒
+- 服药提醒
+- 生日祝福
+
+### 场景二：周期性报告
+
+**需求**：定期生成并发送报告
+
+**解决方案**：
+
+```
+cron 触发 → 隔离执行 → AI 分析 → 渠道传递
+```
+
+**实际案例**：
+
+- 每日摘要
+- 周度报告
+- 月度统计
+
+### 场景三：自动化监控
+
+**需求**：监控系统状态并触发动作
+
+**解决方案**：
+
+```
+定时触发 → 执行检查 → 条件判断 → 动作执行
+```
+
+**实际案例**：
+
+- 健康检查
+- 异常告警
+- 自动备份
+
+---
+
+## 专家思维模型：任务调度优化框架
+
+当设计和管理定时任务时，专家会采用以下思维框架：
+
+### 任务分类矩阵
+
+| 任务类型 | 触发频率 | 执行模式 | 传递方式 | 示例 |
+|---------|---------|---------|---------|------|
+| 提醒类 | 低 | 主执行 | 直接发送 | 会议提醒 |
+| 报告类 | 中 | 隔离执行 | 摘要发送 | 日报周报 |
+| 监控类 | 高 | 隔离执行 | 条件触发 | 健康检查 |
+| 同步类 | 中 | 隔离执行 | 结果返回 | 数据同步 |
+
+### 决策流程
+
+```
+需要定时任务？
+    │
+    ├── 是 → 确定触发频率
+    │           │
+    │           ├── 一次性 → at
+    │           ├── 间隔重复 → every
+    │           └── 周期重复 → cron
+    │
+    └── 否 → 使用即时触发
+```
+
+---
+
+## 学习路径规划
+
+### 阶段一：基础概念（1-2 小时）
+
+**目标**：建立定时任务的认知框架
+
+1. 阅读本教程，理解系统架构
+2. 创建第一个定时任务
+3. 测试任务执行
+
+### 阶段二：核心功能（2-4 小时）
+
+**目标**：掌握实际使用中最常用的功能
+
+4. 配置不同计划类型
+5. 实现任务传递
+6. 管理任务生命周期
+
+### 阶段三：高级应用（4-8 小时）
+
+**目标**：解决复杂场景和高级需求
+
+7. 配置多代理任务
+8. 优化调度性能
+9. 实现复杂路由
+
+### 阶段四：专家实战（8+ 小时）
+
+**目标**：解决真实世界的复杂问题
+
+10. 大规模任务调度
+11. 自定义调度策略
+12. 监控系统集成
+
+---
+
+## 渐进式复杂度：计划类型对比
+
+### 计划类型功能矩阵
+
+| 特性 | at | every | cron |
+|-----|-----|-------|------|
+| 一次性执行 | ✅ | ❌ | ❌ |
+| 间隔重复 | ❌ | ✅ | ❌ |
+| 周期重复 | ❌ | ❌ | ✅ |
+| 时区支持 | ✅ | ✅ | ✅ |
+| 复杂调度 | ❌ | ❌ | ✅ |
+
+### 复杂度等级说明
+
+| 等级 | 描述 | 示例任务 |
+|-----|------|---------|
+| **Level 1 ⭐** | 基础一次性任务 | at 提醒 |
+| **Level 2 ⭐⭐** | 简单重复任务 | every 间隔任务 |
+| **Level 3 ⭐⭐⭐** | 周期调度任务 | cron 定时任务 |
+| **Level 4 ⭐⭐⭐⭐** | 复杂调度系统 | 多代理多渠道任务 |
+
+---
+
+## 故障排查实战
+
+### 场景一：任务不执行
+
+**问题描述**：设置的任务没有按时执行
+
+**排查步骤**：
+
+1. **检查 Cron 是否启用**
+
+   ```bash
+   openclaw config get cron.enabled
+   ```
+
+2. **检查网关状态**
+
+   ```bash
+   openclaw gateway status
+   ```
+
+3. **检查任务列表**
+
+   ```bash
+   openclaw cron list
+   ```
+
+4. **检查时区设置**
+
+   ```bash
+   # 确认时区配置正确
+   date
+   ```
+
+**解决方案**：
+
+- 启用 Cron 功能
+- 确保网关运行
+- 检查任务配置
+
+### 场景二：传递失败
+
+**问题描述**：任务执行但未发送到指定渠道
+
+**排查步骤**：
+
+1. **检查传递配置**
+
+   ```bash
+   openclaw cron describe <job-id>
+   ```
+
+2. **检查渠道状态**
+
+   ```bash
+   openclaw channels status
+   ```
+
+3. **查看任务日志**
+
+   ```bash
+   openclaw cron runs --id <job-id>
+   ```
+
+**解决方案**：
+
+- 修复传递配置
+- 确保渠道可用
+- 检查目标格式
+
+### 场景三：权限错误
+
+**问题描述**：任务执行时返回权限错误
+
+**排查步骤**：
+
+1. **检查代理权限**
+
+   ```bash
+   openclaw config get agents.list[0].tools
+   ```
+
+2. **检查渠道权限**
+
+   ```bash
+   openclaw config get channels
+   ```
+
+**解决方案**：
+
+- 授予必要权限
+- 限制任务范围
+- 使用隔离执行
+
+---
+
+## 最佳实践
+
+### 实践一：提醒任务配置
+
+**目标**：创建可靠的提醒任务
+
+```json5
+{
+  name: "会议提醒",
+  schedule: {
+    kind: "at",
+    atMs: 1704067200000  // 2024-01-01 00:00:00 UTC
+  },
+  sessionTarget: "main",
+  wakeMode: "now",
+  payload: {
+    kind: "systemEvent",
+    text: "提醒：今天的会议将在 10:00 开始"
+  },
+  deleteAfterRun: true
+}
+```
+
+**最佳实践要点**：
+
+- 设置 deleteAfterRun 避免一次性任务堆积
+- 使用 wakeMode 控制唤醒时机
+- 设置合理的提醒时间
+
+### 实践二：报告任务配置
+
+**目标**：创建自动化的周期性报告
+
+```json5
+{
+  name: "每日摘要",
+  schedule: {
+    kind: "cron",
+    expr: "0 8 * * *",
+    tz: "Asia/Shanghai"
+  },
+  sessionTarget: "isolated",
+  wakeMode: "next-heartbeat",
+  payload: {
+    kind: "agentTurn",
+    message: "请总结今天的重要事项并生成日报。",
+    deliver: true,
+    channel: "whatsapp",
+    to: "+15551234567",
+    bestEffortDeliver: true
+  },
+  isolation: {
+    postToMainPrefix: "Cron",
+    postToMainMode: "summary"
+  }
+}
+```
+
+**最佳实践要点**：
+
+- 使用隔离执行避免干扰主会话
+- 配置 bestEffortDeliver 避免传递失败导致任务失败
+- 设置合适的 postToMainMode
+
+### 实践三：多代理任务配置
+
+**目标**：在特定代理下执行任务
+
+```json5
+{
+  name: "代码审查",
+  schedule: {
+    kind: "cron",
+    expr: "0 10 * * *",
+    tz: "Asia/Shanghai"
+  },
+  sessionTarget: "isolated",
+  agentId: "coder",
+  payload: {
+    kind: "agentTurn",
+    message: "请检查昨天的代码变更并提供审查意见。"
+  }
+}
+```
+
+**最佳实践要点**：
+
+- 使用 agentId 绑定特定代理
+- 代理不可用时回退到默认代理
+- 考虑代理的可用性和负载
+
+---
+
+## CLI 命令参考
+
+### 任务管理命令
+
+| 命令 | 说明 |
+|------|------|
+| `openclaw cron add` | 添加新任务 |
+| `openclaw cron list` | 列出所有任务 |
+| `openclaw cron edit` | 编辑任务 |
+| `openclaw cron remove` | 删除任务 |
+| `openclaw cron run` | 手动运行任务 |
+| `openclaw cron runs` | 查看任务运行历史 |
+
+### 参数说明
+
+| 命令 | 参数 | 说明 |
+|-----|------|------|
+| `cron add` | `--name` | 任务名称 |
+| `cron add` | `--at` | 一次性时间 |
+| `cron add` | `--cron` | Cron 表达式 |
+| `cron add` | `--every` | 间隔时间 |
+| `cron add` | `--session` | 执行模式 |
+| `cron add` | `--message` | 任务消息 |
+| `cron add` | `--deliver` | 启用传递 |
+| `cron add` | `--agent` | 绑定代理 |
+
+### 使用示例
 
 ```bash
+# 添加一次性提醒
 openclaw cron add \
   --name "Reminder" \
   --at "2026-02-01T16:00:00Z" \
@@ -37,14 +490,7 @@ openclaw cron add \
   --wake now \
   --delete-after-run
 
-openclaw cron list
-openclaw cron run <job-id> --force
-openclaw cron runs --id <job-id>
-```
-
-安排具有传递的重复隔离作业：
-
-```bash
+# 添加周期性任务
 openclaw cron add \
   --name "Morning brief" \
   --cron "0 7 * * *" \
@@ -54,372 +500,105 @@ openclaw cron add \
   --deliver \
   --channel slack \
   --to "channel:C1234567890"
+
+# 手动运行任务
+openclaw cron run <job-id> --force
+
+# 查看运行历史
+openclaw cron runs --id <job-id> --limit 50
 ```
 
-## 工具调用等效项（网关 cron 工具）
+---
 
-有关规范的 JSON 形状和示例，请参阅[工具调用的 JSON 模式](/automation/cron-jobs#json-schema-for-tool-calls)。
+## 原理解析：执行模式详解
 
-## Cron 作业存储在哪里
+### 主执行模式
 
-Cron 作业默认持久化在网关主机的 `~/.openclaw/cron/jobs.json` 中。网关将文件加载到内存并在更改时写回，因此手动编辑仅在网关停止时是安全的。更改时首选 `openclaw cron add/edit` 或 cron 工具调用 API。
+在主会话上下文中执行任务：
 
-## 初学者友好概述
-
-将 cron 作业视为：**何时**运行 + **什么**做。
-
-1. **选择计划**
-   - 一次性提醒 → `schedule.kind = "at"`（CLI：`--at`）
-   - 重复作业 → `schedule.kind = "every"` 或 `schedule.kind = "cron"`
-   - 如果你的 ISO 时间戳省略了时区，它被视为 **UTC**。
-
-2. **选择它在哪里运行**
-   - `sessionTarget: "main"` → 在下次心跳时使用主上下文运行。
-   - `sessionTarget: "isolated"` → 在 `cron:<jobId>` 中运行专用的代理回合。
-
-3. **选择有效负载**
-   - 主会话 → `payload.kind = "systemEvent"`
-   - 隔离会话 → `payload.kind = "agentTurn"`
-
-可选：`deleteAfterRun: true` 从存储中删除成功的一次性作业。
-
-## 概念
-
-### 作业
-
-Cron 作业是具有以下内容的存储记录：
-
-- **计划**（它应该何时运行），
-- **有效负载**（它应该做什么），
-- 可选的**传递**（输出应该发送到哪里）。
-- 可选的**代理绑定**（`agentId`）：在特定代理下运行作业；如果缺失或未知，网关回退到默认代理。
-
-作业由稳定的 `jobId` 标识（由 CLI/网关 API 使用）。在代理工具调用中，`jobId` 是规范的；为兼容起见接受传统的 `id`。作业可以通过 `deleteAfterRun: true` 在成功的一次性运行后自动删除。
-
-### 计划
-
-Cron 支持三种计划类型：
-
-- `at`：一次性时间戳（自纪元以来的毫秒）。网关接受 ISO 8601 并转换为 UTC。
-- `every`：固定间隔（毫秒）。
-- `cron`：具有可选 IANA 时区的 5 字段 cron 表达式。
-
-Cron 表达式使用 `croner`。如果省略时区，则使用网关主机的本地时区。
-
-### 主执行 vs 隔离执行
-
-#### 主会话作业（系统事件）
-
-主作业将系统事件加入队列，可选择性地唤醒心跳运行器。它们必须使用 `payload.kind = "systemEvent"`。
-
-- `wakeMode: "next-heartbeat"`（默认）：事件等待下次计划的心跳。
-- `wakeMode: "now"`：事件触发立即心跳运行。
-
-这是当你想要正常的心跳提示 + 主会话上下文时的最佳选择。请参阅 [Heartbeat](/gateway/heartbeat)。
-
-#### 隔离作业（专用 cron 会话）
-
-隔离作业在会话 `cron:<jobId>` 中运行专用的代理回合。
-
-关键行为：
-
-- 提示以 `[cron:<jobId> <job name>]` 为前缀以实现可追溯性。
-- 每次运行都从**新的会话 id** 开始（没有先前的对话延续）。
-- 摘要发布到主会话（前缀 `Cron`，可配置）。
-- 如果 `payload.deliver: true`，输出被传递到频道；否则它保持内部。
-
-将隔离作业用于嘈杂、频繁或"后台杂务"，这些杂务不应该弄乱你的主要聊天历史。
-
-### 有效负载形状（什么运行）
-
-支持两种有效负载类型：
-
-- `systemEvent`：仅主会话，通过心跳提示路由。
-- `agentTurn`：仅隔离会话，运行专用的代理回合。
-
-常见的 `agentTurn` 字段：
-
-- `message`：必需的文本提示。
-- `model` / `thinking`：可选覆盖（见下文）。
-- `timeoutSeconds`：可选超时覆盖。
-- `deliver`: `true` 将输出发送到频道目标。
-- `channel`: `last` 或特定频道。
-- `to`: 频道特定目标（电话/聊天/频道 id）。
-- `bestEffortDeliver`：避免在传递失败时使作业失败。
-
-隔离选项（仅用于 `session=isolated`）：
-
-- `postToMainPrefix`（CLI：`--post-prefix`）：主系统事件的前缀。
-- `postToMainMode`: `summary`（默认）或 `full`。
-- `postToMainMaxChars`: 当 `postToMainMode=full` 时的最大字符数（默认 8000）。
-
-### 模型和推理覆盖
-
-隔离作业（`agentTurn`）可以覆盖模型和推理级别：
-
-- `model`：提供商/模型字符串（例如 `anthropic/claude-sonnet-4-20250514`）或别名（例如 `opus`）
-- `thinking`：推理级别（`off`、`minimal`、`low`、`medium`、`high`、`xhigh`；仅 GPT-5.2 + Codex 模型）
-
-注意：你也可以在主会话作业上设置 `model`，但它会改变共享的主会话模型。我们建议仅对隔离作业使用模型覆盖，以避免意外的上下文偏移。
-
-解析优先级：
-
-1. 作业有效负载覆盖（最高）
-2. Hook 特定默认值（例如 `hooks.gmail.model`）
-3. 代理配置默认值
-
-### 传递（频道 + 目标）
-
-隔离作业可以将输出传递到频道。作业有效负载可以指定：
-
-- `channel`: `whatsapp` / `telegram` / `discord` / `slack` / `mattermost`（插件）/`signal` / `imessage` / `last`
-- `to`: 频道特定收件人目标
-
-如果 `channel` 或 `to` 被省略，cron 可以回退到主会话的"最后路由"（代理最后回复的地方）。
-
-传递说明：
-
-- 如果设置了 `to`，cron 即使省略了 `deliver` 也会自动传递代理的最终输出。
-- 当你想要最后路由传递而没有明确的 `to` 时使用 `deliver: true`。
-- 当 `to` 存在时使用 `deliver: false` 以保持输出内部。
-
-目标格式提醒：
-
-- Slack/Discord/Mattermost（插件）目标应该使用明确的前缀（例如 `channel:<id>`、`user:<id>`）以避免歧义。
-- Telegram 主题应该使用 `:topic:` 形式（见下文）。
-
-#### Telegram 传递目标（主题 / 论坛线程）
-
-Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递，你可以将主题/线程编码到 `to` 字段中：
-
-- `-1001234567890`（仅聊天 id）
-- `-1001234567890:topic:123`（首选：明确的主题标记）
-- `-1001234567890:123`（简写：数字后缀）
-
-也接受带前缀的目标如 `telegram:...` / `telegram:group:...`：
-
-- `telegram:group:-1001234567890:topic:123`
-
-## 工具调用的 JSON 模式
-
-当直接调用网关 `cron.*` 工具时使用这些形状（代理工具调用或 RPC）。CLI 标志接受人类可读的持续时间如 `20m`，但工具调用对 `atMs` 和 `everyMs` 使用纪元毫秒（`at` 时间接受 ISO 时间戳）。
-
-### cron.add 参数
-
-一次性，主会话作业（系统事件）：
-
-```json
-{
-  "name": "Reminder",
-  "schedule": { "kind": "at", "atMs": 1738262400000 },
-  "sessionTarget": "main",
-  "wakeMode": "now",
-  "payload": { "kind": "systemEvent", "text": "Reminder text" },
-  "deleteAfterRun": true
-}
+```
+任务触发
+    │
+    ▼
+┌─────────────────────┐
+│  系统事件入队        │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  下次心跳处理        │  ← wakeMode: next-heartbeat
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  主会话执行          │  ← 共享上下文
+└─────────────────────┘
 ```
 
-重复，隔离作业与传递：
+### 隔离执行模式
 
-```json
-{
-  "name": "Morning brief",
-  "schedule": { "kind": "cron", "expr": "0 7 * * *", "tz": "America/Los_Angeles" },
-  "sessionTarget": "isolated",
-  "wakeMode": "next-heartbeat",
-  "payload": {
-    "kind": "agentTurn",
-    "message": "Summarize overnight updates.",
-    "deliver": true,
-    "channel": "slack",
-    "to": "channel:C1234567890",
-    "bestEffortDeliver": true
-  },
-  "isolation": { "postToMainPrefix": "Cron", "postToMainMode": "summary" }
-}
+在独立会话中执行任务：
+
+```
+任务触发
+    │
+    ▼
+┌─────────────────────┐
+│  创建独立会话        │  ← cron:<jobId>
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  独立代理回合        │  ← 新上下文，无历史
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  结果处理            │
+│                     │
+│  ┌────────────────┐│
+│  │ 发布到主会话    ││  ← postToMain
+│  └────────────────┘│
+│                     │
+│  ┌────────────────┐│
+│  │ 渠道传递        ││  ← deliver
+│  └────────────────┘│
+└─────────────────────┘
 ```
 
-注意：
+---
 
-- `schedule.kind`: `at` (`atMs`)、`every` (`everyMs`) 或 `cron` (`expr`，可选的 `tz`)。
-- `atMs` 和 `everyMs` 是纪元毫秒。
-- `sessionTarget` 必须是 `"main"` 或 `"isolated"`，并且必须匹配 `payload.kind`。
-- 可选字段：`agentId`、`description`、`enabled`、`deleteAfterRun`、`isolation`。
-- `wakeMode` 省略时默认为 `"next-heartbeat"`。
+## 总结
 
-### cron.update 参数
+定时任务是 OpenClaw 实现自动化管理的核心功能。通过完善的任务调度系统，你可以：
 
-```json
-{
-  "jobId": "job-123",
-  "patch": {
-    "enabled": false,
-    "schedule": { "kind": "every", "everyMs": 3600000 }
-  }
-}
-```
+- 创建一次性或周期性的自动化任务
+- 在主会话或隔离会话中执行
+- 将结果传递到指定渠道
+- 实现复杂的任务编排
 
-注意：
+掌握定时任务的配置和使用，将帮助你更好地管理和自动化工作流程。
 
-- `jobId` 是规范的；为兼容起见接受 `id`。
-- 在补丁中使用 `agentId: null` 清除代理绑定。
+---
 
-### cron.run 和 cron.remove 参数
+## 进阶学习路径
 
-```json
-{ "jobId": "job-123", "mode": "force" }
-```
+| 级别 | 主题 | 资源 |
+|-----|------|-----|
+| ⭐ | 基础任务配置 | [快速开始](/zh-CN/start/quick-start) |
+| ⭐⭐ | 高级调度配置 | [Webhook 自动化](/zh-CN/automation/webhook) |
+| ⭐⭐⭐ | 复杂任务编排 | [自动化指南](/zh-CN/automation) |
+| ⭐⭐⭐⭐ | 企业级调度 | [运维指南](/zh-CN/operators) |
 
-```json
-{ "jobId": "job-123" }
-```
+---
 
-## 存储和历史
+## 相关文档
 
-- 作业存储：`~/.openclaw/cron/jobs.json`（网关管理的 JSON）。
-- 运行历史：`~/.openclaw/cron/runs/<jobId>.jsonl`（JSONL，自动修剪）。
-- 覆盖存储路径：配置中的 `cron.store`。
+- [Webhook 自动化](/zh-CN/automation/webhook) - Webhook 触发
+- [自动化概述](/zh-CN/automation) - 自动化指南
+- [CLI 参考](/zh-CN/cli) - 命令行工具
+- [配置参考](/zh-CN/config/reference) - 完整配置选项
 
-## 配置
+---
 
-```json5
-{
-  cron: {
-    enabled: true, // 默认 true
-    store: "~/.openclaw/cron/jobs.json",
-    maxConcurrentRuns: 1, // 默认 1
-  },
-}
-```
-
-完全禁用 cron：
-
-- `cron.enabled: false`（配置）
-- `OPENCLAW_SKIP_CRON=1`（环境）
-
-## CLI 快速开始
-
-一次性提醒（UTC ISO，成功后自动删除）：
-
-```bash
-openclaw cron add \
-  --name "Send reminder" \
-  --at "2026-01-12T18:00:00Z" \
-  --session main \
-  --system-event "Reminder: submit expense report." \
-  --wake now \
-  --delete-after-run
-```
-
-一次性提醒（主会话，立即唤醒）：
-
-```bash
-openclaw cron add \
-  --name "Calendar check" \
-  --at "20m" \
-  --session main \
-  --system-event "Next heartbeat: check calendar." \
-  --wake now
-```
-
-重复隔离作业（传递到 WhatsApp）：
-
-```bash
-openclaw cron add \
-  --name "Morning status" \
-  --cron "0 7 * * *" \
-  --tz "America/Los_Angeles" \
-  --session isolated \
-  --message "Summarize inbox + calendar for today." \
-  --deliver \
-  --channel whatsapp \
-  --to "+15551234567"
-```
-
-重复隔离作业（传递到 Telegram 主题）：
-
-```bash
-openclaw cron add \
-  --name "Nightly summary (topic)" \
-  --cron "0 22 * * *" \
-  --tz "America/Los_Angeles" \
-  --session isolated \
-  --message "Summarize today; send to the nightly topic." \
-  --deliver \
-  --channel telegram \
-  --to "-1001234567890:topic:123"
-```
-
-具有模型和推理覆盖的隔离作业：
-
-```bash
-openclaw cron add \
-  --name "Deep analysis" \
-  --cron "0 6 * * 1" \
-  --tz "America/Los_Angeles" \
-  --session isolated \
-  --message "Weekly deep analysis of project progress." \
-  --model "opus" \
-  --thinking high \
-  --deliver \
-  --channel whatsapp \
-  --to "+15551234567"
-```
-
-代理选择（多代理设置）：
-
-```bash
-# 将作业固定到代理"ops"（如果该代理缺失则回退到默认）
-openclaw cron add --name "Ops sweep" --cron "0 6 * * *" --session isolated --message "Check ops queue" --agent ops
-
-# 切换或清除现有作业的代理
-openclaw cron edit <jobId> --agent ops
-openclaw cron edit <jobId> --clear-agent
-```
-
-手动运行（调试）：
-
-```bash
-openclaw cron run <jobId> --force
-```
-
-编辑现有作业（补丁字段）：
-
-```bash
-openclaw cron edit <jobId> \
-  --message "Updated prompt" \
-  --model "opus" \
-  --thinking low
-```
-
-运行历史：
-
-```bash
-openclaw cron runs --id <jobId> --limit 50
-```
-
-无需创建作业的即时系统事件：
-
-```bash
-openclaw system event --mode now --text "Next heartbeat: check battery."
-```
-
-## 网关 API 表面
-
-- `cron.list`、`cron.status`、`cron.add`、`cron.update`、`cron.remove`
-- `cron.run`（强制或到期）、`cron.runs`
-
-对于无需作业的即时系统事件，请使用 [`openclaw system event`](/cli/system)。
-
-## 故障排除
-
-### "什么都不运行"
-
-- 检查 cron 是否启用：`cron.enabled` 和 `OPENCLAW_SKIP_CRON`。
-- 检查网关是否持续运行（cron 在网关进程内运行）。
-- 对于 `cron` 计划：确认时区（`--tz`）与主机时区。
-
-### Telegram 传递到错误的地方
-
-- 对于论坛主题，使用 `-100…:topic:<id>`，使其明确且无歧义。
-- 如果你在日志或存储的"最后路由"目标中看到 `telegram:...` 前缀，那是正常的；cron 传递接受它们并且仍然正确解析主题 ID。
+**定时任务让 OpenClaw 自动化管理更加智能！** 🦞
