@@ -1,368 +1,909 @@
 ---
-summary: "测试套件：单元/端到端/实时测试、Docker 运行器以及每项测试涵盖的内容"
+summary: "OpenClaw 测试完全指南：单元测试、端到端测试、实时测试、Docker 运行器和模型矩阵的完整测试体系"
 read_when:
-  - "在本地或 CI 中运行测试"
-  - "为模型/提供商错误添加回归测试"
-  - "调试网关 + 代理行为"
-title: "测试"
+  - 你需要理解 OpenClaw 的测试体系和最佳实践
+  - 你想在本地或 CI 中运行测试
+  - 你需要为模型和提供商问题添加回归测试
+  - 你在调试网关和代理行为
+title: "测试指南"
 ---
 
-# 测试
+# 🧪 OpenClaw 测试完全指南
 
-OpenClaw 有三个 Vitest 套件（单元/集成、端到端、实时）和一小套 Docker 运行器。
+> **学习目标**：完成本章节学习后，你将能够深入理解 OpenClaw 的三层测试体系，掌握从单元测试到实时测试的完整方法论，理解测试策略的选择依据，并能够为各种场景设计和实施有效的测试方案。
 
-本文档是"我们如何测试"指南：
+---
 
-- 每个套件涵盖什么（以及它故意**不**涵盖什么）
-- 常见工作流程要运行的命令（本地、预推送、调试）
-- 实时测试如何发现凭据并选择模型/提供商
-- 如何为真实的模型/提供商问题添加回归测试
+## 为什么要建立测试体系
 
-## 快速开始
+在深入技术细节之前，我们需要先理解**为什么 OpenClaw 需要如此复杂的测试体系**。作为连接多渠道、多模型的智能助手系统，OpenClaw 的复杂性决定了测试不是可选的「额外工作」，而是确保系统质量的「基础设施」。
 
-大多数时候：
+### 测试金字塔
 
-- 完整门禁（推送前预期）：`pnpm lint && pnpm build && pnpm test`
+OpenClaw 采用经典的**测试金字塔**模型：
 
-当你修改测试或想要更多信心时：
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      测试金字塔                                   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│                         ▲                                       │
+│                    ┌─────────────────────────┐                 │
+│                    │      实时测试 (Live)     │   比例：5-10%   │
+│                    │  真实提供商 + 真实模型    │                 │
+│                    │  最高信任度、最高成本    │                 │
+│                    └───────────┬─────────────┘                 │
+│                                │                                 │
+│                    ┌───────────┴─────────────┐                 │
+│                    │    端到端测试 (E2E)     │   比例：15-25%   │
+│                    │   多实例 + 网络交互     │                 │
+│                    │   较高信任度、中等成本  │                 │
+│                    └───────────┬─────────────┘                 │
+│                                │                                 │
+│                    ┌───────────┴─────────────┐                 │
+│                    │     单元/集成测试         │   比例：65-80%  │
+│                    │   纯单元 + 进程内集成     │                 │
+│                    │   最高频率、最低成本     │                 │
+│                    └─────────────────────────┘                 │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-- 覆盖率门禁：`pnpm test:coverage`
-- 端到端套件：`pnpm test:e2e`
+| 测试类型 | 频率 | 速度 | 隔离度 | 信任度 | 成本 |
+|----------|------|------|--------|--------|------|
+| **单元测试** | 每提交 | 毫秒级 | 完全隔离 | 低 | $ |
+| **集成测试** | 每提交 | 秒级 | 进程隔离 | 中 | $$ |
+| **E2E 测试** | 每 PR | 分钟级 | 环境隔离 | 高 | $$$ |
+| **实时测试** | 按需 | 分钟级 | 无隔离 | 最高 | $$$$ |
 
-调试真实的提供商/模型（需要真实凭据）时：
+### OpenClaw 测试体系的设计目标
 
-- 实时套件（模型 + 网关工具/图像探测）：`pnpm test:live`
+1. **快速反馈**：单元测试毫秒级反馈，不阻塞开发流程
+2. **安全回归**：集成测试确保核心功能不受影响
+3. **端到端验证**：E2E 测试验证完整用户流程
+4. **真实验证**：实时测试验证与真实服务的集成
 
-提示：当你只需要一个失败的用例时，优先通过下面描述的允许列表环境变量缩小实时测试范围。
+---
 
-## 测试套件（在哪里运行）
+## 认知负荷管理：学习路径设计
 
-将套件视为"越来越真实"（也越来越不稳定/昂贵）：
+```
+测试技能金字塔：
 
-### 单元 / 集成（默认）
+                    ┌─────────────────────────┐
+                    │   专家级：测试策略设计   │  CI/CD 集成、测试覆盖优化
+                    └─────────────────────────┘
+                         ▲
+                    ┌─────────────────────────┐
+                    │   高级：实时测试       │  模型矩阵、探针测试
+                    └─────────────────────────┘
+                         ▲
+                    ┌─────────────────────────┐
+                    │   中级：E2E 测试       │  网关冒烟测试、CI 集成
+                    └─────────────────────────┘
+                         ▲
+                    ┌─────────────────────────┐
+                    │   初级：单元测试       │  基础测试编写、运行
+                    └─────────────────────────┘
+```
 
-- 命令：`pnpm test`
-- 配置：`vitest.config.ts`
-- 文件：`src/**/*.test.ts`
-- 范围：
-  - 纯单元测试
-  - 进程内集成测试（网关身份验证、路由、工具、解析、配置）
-  - 已知错误的确定性回归测试
-- 期望：
-  - 在 CI 中运行
-  - 不需要真实密钥
-  - 应该快速且稳定
+**建议学习路径**：
+- 新手：从单元测试开始，理解测试基础
+- 开发者：掌握集成测试和 E2E 测试
+- 高级用户：深入实时测试和模型验证
+- 架构师：设计测试策略和 CI/CD 流程
 
-### 端到端（网关冒烟测试）
+---
 
-- 命令：`pnpm test:e2e`
-- 配置：`vitest.e2e.config.ts`
-- 文件：`src/**/*.e2e.test.ts`
-- 范围：
-  - 多实例网关端到端行为
-  - WebSocket/HTTP 表面、节点配对和更重的网络
-- 期望：
-  - 在 CI 中运行（当在管道中启用时）
-  - 不需要真实密钥
-  - 比单元测试有更多移动部分（可能更慢）
+## 第一部分：快速开始（⭐ 入门级）
 
-### 实时（真实提供商 + 真实模型）
+### 学习目标
 
-- 命令：`pnpm test:live`
-- 配置：`vitest.live.config.ts`
-- 文件：`src/**/*.live.test.ts`
-- 默认：**启用** by `pnpm test:live`（设置 `OPENCLAW_LIVE_TEST=1`）
-- 范围：
-  - "这个提供商/模型今天用真实凭据真的能工作吗？"
-  - 捕获提供商格式更改、工具调用怪癖、身份验证问题和速率限制行为
-- 期望：
-  - 设计上在 CI 中不稳定（真实网络、真实提供商策略、配额、中断）
-  - 花钱 / 使用速率限制
-  - 优先运行缩小子集而不是"一切"
-  - 实时运行将获取 `~/.profile` 以获取缺失的 API 密钥
-  - Anthropic 密钥轮换：设置 `OPENCLAW_LIVE_ANTHROPIC_KEYS="sk-...,sk-..."`（或 `OPENCLAW_LIVE_ANTHROPIC_KEY=sk-...`）或多个 `ANTHROPIC_API_KEY*` 变量；测试将在速率限制时重试
+完成本节学习后，你将能够：
+- [ ] 理解 OpenClaw 的测试命令
+- [ ] 运行基础测试套件
+- [ ] 理解测试结果的含义
+- [ ] 掌握基本的测试调试方法
 
-## 我应该运行哪个套件？
+### 1.1 快速命令参考
 
-使用此决策表：
-
-- 编辑逻辑/测试：运行 `pnpm test`（如果你改变了很多，也运行 `pnpm test:coverage`）
-- 触及网关网络 / WS 协议 / 配对：添加 `pnpm test:e2e`
-- 调试"我的机器人挂了" / 提供商特定失败 / 工具调用：运行缩小的 `pnpm test:live`
-
-## 实时：模型冒烟（配置文件密钥）
-
-实时测试分为两层，以便我们能够隔离失败：
-
-- "直接模型"告诉我们提供商/模型使用给定密钥是否能回答。
-- "网关冒烟"告诉我们完整的网关+代理管道对于该模型是否工作（会话、历史、工具、沙箱策略等）。
-
-### 第 1 层：直接模型完成（无网关）
-
-- 测试：`src/agents/models.profiles.live.test.ts`
-- 目标：
-  - 枚举发现的模型
-  - 使用 `getApiKeyForModel` 选择你有凭据的模型
-  - 对每个模型运行一个小完成（并在需要时进行有针对性的回归测试）
-- 如何启用：
-  - `pnpm test:live`（或如果直接调用 Vitest，则设置 `OPENCLAW_LIVE_TEST=1`）
-- 设置 `OPENCLAW_LIVE_MODELS=modern`（或 `all`，modern 的别名）以实际运行此套件；否则它会跳过以保持 `pnpm test:live` 专注于网关冒烟
-- 如何选择模型：
-  - `OPENCLAW_LIVE_MODELS=modern` 运行现代允许列表（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.1、Grok 4）
-  - `OPENCLAW_LIVE_MODELS=all` 是现代允许列表的别名
-  - 或 `OPENCLAW_LIVE_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-5,..."`（逗号允许列表）
-- 如何选择提供商：
-  - `OPENCLAW_LIVE_PROVIDERS="google,google-antigravity,google-gemini-cli"`（逗号允许列表）
-- 密钥来自哪里：
-  - 默认：配置文件存储和环境回退
-  - 设置 `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` 以强制仅使用**配置文件存储**
-- 为什么存在：
-  - 将"提供商 API 损坏 / 密钥无效"与"网关代理管道损坏"分开
-  - 包含小的、隔离的回归测试（示例：OpenAI Responses/Codex Responses 推理重放 + 工具调用流程）
-
-### 第 2 层：网关 + 开发代理冒烟（"@openclaw" 实际做什么）
-
-- 测试：`src/gateway/gateway-models.profiles.live.test.ts`
-- 目标：
-  - 启动进程内网关
-  - 创建/修补 `agent:dev:*` 会话（每次运行模型覆盖）
-  - 迭代带密钥的模型并断言：
-    - "有意义"的响应（无工具）
-    - 真实的工具调用工作（读取探测）
-    - 可选的额外工具探测（exec+读取探测）
-    - OpenAI 回归路径（仅工具调用 → 后续）保持工作
-- 探测详情（以便你可以快速解释失败）：
-  - `read` 探测：测试在工作区中写入一个随机数文件，并要求代理 `read` 它并回显随机数。
-  - `exec+read` 探测：测试要求代理 `exec`-write 将随机数写入临时文件，然后 `read` 它回来。
-  - 图像探测：测试附加一个生成的 PNG（猫 + 随机代码）并期望模型返回 `cat <CODE>`。
-  - 实现参考：`src/gateway/gateway-models.profiles.live.test.ts` 和 `src/gateway/live-image-probe.ts`。
-- 如何启用：
-  - `pnpm test:live`（或如果直接调用 Vitest，则设置 `OPENCLAW_LIVE_TEST=1`）
-- 如何选择模型：
-  - 默认：现代允许列表（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.1、Grok 4）
-  - `OPENCLAW_LIVE_GATEWAY_MODELS=all` 是现代允许列表的别名
-  - 或设置 `OPENCLAW_LIVE_GATEWAY_MODELS="provider/model"`（或逗号列表）以缩小范围
-- 如何选择提供商（避免"OpenRouter 一切"）：
-  - `OPENCLAW_LIVE_GATEWAY_PROVIDERS="google,google-antigravity,google-gemini-cli,openai,anthropic,zai,minimax"`（逗号允许列表）
-- 工具 + 图像探测在此实时测试中始终开启：
-  - `read` 探测 + `exec+read` 探测（工具压力测试）
-  - 当模型广告图像输入支持时运行图像探测
-  - 流程（高级）：
-    - 测试生成一个带有"CAT" + 随机代码的小 PNG（`src/gateway/live-image-probe.ts`）
-    - 通过 `agent` `attachments: [{ mimeType: "image/png", content: "<base64>" }]` 发送
-    - 网关将附件解析为 `images[]`（`src/gateway/server-methods/agent.ts` + `src/gateway/chat-attachments.ts`）
-    - 嵌入式代理将多模态用户消息转发给模型
-    - 断言：回复包含 `cat` + 代码（OCR 容忍度：允许轻微错误）
-
-提示：要查看你可以在机器上测试什么（以及确切的 `provider/model` id），运行：
+**常用测试命令**：
 
 ```bash
+# 完整门禁测试（推送前必跑）
+pnpm lint && pnpm build && pnpm test
+
+# 仅运行单元/集成测试
+pnpm test
+
+# 运行单元测试并生成覆盖率
+pnpm test:coverage
+
+# 运行端到端测试
+pnpm test:e2e
+
+# 运行实时测试（需要真实凭据）
+pnpm test:live
+
+# 运行特定测试文件
+pnpm test src/gateway/gateway.test.ts
+
+# 运行特定测试
+pnpm test -- -t "test name"
+```
+
+**测试配置位置**：
+
+| 文件 | 用途 |
+|------|------|
+| `vitest.config.ts` | 单元/集成测试配置 |
+| `vitest.e2e.config.ts` | E2E 测试配置 |
+| `vitest.live.config.ts` | 实时测试配置 |
+
+### 1.2 测试文件结构
+
+```
+src/
+├── *.test.ts           # 单元/集成测试
+├── *.e2e.test.ts       # 端到端测试
+├── *.live.test.ts      # 实时测试
+└── gateway/
+    ├── gateway.test.ts              # Gateway 基础测试
+    ├── gateway.tool-calling.test.ts # 工具调用测试
+    └── gateway-models.live.test.ts  # 模型实时测试
+```
+
+### 1.3 测试输出解读
+
+**测试结果示例**：
+
+```
+Test Files    15 passed, 15 total
+Tests         247 passed, 247 total
+Time          12.45s
+```
+
+**结果含义**：
+
+| 指标 | 说明 | 期望值 |
+|------|------|--------|
+| Test Files | 测试文件数 | 根据变更调整 |
+| Tests | 测试用例数 | 根据变更调整 |
+| Time | 运行时间 | < 30s（单元测试） |
+| Coverage | 代码覆盖率 | > 70% |
+
+---
+
+## 第二部分：测试套件详解（⭐⭐ 进阶级）
+
+### 学习目标
+
+完成本节学习后，你将能够：
+- [ ] 理解各层测试的范围和职责
+- [ ] 选择合适的测试类型
+- [ ] 理解测试的预期行为
+- [ ] 配置测试环境
+
+### 2.1 单元/集成测试
+
+**范围**：
+
+| 测试类型 | 说明 | 示例 |
+|----------|------|------|
+| **纯单元测试** | 测试单个函数/类 | `add(2, 3) === 5` |
+| **进程内集成** | 测试组件交互 | Gateway 认证流程 |
+| **回归测试** | 已知 Bug 的确定性测试 | 修复后的 Bug 重现 |
+
+**配置**：
+
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    // 测试环境
+    environment: 'node',
+    
+    // 全局测试超时
+    testTimeout: 10000,
+    
+    // 并发配置
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        maxForks: 16  // 最大并发数
+      }
+    },
+    
+    // 覆盖率配置
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 70,
+        statements: 70
+      }
+    }
+  }
+})
+```
+
+**预期行为**：
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              单元/集成测试预期行为                          │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│   ✅ 在 CI 中运行                                        │
+│   ✅ 不需要真实 API 密钥                                 │
+│   ✅ 快速且稳定（< 30s）                                 │
+│   ✅ 确定性结果（无随机失败）                              │
+│   ✅ 隔离性好（不影响其他测试）                            │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 2.2 端到端测试（E2E）
+
+**范围**：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    E2E 测试范围                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   1. 多实例 Gateway 行为                                      │
+│      - 实例间通信                                            │
+│      - 状态同步                                              │
+│                                                              │
+│   2. WebSocket/HTTP 表面                                    │
+│      - 连接建立                                              │
+│      - 消息传递                                              │
+│      - 断开处理                                              │
+│                                                              │
+│   3. 节点配对                                               │
+│      - 发现流程                                              │
+│      - 认证流程                                              │
+│                                                              │
+│   4. 网络交互                                               │
+│      - 端口绑定                                              │
+│      - 连接池                                               │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**配置**：
+
+```typescript
+// vitest.e2e.config.ts
+export default defineConfig({
+  test: {
+    environment: 'node',
+    
+    // E2E 测试专用配置
+    e2e: {
+      // 测试间等待时间
+      waitForDeployTimeout: 60000,
+      
+      // 全局测试超时
+      testTimeout: 120000
+    },
+    
+    // 更严格的资源限制
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        maxThreads: 4,
+        minThreads: 1
+      }
+    }
+  }
+})
+```
+
+**预期行为**：
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              E2E 测试预期行为                              │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│   ✅ 在 CI 中运行（当启用时）                              │
+│   ✅ 不需要真实 API 密钥                                   │
+│   ✅ 移动部件较多（可能较慢）                               │
+│   ✅ 需要环境隔离                                          │
+│   ✅ 可能受网络影响                                        │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 2.3 实时测试（Live）
+
+**核心设计**：
+
+实时测试是 OpenClaw 测试体系的**最后一公里**，验证与真实服务的集成：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    实时测试设计                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   设计原则：                                                  │
+│   1. 按需运行（不强制在每次提交时）                           │
+│   2. 真实凭据（使用 ~/.profile 或配置文件）                   │
+│   3. 成本意识（注意 API 配额和费用）                         │
+│   4. 失败容忍（网络和服务可能不稳定）                         │
+│                                                              │
+│   ⚠️ 重要：实时测试不保证在 CI 中稳定                         │
+│   - 真实网络延迟                                             │
+│   - 提供商策略变化                                           │
+│   - 速率限制                                                 │
+│   - 服务中断                                                 │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**启用方式**：
+
+```bash
+# 方法一：环境变量
+OPENCLAW_LIVE_TEST=1 pnpm test:live
+
+# 方法二：直接配置
+pnpm test:live
+#（自动设置 OPENCLAW_LIVE_TEST=1）
+```
+
+**凭据发现**：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    实时测试凭据发现                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   优先级（与 CLI 相同）：                                     │
+│   1. 进程环境变量                                            │
+│   2. ~/.profile 导出                                         │
+│   3. 配置文件存储                                             │
+│   4. 交互式输入（如果未找到）                                 │
+│                                                              │
+│   建议：确保 ~/.profile 包含你的 API 密钥                     │
+│   export ANTHROPIC_API_KEY="sk-ant-..."                      │
+│   export OPENAI_API_KEY="sk-..."                             │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 第三部分：实时测试深入（⭐⭐⭐ 高级）
+
+### 学习目标
+
+完成本节学习后，你将能够：
+- [ ] 理解实时测试的两层架构
+- [ ] 配置模型选择和测试探针
+- [ ] 理解 Anthropic 设置令牌测试
+- [ ] 掌握 CLI 后端测试
+
+### 3.1 实时测试的两层架构
+
+**设计理念**：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  实时测试两层架构                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   Layer 1：直接模型测试                                       │
+│   ┌─────────────────────────────────────────────────────┐    │
+│   │  目标：验证提供商/模型 API 是否正常                   │    │
+│   │  范围：API 调用、响应解析、错误处理                   │    │
+│   │  文件：src/agents/models.profiles.live.test.ts     │    │
+│   │  速度：快速（无需完整网关栈）                         │    │
+│   └─────────────────────────────────────────────────────┘    │
+│                           │                                  │
+│                           ▼                                  │
+│   Layer 2：网关冒烟测试                                       │
+│   ┌─────────────────────────────────────────────────────┐    │
+│   │  目标：验证完整网关 + 代理管道是否正常                │    │
+│   │  范围：会话、历史、工具调用、工具调用流程              │    │
+│   │  文件：src/gateway/gateway-models.profiles.live.test.ts│    │
+│   │  速度：较慢（完整栈）                                 │    │
+│   └─────────────────────────────────────────────────────┘    │
+│                                                              │
+│   分离原因：                                                  │
+│   - 快速定位问题层级（API vs 网关）                           │
+│   - 减少调试时间                                             │
+│   - 降低测试成本                                             │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 3.2 模型选择与环境配置
+
+**模型选择控制**：
+
+```bash
+# 使用现代模型列表（推荐）
+OPENCLAW_LIVE_MODELS=modern pnpm test:live
+
+# 运行所有测试模型
+OPENCLAW_LIVE_MODELS=all pnpm test:live
+
+# 自定义模型列表
+OPENCLAW_LIVE_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-5" pnpm test:live
+
+# 指定提供商
+OPENCLAW_LIVE_PROVIDERS="google,openai,anthropic" pnpm test:live
+```
+
+**提供商选择**：
+
+| 提供商 | ID | 特点 |
+|--------|-----|------|
+| OpenAI | `openai` | 稳定、功能全 |
+| Anthropic | `anthropic` | 高质量、长上下文 |
+| Google | `google` | Gemini 系列 |
+| OpenRouter | `openrouter` | 模型聚合 |
+| Z.AI | `zai` | GLM 系列 |
+
+**密钥来源控制**：
+
+```bash
+# 仅使用配置文件存储的密钥
+OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1 pnpm test:live
+
+# 允许环境变量
+pnpm test:live
+```
+
+### 3.3 测试探针详解
+
+**工具调用探针**：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    工具调用探针                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   Read 探针：                                                │
+│   1. 在工作区写入随机数文件                                  │
+│   2. 要求代理读取并回显内容                                  │
+│   3. 验证内容正确性                                          │
+│                                                              │
+│   Exec+Read 探针：                                          │
+│   1. 要求代理执行命令写入随机数                              │
+│   2. 读取并回显内容                                          │
+│   3. 验证命令执行和文件读取                                  │
+│                                                              │
+│   图像探针：                                                 │
+│   1. 生成带随机码的 PNG 图像                                 │
+│   2. 作为附件发送给代理                                      │
+│   3. 要求代理识别并返回码                                    │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**探针测试示例**：
+
+```typescript
+// Read 探针测试
+test('read probe', async () => {
+  // 1. 写入随机数文件
+  const randomCode = generateRandomCode();
+  await writeFile('probe-test.txt', randomCode);
+  
+  // 2. 发送读取请求
+  const response = await sendToAgent(`Read probe-test.txt and echo: ${randomCode}`);
+  
+  // 3. 验证响应
+  expect(response).toContain(randomCode);
+});
+```
+
+### 3.4 Anthropic 设置令牌测试
+
+**测试范围**：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Anthropic 设置令牌测试                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   目标：                                                      │
+│   验证 Claude Code CLI 设置令牌能够正常完成 Anthropic 提示    │
+│                                                              │
+│   文件：src/agents/anthropic.setup-token.live.test.ts       │
+│                                                              │
+│   启用方式：                                                  │
+│   OPENCLAW_LIVE_SETUP_TOKEN=1 pnpm test:live               │
+│                                                              │
+│   令牌来源：                                                  │
+│   - 配置文件：OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=profile-id   │
+│   - 原始令牌：OPENCLAW_LIVE_SETUP_TOKEN_VALUE=sk-ant-...    │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 3.5 CLI 后端测试
+
+**测试范围**：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CLI 后端测试                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   目标：                                                      │
+│   验证网关 + 代理管道使用本地 CLI 后端正常工作                  │
+│                                                              │
+│   文件：src/gateway/gateway-cli-backend.live.test.ts        │
+│                                                              │
+│   启用方式：                                                  │
+│   OPENCLAW_LIVE_CLI_BACKEND=1 pnpm test:live               │
+│                                                              │
+│   默认配置：                                                  │
+│   - 模型：claude-cli/claude-sonnet-4-5                      │
+│   - 命令：claude                                             │
+│   - 参数：["-p", "--output-format", "json"]                 │
+│                                                              │
+│   覆盖选项：                                                  │
+│   - 模型：OPENCLAW_LIVE_CLI_BACKEND_MODEL                   │
+│   - 命令：OPENCLAW_LIVE_CLI_BACKEND_COMMAND                 │
+│   - 图像探针：OPENCLAW_LIVE_CLI_BACKEND_IMAGE_PROBE         │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 第四部分：模型矩阵（⭐⭐⭐⭐）
+
+### 学习目标
+
+完成本节学习后，你将能够：
+- [ ] 理解推荐测试的模型列表
+- [ ] 根据场景选择测试模型
+- [ ] 掌握模型发现命令
+- [ ] 理解不同提供商的特点
+
+### 4.1 推荐模型测试矩阵
+
+**现代冒烟集（工具调用 + 图像）**：
+
+| 提供商 | 模型 ID | 用途 | 必需性 |
+|--------|---------|------|--------|
+| OpenAI | `openai/gpt-5.2` | 主要测试 | ✅ 推荐 |
+| OpenAI | `openai-codex/gpt-5.2` | Codex 测试 | ⭐ 可选 |
+| Anthropic | `anthropic/claude-opus-4-5` | 主要测试 | ✅ 推荐 |
+| Anthropic | `anthropic/claude-sonnet-4-5` | 备用测试 | ⭐ 可选 |
+| Google | `google/gemini-3-pro-preview` | Gemini API | ✅ 推荐 |
+| Google | `google/gemini-3-flash-preview` | 快速测试 | ✅ 推荐 |
+| Google Antigravity | `google-antigravity/claude-opus-4-5-thinking` | OAuth 测试 | ⭐ 可选 |
+| Z.AI | `zai/glm-4.7` | 国产模型 | ⭐ 可选 |
+| MiniMax | `minimax/minimax-m2.1` | 国产模型 | ⭐ 可选 |
+
+**推荐测试命令**：
+
+```bash
+# 完整冒烟测试
+OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-5,google/gemini-3-pro-preview,google/gemini-3-flash-preview" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts
+```
+
+### 4.2 模型发现
+
+**查看可用模型**：
+
+```bash
+# 列出所有可用模型
 openclaw models list
+
+# JSON 格式输出（程序处理）
 openclaw models list --json
+
+# 按提供商筛选
+openclaw models list --provider anthropic
+
+# 筛选支持图像的模型
+openclaw models list | grep -i image
 ```
 
-## 实时：Anthropic 设置令牌冒烟
+### 4.3 提供商特点对比
 
-- 测试：`src/agents/anthropic.setup-token.live.test.ts`
-- 目标：验证 Claude Code CLI 设置令牌（或粘贴的设置令牌配置文件）可以完成 Anthropic 提示。
-- 启用：
-  - `pnpm test:live`（或如果直接调用 Vitest，则设置 `OPENCLAW_LIVE_TEST=1`）
-  - `OPENCLAW_LIVE_SETUP_TOKEN=1`
-- 令牌来源（任选其一）：
-  - 配置文件：`OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-token-test`
-  - 原始令牌：`OPENCLAW_LIVE_SETUP_TOKEN_VALUE=sk-ant-oat01-...`
-- 模型覆盖（可选）：
-  - `OPENCLAW_LIVE_SETUP_TOKEN_MODEL=anthropic/claude-opus-4-5`
+| 提供商 | 优势 | 劣势 | 适用场景 |
+|--------|------|------|----------|
+| **OpenAI** | 稳定、功能全、文档完善 | 成本较高 | 通用场景 |
+| **Anthropic** | 长上下文、高质量 | 配额限制 | 复杂推理 |
+| **Google** | 多模态优秀、价格低 | 快速发展中 | 图像任务 |
+| **OpenRouter** | 模型多样、灵活 | 延迟较高 | 实验性测试 |
 
-设置示例：
+---
+
+## 第五部分：Docker 运行器
+
+### 学习目标
+
+完成本节学习后，你将能够：
+- [ ] 使用 Docker 运行测试
+- [ ] 配置 Docker 测试环境
+- [ ] 理解 Docker 测试的价值
+- [ ] 解决 Docker 相关问题
+
+### 5.1 Docker 测试命令
+
+| 命令 | 用途 | 说明 |
+|------|------|------|
+| `pnpm test:docker:live-models` | 直接模型测试 | 挂载配置目录 |
+| `pnpm test:docker:live-gateway` | 网关测试 | 完整栈测试 |
+| `pnpm test:docker:onboard` | 向导测试 | TTY 交互测试 |
+| `pnpm test:docker:gateway-network` | 网络测试 | 双容器测试 |
+| `pnpm test:docker:plugins` | 插件测试 | 扩展测试 |
+
+**环境变量配置**：
 
 ```bash
-openclaw models auth paste-token --provider anthropic --profile-id anthropic:setup-token-test
-OPENCLAW_LIVE_SETUP_TOKEN=1 OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-token-test pnpm test:live src/agents/anthropic.setup-token.live.test.ts
+# 配置目录（默认：~/.openclaw）
+OPENCLAW_CONFIG_DIR=/path/to/config pnpm test:docker:live-gateway
+
+# 工作区目录（默认：~/.openclaw/workspace）
+OPENCLAW_WORKSPACE_DIR=/path/to/workspace pnpm test:docker:live-gateway
+
+# Profile 文件
+OPENCLAW_PROFILE_FILE=~/.profile pnpm test:docker:live-gateway
+
+# 限制测试范围
+OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2" pnpm test:docker:live-gateway
+
+# 强制使用配置文件密钥
+OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1 pnpm test:docker:live-gateway
 ```
 
-## 实时：CLI 后端冒烟（Claude Code CLI 或其他本地 CLI）
+### 5.2 Docker 测试的价值
 
-- 测试：`src/gateway/gateway-cli-backend.live.test.ts`
-- 目标：使用本地 CLI 后端验证网关 + 代理管道，而不触及你的默认配置。
-- 启用：
-  - `pnpm test:live`（或如果直接调用 Vitest，则设置 `OPENCLAW_LIVE_TEST=1`）
-  - `OPENCLAW_LIVE_CLI_BACKEND=1`
-- 默认值：
-  - 模型：`claude-cli/claude-sonnet-4-5`
-  - 命令：`claude`
-  - 参数：`["-p","--output-format","json","--dangerously-skip-permissions"]`
-- 覆盖（可选）：
-  - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-opus-4-5"`
-  - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="codex-cli/gpt-5.2-codex"`
-  - `OPENCLAW_LIVE_CLI_BACKEND_COMMAND="/full/path/to/claude"`
-  - `OPENCLAW_LIVE_CLI_BACKEND_ARGS='["-p","--output-format","json","--permission-mode","bypassPermissions"]'`
-  - `OPENCLAW_LIVE_CLI_BACKEND_CLEAR_ENV='["ANTHROPIC_API_KEY","ANTHROPIC_API_KEY_OLD"]'`
-  - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_PROBE=1` 发送真实的图像附件（路径被注入到提示中）。
-  - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_ARG="--image"` 将图像文件路径作为 CLI 参数传递，而不是提示注入。
-  - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_MODE="repeat"`（或 `"list"`）来控制当设置了 `IMAGE_ARG` 时如何传递图像参数。
-  - `OPENCLAW_LIVE_CLI_BACKEND_RESUME_PROBE=1` 发送第二轮并验证恢复流程。
-  - `OPENCLAW_LIVE_CLI_BACKEND_DISABLE_MCP_CONFIG=0` 保持 Claude Code CLI MCP 配置启用（默认使用临时空文件禁用 MCP 配置）。
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Docker 测试的优势                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   1. 环境一致性                                              │
+│      - 标准化测试环境                                         │
+│      - 消除「在我机器上能运行」问题                            │
+│                                                              │
+│   2. 隔离性                                                  │
+│      - 不影响主机配置                                         │
+│      - 干净的依赖环境                                         │
+│                                                              │
+│   3. 可重复性                                                │
+│      - 多次运行结果一致                                       │
+│      - 便于问题复现                                           │
+│                                                              │
+│   4. CI/CD 集成                                              │
+│      - 无缝集成 CI 流程                                      │
+│      - 标准化部署验证                                        │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
 
-示例：
+---
+
+## 第六部分：添加回归测试
+
+### 学习目标
+
+完成本节学习后，你将能够：
+- [ ] 理解何时需要添加回归测试
+- [ ] 掌握回归测试的编写方法
+- [ ] 理解测试分层策略
+- [ ] 优化测试覆盖
+
+### 6.1 何时添加回归测试
+
+**触发条件**：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  回归测试触发条件                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   ✅ 发现并修复了提供商/模型 问题                             │
+│   ✅ 添加了新的功能模块                                       │
+│   ✅ 重构了核心逻辑                                          │
+│   ✅ 修复了用户报告的 Bug                                     │
+│   ✅ 变更影响多个组件                                         │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 6.2 测试分层策略
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  回归测试分层策略                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   问题类型              →  测试层  →  选择理由               │
+│   ──────────────────────────────────────────────────────── │
+│   提供商请求转换问题    →  直接模型 →  最小依赖              │
+│   网关管道问题         →  网关测试 →  验证完整栈             │
+│   集成问题             →  E2E 测试 →  端到端验证              │
+│   速率限制/认证        →  实时测试 →  真实环境验证           │
+│                                                              │
+│   原则：                                                    │
+│   - 优先选择依赖最少、速度最快的测试层                        │
+│   - 仅当需要真实环境时才使用实时测试                          │
+│   - 保持测试套件的平衡                                        │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 6.3 测试模板
+
+**单元测试模板**：
+
+```typescript
+// src/utils/math.test.ts
+import { describe, it, expect } from 'vitest';
+import { add } from '../math';
+
+describe('math utils', () => {
+  describe('add', () => {
+    it('should add two positive numbers', () => {
+      expect(add(2, 3)).toBe(5);
+    });
+    
+    it('should handle negative numbers', () => {
+      expect(add(-1, 1)).toBe(0);
+    });
+  });
+});
+```
+
+**实时回归测试模板**：
+
+```typescript
+// src/providers/openai-format.live.test.ts
+import { test, expect } from 'vitest';
+
+test('openai response format regression', async () => {
+  // 设置测试凭据
+  process.env.OPENAI_API_KEY = process.env.OPENCLAW_LIVE_OPENAI_KEY;
+  
+  // 执行测试
+  const response = await callOpenAI('Hello');
+  
+  // 验证格式（这是我们修复的问题）
+  expect(response).toHaveProperty('choices');
+  expect(response.choices[0]).toHaveProperty('message');
+});
+```
+
+---
+
+## 第七部分：故障排查速查
+
+### 常见问题与解决方案
+
+**问题一：测试超时**
+
+**排查步骤**：
 
 ```bash
-OPENCLAW_LIVE_CLI_BACKEND=1 \
-  OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-sonnet-4-5" \
-  pnpm test:live src/gateway/gateway-cli-backend.live.test.ts
+# 增加超时时间
+pnpm test -- --testTimeout=30000
+
+# 检查网络连接
+curl -I https://api.anthropic.com
+
+# 验证 API 密钥
+echo $ANTHROPIC_API_KEY | head -c 10
 ```
 
-### 推荐的实时配方
+**问题二：实时测试找不到凭据**
 
-狭窄、明确的允许列表最快、最稳定：
+**排查步骤**：
 
-- 单模型，直接（无网关）：
-  - `OPENCLAW_LIVE_MODELS="openai/gpt-5.2" pnpm test:live src/agents/models.profiles.live.test.ts`
+```bash
+# 检查环境变量
+env | grep API_KEY
 
-- 单模型，网关冒烟：
-  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+# 检查配置文件
+cat ~/.openclaw/credentials/openai/api-key.json
 
-- 跨多个提供商的工具调用：
-  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-5,google/gemini-3-flash-preview,zai/glm-4.7,minimax/minimax-m2.1" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+# 测试凭据获取
+OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1 pnpm test:live
 
-- Google 专注（Gemini API 密钥 + Antigravity）：
-  - Gemini（API 密钥）：`OPENCLAW_LIVE_GATEWAY_MODELS="google/gemini-3-flash-preview" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
-  - Antigravity（OAuth）：`OPENCLAW_LIVE_GATEWAY_MODELS="google-antigravity/claude-opus-4-5-thinking,google-antigravity/gemini-3-pro-high" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+# 检查 ~/.profile
+cat ~/.profile | grep API_KEY
+```
 
-注意：
+**问题三：测试覆盖率不达标**
 
-- `google/...` 使用 Gemini API（API 密钥）。
-- `google-antigravity/...` 使用 Antigravity OAuth 桥接（Cloud Code Assist 风格的代理端点）。
-- `google-gemini-cli/...` 使用你机器上的本地 Gemini CLI（单独的身份验证和工具怪癖）。
-- Gemini API vs Gemini CLI：
-  - API：OpenClaw 通过 HTTP 调用 Google 托管的 Gemini API（API 密钥 / 配置文件身份验证）；这就是大多数用户所说的"Gemini"。
-  - CLI：OpenClaw 外壳到本地 `gemini` 二进制文件；它有自己的身份验证，可能表现不同（流式/工具支持/版本偏差）。
+**解决方案**：
 
-## 实时：模型矩阵（我们涵盖什么）
+```bash
+# 运行覆盖率报告
+pnpm test:coverage
 
-没有固定的"CI 模型列表"（实时是选择加入），但这些是**推荐**的模型，用于在有密钥的开发机器上定期覆盖。
+# 查看详细报告
+open coverage/index.html
 
-### 现代冒烟集（工具调用 + 图像）
+# 添加缺失测试
+# 根据报告补全测试用例
+```
 
-这是我们期望保持工作的"常见模型"运行：
+**问题四：E2E 测试不稳定**
 
-- OpenAI（非 Codex）：`openai/gpt-5.2`（可选：`openai/gpt-5.1`）
-- OpenAI Codex：`openai-codex/gpt-5.2`（可选：`openai-codex/gpt-5.2-codex`）
-- Anthropic：`anthropic/claude-opus-4-5`（或 `anthropic/claude-sonnet-4-5`）
-- Google（Gemini API）：`google/gemini-3-pro-preview` 和 `google/gemini-3-flash-preview`（避免较旧的 Gemini 2.x 模型）
-- Google（Antigravity）：`google-antigravity/claude-opus-4-5-thinking` 和 `google-antigravity/gemini-3-flash`
-- Z.AI（GLM）：`zai/glm-4.7`
-- MiniMax：`minimax/minimax-m2.1`
+**排查步骤**：
 
-使用工具 + 图像运行网关冒烟：
-`OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,openai-codex/gpt-5.2,anthropic/claude-opus-4-5,google/gemini-3-pro-preview,google/gemini-3-flash-preview,google-antigravity/claude-opus-4-5-thinking,google-antigravity/gemini-3-flash,zai/glm-4.7,minimax/minimax-m2.1" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+```bash
+# 单独运行失败的测试
+pnpm test:e2e src/gateway/failing-test.e2e.test.ts
 
-### 基线：工具调用（读取 + 可选 Exec）
+# 增加等待时间
+pnpm test:e2e --testTimeout=120000
 
-每个提供商系列至少选择一个：
+# 检查资源使用
+htop  # 确保有足够内存
+```
 
-- OpenAI：`openai/gpt-5.2`（或 `openai/gpt-5-mini`）
-- Anthropic：`anthropic/claude-opus-4-5`（或 `anthropic/claude-sonnet-4-5`）
-- Google：`google/gemini-3-flash-preview`（或 `google/gemini-3-pro-preview`）
-- Z.AI（GLM）：`zai/glm-4.7`
-- MiniMax：`minimax/minimax-m2.1`
+---
 
-可选的额外覆盖（最好有）：
+## 练习与自检
 
-- xAI：`xai/grok-4`（或最新的可用版本）
-- Mistral：`mistral/`…（选择一个你有启用的"工具"能力模型）
-- Cerebras：`cerebras/`…（如果你有访问权限）
-- LM Studio：`lmstudio/`…（本地；工具调用取决于 API 模式）
+### 基础技能自检
 
-### 视觉：图像发送（附件 → 多模态消息）
+- [ ] 能够运行基本测试命令
+- [ ] 理解测试结果含义
+- [ ] 能够定位测试文件
+- [ ] 掌握测试调试方法
 
-在 `OPENCLAW_LIVE_GATEWAY_MODELS` 中至少包含一个支持图像的模型（Claude/Gemini/OpenAI 视觉能力变体等）以进行图像探测。
+### 进阶技能自检
 
-### 聚合器 / 替代网关
+- [ ] 理解测试套件分层
+- [ ] 能够配置测试环境
+- [ ] 理解实时测试凭据发现
+- [ ] 能够选择测试类型
 
-如果你启用了密钥，我们还支持通过以下方式测试：
+### 专家技能自检
 
-- OpenRouter：`openrouter/...`（数百个模型；使用 `openclaw models scan` 查找工具+图像能力候选）
-- OpenCode Zen：`opencode/...`（通过 `OPENCODE_API_KEY` / `OPENCODE_ZEN_API_KEY` 进行身份验证）
+- [ ] 能够设计回归测试策略
+- [ ] 理解 Docker 测试价值
+- [ ] 掌握模型矩阵选择
+- [ ] 能够优化测试覆盖
 
-更多提供商你可以包含在实时矩阵中（如果你有凭据/配置）：
+---
 
-- 内置：`openai`、`openai-codex`、`anthropic`、`google`、`google-vertex`、`google-antigravity`、`google-gemini-cli`、`zai`、`openrouter`、`opencode`、`xai`、`groq`、`cerebras`、`mistral`、`github-copilot`
-- 通过 `models.providers`（自定义端点）：`minimax`（云/API），加上任何 OpenAI/Anthropic 兼容代理（LM Studio、vLLM、LiteLLM 等）
+## 参考资料
 
-提示：不要尝试在文档中硬编码"所有模型"。权威列表是你的机器上 `discoverModels(...)` 返回的内容 + 可用的任何密钥。
+### 核心文档
 
-## 凭据（永远不要提交）
+- [调试指南](/zh-CN/debugging) - 调试工具详解
+- [日志记录](/zh-CN/logging) - 日志分析
+- [Vitest 文档](https://vitest.dev/)
 
-实时测试以与 CLI 相同的方式发现凭据。实际影响：
+### 相关命令速查
 
-- 如果 CLI 工作，实时测试应该找到相同的密钥。
-- 如果实时测试说"没有凭据"，以与调试 `openclaw models list` / 模型选择相同的方式进行调试。
+```bash
+# 测试命令
+pnpm test              # 单元/集成测试
+pnpm test:coverage    # 覆盖率测试
+pnpm test:e2e         # 端到端测试
+pnpm test:live        # 实时测试
 
-- 配置文件存储：`~/.openclaw/credentials/`（首选；测试中"配置文件密钥"的含义）
-- 配置：`~/.openclaw/openclaw.json`（或 `OPENCLAW_CONFIG_PATH`）
+# Docker 测试
+pnpm test:docker:live-models     # Docker 模型测试
+pnpm test:docker:live-gateway    # Docker 网关测试
 
-如果你想依赖环境密钥（例如在你的 `~/.profile` 中导出），在 `source ~/.profile` 后运行本地测试，或使用下面的 Docker 运行器（它们可以将 `~/.profile` 挂载到容器中）。
+# 模型发现
+openclaw models list             # 列出模型
+openclaw models list --json     # JSON 格式
+```
 
-## Deepgram 实时（音频转录）
+### 扩展阅读
 
-- 测试：`src/media-understanding/providers/deepgram/audio.live.test.ts`
-- 启用：`DEEPGRAM_API_KEY=... DEEPGRAM_LIVE_TEST=1 pnpm test:live src/media-understanding/providers/deepgram/audio.live.test.ts`
-
-## Docker 运行器（可选的"在 Linux 中工作"检查）
-
-这些在仓库 Docker 镜像内运行 `pnpm test:live`，挂载你的本地配置目录和工作区（并在运行时获取 `~/.profile` 如果已挂载）：
-
-- 直接模型：`pnpm test:docker:live-models`（脚本：`scripts/test-live-models-docker.sh`）
-- 网关 + 开发代理：`pnpm test:docker:live-gateway`（脚本：`scripts/test-live-gateway-models-docker.sh`）
-- 引导向导（TTY，完整脚手架）：`pnpm test:docker:onboard`（脚本：`scripts/e2e/onboard-docker.sh`）
-- 网关网络（两个容器，WS 身份验证 + 健康）：`pnpm test:docker:gateway-network`（脚本：`scripts/e2e/gateway-network-docker.sh`）
-- 插件（自定义扩展加载 + 注册表冒烟）：`pnpm test:docker:plugins`（脚本：`scripts/e2e/plugins-docker.sh`）
-
-有用的环境变量：
-
-- `OPENCLAW_CONFIG_DIR=...`（默认：`~/.openclaw`）挂载到 `/home/node/.openclaw`
-- `OPENCLAW_WORKSPACE_DIR=...`（默认：`~/.openclaw/workspace`）挂载到 `/home/node/.openclaw/workspace`
-- `OPENCLAW_PROFILE_FILE=...`（默认：`~/.profile`）挂载到 `/home/node/.profile` 并在运行测试前获取
-- `OPENCLAW_LIVE_GATEWAY_MODELS=...` / `OPENCLAW_LIVE_MODELS=...` 以缩小运行范围
-- `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` 以确保凭据来自配置文件存储（而不是环境）
-
-## 文档健全
-
-在文档编辑后运行文档检查：`pnpm docs:list`。
-
-## 离线回归（CI 安全）
-
-这些是"真实管道"回归测试，没有真实提供商：
-
-- 网关工具调用（模拟 OpenAI，真实网关 + 代理循环）：`src/gateway/gateway.tool-calling.mock-openai.test.ts`
-- 网关向导（WS `wizard.start`/`wizard.next`，写入配置 + 身份验证强制执行）：`src/gateway/gateway.wizard.e2e.test.ts`
-
-## 代理可靠性评估（技能）
-
-我们已经有几个表现得像"代理可靠性评估"的 CI 安全测试：
-
-- 通过真实网关 + 代理循环进行模拟工具调用（`src/gateway/gateway.tool-calling.mock-openai.test.ts`）。
-- 端到端向导流验证会话布线和配置效果（`src/gateway/gateway.wizard.e2e.test.ts`）。
-
-技能仍然缺失的内容（请参阅 [Skills](/tools/skills)）：
-
-- **决策：** 当技能在提示中列出时，代理是否选择正确的技能（或避免无关的技能）？
-- **合规性：** 代理是否在使用前阅读 `SKILL.md` 并遵循要求的步骤/参数？
-- **工作流合同：** 多轮场景断言工具顺序、会话历史延续和沙箱边界。
-
-未来的评估应该首先保持确定性：
-
-- 使用模拟提供商断言工具调用 + 顺序、技能文件读取和会话布线的场景运行器。
-- 一小套以技能为重点的场景（使用 vs 避免、门控、提示注入）。
-- 可选的实时评估（选择加入、环境门控）只有在 CI 安全套件就位之后。
-
-## 添加回归测试（指导）
-
-当你在实时中发现并修复了提供商/模型问题时：
-
-- 如果可能，添加 CI 安全回归测试（模拟/存根提供商，或捕获确切的请求形状转换）
-- 如果它本质上是实时唯一的（速率限制、身份验证策略），请保持实时测试狭窄并通过环境变量选择加入
-- 优先针对捕获 bug 的最小层：
-  - 提供商请求转换/重放 bug → 直接模型测试
-  - 网关会话/历史/工具管道 bug → 网关实时冒烟或 CI 安全网关模拟测试
+- [测试金字塔](https://martinfowler.com/articles/practical-test-pyramid.html)
+- [Vitest 最佳实践](https://vitest.dev/guide/best-practices.html)
+- [持续集成测试策略](https://docs.github.com/en/actions/guides/choosing-when-to-use-github-hosted-runners)

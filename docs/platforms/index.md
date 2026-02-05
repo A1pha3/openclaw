@@ -1,53 +1,499 @@
 ---
-summary: "Platform support overview (Gateway + companion apps)"
+summary: "平台支持概览（网关部署与配套应用）"
 read_when:
-  - Looking for OS support or install paths
-  - Deciding where to run the Gateway
-title: "Platforms"
+  - 了解 OpenClaw 支持的操作系统和部署平台
+  - 决定在哪里运行 OpenClaw 网关
+  - 查找特定平台的详细部署指南
+title: "平台部署"
 ---
 
-# Platforms
+# OpenClaw 平台部署指南
 
-OpenClaw core is written in TypeScript. **Node is the recommended runtime**.
-Bun is not recommended for the Gateway (WhatsApp/Telegram bugs).
+## 学习目标
 
-Companion apps exist for macOS (menu bar app) and mobile nodes (iOS/Android). Windows and
-Linux companion apps are planned, but the Gateway is fully supported today.
-Native companion apps for Windows are also planned; the Gateway is recommended via WSL2.
+完成本章节学习后，你将能够：
 
-## Choose your OS
+### 基础目标（必掌握）
 
-- macOS: [macOS](/platforms/macos)
-- iOS: [iOS](/platforms/ios)
-- Android: [Android](/platforms/android)
-- Windows: [Windows](/platforms/windows)
-- Linux: [Linux](/platforms/linux)
+- 理解 OpenClaw 支持的各类部署平台及其特点
+- 根据自身需求选择最适合的部署方案
+- 掌握从本地开发到生产部署的完整路径
 
-## VPS & hosting
+### 进阶目标（建议掌握）
 
-- VPS hub: [VPS hosting](/vps)
-- Fly.io: [Fly.io](/platforms/fly)
-- Hetzner (Docker): [Hetzner](/platforms/hetzner)
-- GCP (Compute Engine): [GCP](/platforms/gcp)
-- exe.dev (VM + HTTPS proxy): [exe.dev](/platforms/exe-dev)
+- 理解不同平台之间的架构差异和权衡
+- 掌握多平台部署的决策框架
+- 能够为团队制定平台选型策略
 
-## Common links
+### 专家目标（挑战）
 
-- Install guide: [Getting Started](/start/getting-started)
-- Gateway runbook: [Gateway](/gateway)
-- Gateway configuration: [Configuration](/gateway/configuration)
-- Service status: `openclaw gateway status`
+- 设计跨平台的高可用部署架构
+- 构建平台无关的统一运维体系
+- 实现成本与性能的动态平衡
 
-## Gateway service install (CLI)
+---
 
-Use one of these (all supported):
+## 核心概念解析
 
-- Wizard (recommended): `openclaw onboard --install-daemon`
-- Direct: `openclaw gateway install`
-- Configure flow: `openclaw configure` → select **Gateway service**
-- Repair/migrate: `openclaw doctor` (offers to install or fix the service)
+### OpenClaw 的部署架构设计
 
-The service target depends on OS:
+OpenClaw 采用**控制平面与执行平面分离**的架构设计，这种设计使得 OpenClaw 可以在多种平台上运行：
 
-- macOS: LaunchAgent (`bot.molt.gateway` or `bot.molt.<profile>`; legacy `com.openclaw.*`)
-- Linux/WSL2: systemd user service (`openclaw-gateway[-<profile>].service`)
+**控制平面（Gateway）**：
+- 管理会话、渠道连接和消息路由
+- 处理用户认证和权限控制
+- 协调 AI 模型的 API 调用
+- 资源需求低，可在轻量级设备上运行
+
+**执行平面（AI 模型推理）**：
+- 由云端大语言模型处理（Claude、GPT 等）
+- 不占用本地计算资源
+- 通过 API 按需调用
+
+**平台分类**：
+
+| 类别 | 代表平台 | 核心特点 | 适用场景 |
+|-----|---------|---------|---------|
+| **本地硬件** | Raspberry Pi、自建服务器 | 低成本、完全控制 | 预算敏感、技术能力强 |
+| **云托管 VPS** | DigitalOcean、Hetzner、Oracle Cloud | 简单可靠、按需付费 | 追求平衡的用户 |
+| **容器化平台** | Fly.io、GCP、Hetzner Docker | 可移植、可扩展 | 需要容器化的团队 |
+| **macOS 专用** | Lume、MacStadium | iMessage 支持、沙箱隔离 | 需要 iMessage 的用户 |
+
+---
+
+## 平台总览与选择指南
+
+### 平台功能对比矩阵
+
+| 平台 | 成本 | 难度 | 控制权 | iMessage | 推荐程度 |
+|-----|------|-----|--------|---------|---------|
+| **Raspberry Pi** | ~$35 硬件 | 中 | 高 | 否 | ⭐⭐⭐⭐ |
+| **DigitalOcean** | $6/月 | 低 | 中 | 否 | ⭐⭐⭐⭐ |
+| **Hetzner** | €3.79/月 | 中 | 高 | 否 | ⭐⭐⭐⭐⭐ |
+| **Oracle Cloud** | 免费 | 中 | 中 | 否 | ⭐⭐⭐⭐ |
+| **Fly.io** | ~$10/月 | 中 | 中 | 否 | ⭐⭐⭐⭐ |
+| **GCP** | ~$12/月 | 高 | 高 | 否 | ⭐⭐⭐ |
+| **exe.dev** | 按需 | 低 | 中 | 否 | ⭐⭐⭐ |
+| **macOS VM** | 硬件成本 | 高 | 高 | 是 | ⭐⭐ |
+
+### 选择决策框架
+
+```
+部署需求评估
+    │
+    ├── 预算
+    │       ├── $0 ─────────────────────────────────► Oracle Cloud ⭐
+    │       │
+    │       ├── €3-6/月 ───────────────────────────► Hetzner ⭐⭐⭐⭐⭐
+    │       │
+    │       └── $10+/月 ───────────────────────────► Fly.io / GCP
+    │
+    ├── 技术能力
+    │       ├── 新手 ──────────────────────────────► DigitalOcean / Fly.io
+    │       │
+    │       ├── 有经验 ───────────────────────────► Hetzner / GCP
+    │       │
+    │       └── 开发者 ──────────────────────────► 任意平台 + Docker
+    │
+    ├── 特殊需求
+    │       ├── 需要 iMessage ──────────────────────► macOS VM ⭐
+    │       │
+    │       ├── 需要最高性价比 ───────────────────► Hetzner
+    │       │
+    │       ├── 需要自动 HTTPS ───────────────────► Fly.io / exe.dev
+    │       │
+    │       └── 需要 ARM 架构 ───────────────────► Oracle Cloud
+    │
+    └── 运维偏好
+            ├── 不想运维 ──────────────────────────► 托管服务 (Fly.io)
+            │
+            ├── 完全控制 ─────────────────────────► 自建 (Hetzner / GCP)
+            │
+            └── 混合架构 ─────────────────────────► 本地 + 云端
+```
+
+---
+
+## 详细平台指南
+
+### 本地硬件平台
+
+#### Raspberry Pi ⭐⭐⭐⭐
+
+**核心优势**：
+- 一次性硬件成本 $35-80，无月度费用
+- 功耗极低（5-15W），适合 24/7 运行
+- 完全本地部署，数据隐私有保障
+
+**适用人群**：
+- 预算有限的个人用户
+- 技术爱好者，喜欢动手折腾
+- 需要本地智能家居集成的用户
+
+**详细指南**：[Raspberry Pi 部署指南](/platforms/raspberry-pi)
+
+---
+
+### 云托管 VPS 平台
+
+#### Hetzner ⭐⭐⭐⭐⭐
+
+**核心优势**：
+- 业界最高性价比（€3.79/月获得 2 vCPU / 4 GB / 40 GB SSD）
+- 德国品质，企业级可靠性
+- 完整的 root 权限
+
+**适用人群**：
+- 追求最佳性价比的用户
+- 需要完整控制权的开发者
+- 欧洲用户（低延迟优势）
+
+**详细指南**：[Hetzner Docker 部署指南](/platforms/hetzner)
+
+#### DigitalOcean ⭐⭐⭐⭐
+
+**核心优势**：
+- 简单易用的界面和文档
+- 透明的定价，无隐藏费用
+- 丰富的社区资源
+
+**适用人群**：
+- 云服务新手
+- 追求简单可靠的用户
+- 美国用户（数据中心覆盖广）
+
+**详细指南**：[DigitalOcean 部署指南](/platforms/digitalocean)
+
+#### Oracle Cloud ⭐⭐⭐⭐
+
+**核心优势**：
+- 真正的永久免费（2 OCPU / 12 GB RAM / 200 GB 存储）
+- 强大的 ARM 实例
+- 企业级基础设施
+
+**适用人群**：
+- 预算为零的用户
+- 能接受 ARM 架构
+- 技术能力较强（注册流程较复杂）
+
+**详细指南**：[Oracle Cloud 部署指南](/platforms/oracle)
+
+---
+
+### 容器化云平台
+
+#### Fly.io ⭐⭐⭐⭐
+
+**核心优势**：
+- 自动 HTTPS 配置
+- 全球分布式部署
+- 原生容器支持
+
+**适用人群**：
+- 追求简化运维的用户
+- 需要全球低延迟
+- 熟悉容器化部署
+
+**详细指南**：[Fly.io 部署指南](/platforms/fly)
+
+#### Google Cloud Platform ⭐⭐⭐
+
+**核心优势**：
+- 成熟的云生态系统
+- 精细的 IAM 权限控制
+- 丰富的配套服务
+
+**适用人群**：
+- 已有 GCP 基础设施
+- 需要企业级合规
+- 需要高级监控和日志
+
+**详细指南**：[GCP Docker 部署指南](/platforms/gcp)
+
+#### exe.dev ⭐⭐⭐
+
+**核心优势**：
+- 简化的虚拟机托管
+- 内置 HTTPS 代理
+- Shelley 自动化部署
+
+**适用人群**：
+- 不想管理完整服务器
+- 需要快速部署
+- 愿意使用托管服务
+
+**详细指南**：[exe.dev 部署指南](/platforms/exe-dev)
+
+---
+
+### macOS 专用平台
+
+#### macOS 虚拟机 ⭐⭐
+
+**核心优势**：
+- iMessage 支持（BlueBubbles）
+- 完整的沙箱隔离
+- macOS 原生功能
+
+**适用人群**：
+- 需要 iMessage 集成的用户
+- 需要 macOS 隔离环境
+- iOS/macOS 开发者
+
+**详细指南**：[macOS 虚拟机部署指南](/platforms/macos-vm)
+
+---
+
+## 配套应用与节点
+
+### 平台应用
+
+| 应用 | 平台 | 说明 |
+|-----|------|------|
+| **OpenClaw 菜单栏应用** | macOS | 菜单栏控制、状态显示 |
+| **iOS 节点** | iOS | 语音唤醒、Canvas 集成 |
+| **Android 节点** | Android | 语音唤醒、Canvas 集成 |
+
+### 节点配对
+
+OpenClaw 支持将本地设备作为「节点」连接到网关：
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    OpenClaw 网关                         │
+│  （运行在 VPS/本地服务器上）                              │
+│                                                          │
+│  • 协调所有会话和消息                                     │
+│  • 管理渠道连接                                          │
+│  • 调用 AI 模型                                          │
+└─────────────────────────────────────────────────────────┘
+                         │
+              ┌──────────┼──────────┐
+              ▼          ▼          ▼
+       ┌──────────┐ ┌──────────┐ ┌──────────┐
+       │ macOS    │ │ iOS      │ │ Android  │
+       │ 菜单栏   │ │ 节点     │ │ 节点     │
+       │ 应用     │ │          │ │          │
+       │          │ │ • 语音   │ │ • 语音   │
+       │ • 控制   │ │ • 相机   │ │ • 相机   │
+       │ • 状态   │ │ • 屏幕   │ │ • 屏幕   │
+       └──────────┘ └──────────┘ └──────────┘
+```
+
+**节点能力**：
+- 设备本地操作（运行命令、发送通知）
+- 媒体捕获（相机、屏幕录制）
+- 语音交互（语音唤醒、语音输入）
+
+**详细配置**：[节点配对指南](/nodes)
+
+---
+
+## 网关服务安装
+
+### 命令行安装
+
+OpenClaw 网关服务可以通过以下方式安装：
+
+| 方法 | 命令 | 说明 |
+|-----|------|------|
+| **安装向导（推荐）** | `openclaw onboard --install-daemon` | 交互式引导安装 |
+| **直接安装** | `openclaw gateway install` | 直接安装服务 |
+| **配置流程** | `openclaw configure` | 选择「Gateway 服务」 |
+| **修复/迁移** | `openclaw doctor` | 提供安装或修复选项 |
+
+### 服务目标平台
+
+| 平台 | 服务类型 | 服务名称 |
+|-----|---------|---------|
+| **macOS** | LaunchAgent | `bot.molt.gateway`（或带配置后缀） |
+| **Linux/WSL2** | systemd | `openclaw-gateway[-<profile>].service` |
+
+---
+
+## 快速入门路径
+
+### 新用户推荐路径
+
+```
+步骤 1：准备环境
+    │
+    ├── 有 Raspberry Pi ──► 参考 Raspberry Pi 指南 ⭐
+    │
+    ├── 愿意付费（$5-10/月）──► Hetzner 或 DigitalOcean ⭐⭐⭐⭐
+    │
+    └── 完全不想付费 ───────► Oracle Cloud ⭐⭐⭐⭐
+                                    │
+                                    ▼
+                          步骤 2：创建服务器/实例
+                                    │
+                                    ▼
+                          步骤 3：运行安装向导
+                           `openclaw onboard --install-daemon`
+                                    │
+                                    ▼
+                          步骤 4：配置访问方式
+                           SSH 隧道或 Tailscale
+                                    │
+                                    ▼
+                          步骤 5：连接即时通讯渠道
+                           Telegram / WhatsApp / Discord
+```
+
+### 技术用户路径
+
+```
+熟悉 Docker 和容器化
+         │
+         ├── 追求最佳性价比 ──► Hetzner + Docker ⭐⭐⭐⭐⭐
+         │
+         ├── 需要全球部署 ──► Fly.io ⭐⭐⭐⭐
+         │
+         └── 已有 GCP ──────► GCP + Docker ⭐⭐⭐
+```
+
+---
+
+## 运维最佳实践
+
+### 安全加固
+
+| 措施 | 说明 |
+|-----|------|
+| **最小化公网暴露** | 优先使用 SSH 隧道或 Tailscale |
+| **强认证** | 使用随机 Token，避免弱密码 |
+| **定期更新** | 保持系统和 OpenClaw 最新 |
+| **备份** | 定期备份配置和工作区 |
+
+### 监控与告警
+
+| 层面 | 监控项 | 工具 |
+|-----|-------|------|
+| **服务状态** | OpenClaw 是否运行 | `openclaw status` |
+| **资源使用** | CPU、内存、磁盘 | 平台监控 + htop |
+| **日志** | 应用日志 | `journalctl` / `docker logs` |
+| **可用性** | 服务是否可访问 | UptimeRobot 等 |
+
+### 备份策略
+
+```bash
+# 创建完整备份
+tar -czvf openclaw-backup-$(date +%Y%m%d).tar.gz ~/.openclaw ~/.openclaw/workspace
+
+# 定时任务（每日凌晨 3 点）
+0 3 * * * tar -czvf /backup/openclaw-$(date +\%Y\%m\%d).tar.gz ~/.openclaw ~/.openclaw/workspace
+```
+
+---
+
+## 故障排查资源
+
+### 常见问题
+
+| 问题 | 排查命令 | 参考文档 |
+|-----|---------|---------|
+| 网关无法启动 | `openclaw doctor` | [网关故障排查](/gateway/troubleshooting) |
+| 渠道连接失败 | `openclaw channels status` | [渠道故障排查](/channels/troubleshooting) |
+| 性能问题 | `htop`, `free -h` | [性能优化指南](/gateway/performance) |
+| 认证问题 | `openclaw config get` | [安全配置](/gateway/security) |
+
+### 健康检查
+
+```bash
+# 综合健康检查
+openclaw doctor
+
+# 检查特定问题
+openclaw doctor --non-interactive
+
+# 生成诊断报告
+openclaw doctor --generate-report
+```
+
+---
+
+## 扩展阅读
+
+### 相关文档
+
+| 文档 | 说明 |
+|-----|------|
+| [网关配置](/gateway/configuration) | 完整配置参考 |
+| [安全指南](/gateway/security) | 安全最佳实践 |
+| [远程访问](/gateway/remote) | 远程访问配置 |
+| [渠道配置](/channels) | 即时通讯渠道设置 |
+| [节点配对](/nodes) | 设备节点连接 |
+| [模型配置](/concepts/models) | AI 模型设置 |
+
+### 更新与升级
+
+| 场景 | 命令 |
+|-----|------|
+| **更新 CLI** | `npm i -g openclaw@latest` |
+| **更新网关** | `openclaw gateway update` |
+| **完整升级** | [更新指南](/install/updating) |
+
+---
+
+## 专家思维模型：本章总结
+
+### 平台选型核心原则
+
+1. **需求驱动**：从实际需求出发，不要被技术复杂性绑架
+2. **成本意识**：考虑总体拥有成本（TCO），而非仅看月度费用
+3. **能力匹配**：选择与团队技术能力匹配的平台
+4. **未来考量**：考虑扩展性和迁移成本
+
+### 演进路径
+
+```
+新手阶段
+    │
+    ├── 简单部署：DigitalOcean / Fly.io
+    │
+    ▼
+进阶阶段
+    │
+    ├── 成本优化：迁移到 Hetzner
+    │
+    ├── 功能扩展：添加 macOS 节点
+    │
+    ▼
+专家阶段
+    │
+    ├── 多平台架构：混合部署
+    │
+    ├── 高可用设计：多区域部署
+    │
+    └── 自动化运维：CI/CD 流水线
+```
+
+---
+
+## 自检清单
+
+完成本章节学习后，请确认你已掌握以下能力：
+
+### 概念理解
+
+- [ ] 能够解释控制平面与执行平面分离的架构设计
+- [ ] 理解各平台的成本和特性差异
+- [ ] 了解节点配对的架构设计
+
+### 平台选择
+
+- [ ] 能够根据预算选择合适的平台
+- [ ] 能够根据技术能力选择合适难度的平台
+- [ ] 能够根据特殊需求（iMessage、ARM）做出选择
+
+### 运维能力
+
+- [ ] 掌握基本的故障排查方法
+- [ ] 能够配置备份和监控
+- [ ] 理解安全加固的最佳实践
+
+### 进阶能力
+
+- [ ] 能够设计多平台混合部署架构
+- [ ] 能够制定成本优化策略
+- [ ] 能够构建自动化的运维体系
