@@ -1267,5 +1267,311 @@ openclaw config set logging.level info
 
 | 版本 | 日期 | 变更内容 |
 |------|------|----------|
-| 2026.2.17 | 2026-03-05 | 添加配置最佳实践章节 |
+| 2026.2.17 | 2026-03-05 | 添加配置最佳实践章节、配置模板库、调试技巧 |
 | 2026.2.17 | 2026-02-04 | 初始翻译版本 |
+
+---
+
+## 🎯 配置检查清单
+
+### 新安装检查清单
+
+**首次配置前**：
+- [ ] 已安装 Node.js 22+
+- [ ] 已安装 OpenClaw CLI
+- [ ] 已创建 ~/.openclaw 目录
+- [ ] 已设置文件权限（600/700）
+
+**基础配置**：
+- [ ] 配置 AI 模型 provider
+- [ ] 配置至少一个渠道
+- [ ] 配置 Gateway 认证令牌
+- [ ] 配置日志级别
+
+**安全配置**：
+- [ ] 使用环境变量存储敏感信息
+- [ ] 设置文件权限为 600/700
+- [ ] 启用 Gateway 认证
+- [ ] 配置渠道白名单
+
+**性能配置**：
+- [ ] 设置合理的 historyLimit
+- [ ] 配置并发限制
+- [ ] 优化日志级别
+- [ ] 设置磁盘配额
+
+### 生产环境检查清单
+
+**启动前检查**：
+```bash
+# 1. 验证配置
+openclaw doctor
+
+# 2. 检查 JSON 语法
+jq . ~/.openclaw/openclaw.json
+
+# 3. 检查文件权限
+ls -la ~/.openclaw/openclaw.json
+
+# 4. 测试渠道连接
+openclaw channels status --probe
+```
+
+**监控配置**：
+```bash
+# 1. 设置健康检查
+openclaw health
+
+# 2. 配置日志轮转
+# /etc/logrotate.d/openclaw
+
+# 3. 设置告警
+# 使用监控脚本
+```
+
+**备份配置**：
+```bash
+# 1. 定期备份配置
+cp ~/.openclaw/openclaw.json \
+   ~/.openclaw/backup.$(date +%Y%m%d).json
+
+# 2. 备份凭据
+tar -czf ~/.openclaw/credentials.$(date +%Y%m%d).tar.gz \
+    ~/.openclaw/credentials/
+
+# 3. 异地备份
+# 使用云存储或远程服务器
+```
+
+### 配置审计清单
+
+**月度审计**：
+- [ ] 审查配置文件权限
+- [ ] 更新 Gateway 令牌
+- [ ] 审查渠道白名单
+- [ ] 清理过期凭据
+- [ ] 审查日志文件
+- [ ] 检查磁盘使用
+- [ ] 更新配置备份
+
+**季度审计**：
+- [ ] 全面安全审计
+- [ ] 性能基准测试
+- [ ] 配置优化调整
+- [ ] 文档更新审查
+- [ ] 灾难恢复演练
+
+---
+
+## 🎓 配置专家技巧
+
+### 高级配置模式
+
+**1. 动态配置切换**
+
+```bash
+#!/bin/bash
+# ~/.openclaw/scripts/switch-config.sh
+
+ENV=$1
+
+if [ -z "$ENV" ]; then
+    echo "用法：switch-config <development|staging|production>"
+    exit 1
+fi
+
+CONFIG_DIR="~/.openclaw/configs"
+cp "$CONFIG_DIR/openclaw.$ENV.json" ~/.openclaw/openclaw.json
+
+echo "已切换到 $ENV 环境配置"
+openclaw doctor
+```
+
+**2. 配置版本控制**
+
+```bash
+# 使用 Git 管理配置
+cd ~/.openclaw
+git init
+git add openclaw.json
+git commit -m "Initial config"
+
+# 每次更改后
+git add openclaw.json
+git commit -m "Updated config: $(date)"
+
+# 回滚到历史版本
+git checkout <commit-hash> openclaw.json
+openclaw gateway restart
+```
+
+**3. 配置模板引擎**
+
+```bash
+# 使用 envsubst 生成配置
+cat ~/.openclaw/openclaw.json.template | \
+  envsubst > ~/.openclaw/openclaw.json
+
+# 模板文件示例
+# openclaw.json.template
+{
+  "gateway": {
+    "auth": {
+      "token": "${GATEWAY_TOKEN}"
+    }
+  }
+}
+```
+
+### 配置性能调优
+
+**1. 内存优化**
+
+```json5
+{
+  agents: {
+    defaults: {
+      // 限制上下文大小
+      maxTokens: 8192,
+      
+      // 限制历史消息
+      historyLimit: {
+        messages: 50,
+        maxTokens: 50000
+      },
+      
+      // 限制并发
+      concurrency: {
+        max: 3
+      }
+    }
+  }
+}
+```
+
+**2. 磁盘优化**
+
+```json5
+{
+  storage: {
+    // 限制会话大小
+    maxSessionSize: "100MB",
+    
+    // 自动清理
+    autoPrune: {
+      enabled: true,
+      olderThan: "7d"
+    },
+    
+    // 媒体缓存
+    mediaCache: {
+      maxSize: "1GB",
+      ttl: "24h"
+    }
+  }
+}
+```
+
+**3. 网络优化**
+
+```json5
+{
+  gateway: {
+    // 连接池
+    connectionPool: {
+      min: 5,
+      max: 20
+    },
+    
+    // 超时设置
+    timeouts: {
+      connect: "10s",
+      read: "30s",
+      write: "30s"
+    },
+    
+    // 重试策略
+    retry: {
+      maxAttempts: 3,
+      backoff: "exponential"
+    }
+  }
+}
+```
+
+### 配置安全加固
+
+**1. 密钥轮换**
+
+```bash
+#!/bin/bash
+# ~/.openclaw/scripts/rotate-keys.sh
+
+# 生成新令牌
+NEW_TOKEN=$(openssl rand -hex 32)
+
+# 更新配置
+jq --arg token "$NEW_TOKEN" \
+   '.gateway.auth.token = $token' \
+   ~/.openclaw/openclaw.json > /tmp/openclaw.json && \
+   mv /tmp/openclaw.json ~/.openclaw/openclaw.json
+
+# 重启服务
+openclaw gateway restart
+
+# 记录审计日志
+echo "$(date): Rotated Gateway token" >> \
+   ~/.openclaw/audit.log
+```
+
+**2. 配置加密**
+
+```bash
+# 使用 age 加密配置
+age -o ~/.openclaw/openclaw.json.age \
+      -R ~/.openclaw/age.pubkey \
+      ~/.openclaw/openclaw.json
+
+# 解密配置
+age -d -o ~/.openclaw/openclaw.json \
+      -i ~/.openclaw/age.key \
+      ~/.openclaw/openclaw.json.age
+```
+
+**3. 访问日志审计**
+
+```bash
+# 分析访问日志
+cat ~/.openclaw/access.log | \
+  jq -r '.timestamp + " " + .user + " " + .action' | \
+  sort | uniq -c | sort -rn | \
+  head -20
+```
+
+---
+
+## 🏆 配置大师挑战
+
+### 初级挑战
+- [ ] 完成基础配置并成功启动 Gateway
+- [ ] 配置一个渠道并成功接收消息
+- [ ] 使用环境变量管理敏感信息
+- [ ] 设置正确的文件权限
+
+### 中级挑战
+- [ ] 配置多环境（dev/prod）
+- [ ] 实现配置自动备份
+- [ ] 配置监控和告警
+- [ ] 优化性能参数
+
+### 高级挑战
+- [ ] 实现配置版本控制
+- [ ] 配置自动密钥轮换
+- [ ] 实现配置加密存储
+- [ ] 设计多租户配置方案
+
+### 专家挑战
+- [ ] 设计高可用配置方案
+- [ ] 实现配置自动漂移检测
+- [ ] 设计灾难恢复方案
+- [ ] 编写配置管理最佳实践文档

@@ -1283,4 +1283,201 @@ echo "请将此文件附加到您的 Issue 或支持请求中"
 | [部署指南](/operations/deployment) | 详细部署步骤和配置 |
 | [监控指南](/operations/monitoring) | 监控配置和告警策略 |
 | [配置参考](/gateway/configuration) | 配置选项详细说明 |
-| [快速入门](/start/quick-start) | 重新开始安装流程 |
+| [快速入门](/start/quick-start) | 重新开始安装流程
+
+---
+
+## 💡 诊断决策树
+
+### 快速诊断流程图
+
+```
+开始诊断
+    ↓
+[1] 服务是否运行？
+    ├── 否 → 检查服务状态 → 启动服务 → 检查日志
+    └── 是 ↓
+    ↓
+[2] 渠道是否连接？
+    ├── 否 → 检查渠道状态 → 重新登录渠道
+    └── 是 ↓
+    ↓
+[3] 消息是否正常？
+    ├── 收不到 → 检查 DM 策略/配对/白名单
+    ├── 发不出 → 检查目标格式/渠道连接/日志
+    └── 正常 ↓
+    ↓
+[4] 性能是否正常？
+    ├── 响应慢 → 检查资源使用/清理会话/优化配置
+    ├── 内存高 → 清理会话/重启服务/调整配置
+    └── 正常 ↓
+    ↓
+[5] 运行完整诊断
+    openclaw doctor
+    openclaw status --deep
+    收集诊断包
+```
+
+### 快速决策卡片
+
+#### 服务启动失败
+
+```
+症状：openclaw gateway 无法启动
+
+快速决策流程：
+1. 检查端口占用 → lsof -i :18789
+   ├── 被占用 → kill 占用进程 或 更换端口
+   └── 未占用 ↓
+2. 检查配置 → openclaw doctor
+   ├── 配置错误 → 修复配置
+   └── 配置正常 ↓
+3. 查看详细错误 → openclaw gateway --verbose
+   ├── Node.js 版本 → 升级到 22+
+   ├── 权限问题 → 检查文件权限
+   └── 其他错误 → 查看日志
+```
+
+#### 渠道离线
+
+```
+症状：channels status 显示 offline
+
+快速决策流程：
+1. 检查凭证 → ls ~/.clawdbot/credentials/
+   ├── 凭证缺失 → 重新登录渠道
+   └── 凭证存在 ↓
+2. 查看渠道日志 → openclaw logs --channel <name>
+   ├── 认证失败 → 重新登录
+   ├── 网络错误 → 检查网络
+   └── 会话过期 → 清除会话重新登录
+3. 测试连接 → openclaw channels status --probe
+```
+
+#### 消息问题
+
+```
+症状：消息发送失败或收不到
+
+快速决策流程：
+1. 发送失败
+   ├── 检查目标格式 → +1234567890
+   ├── 检查渠道连接 → channels status
+   └── 查看详细错误 → message send --verbose
+
+2. 收不到消息
+   ├── 检查 DM 策略 → config get channels.<name>.dmPolicy
+   ├── 检查配对 → pairing list <channel>
+   └── 检查白名单 → config get channels.<name>.allowFrom
+```
+
+#### 性能问题
+
+```
+症状：响应缓慢或内存占用高
+
+快速决策流程：
+1. 检查资源 → openclaw status
+   ├── CPU 高 → 检查并发/减少负载
+   ├── 内存高 → 清理会话/重启服务
+   └── 正常 ↓
+2. 检查队列 → status | grep queue
+   ├── 积压 → 调整队列参数
+   └── 正常 ↓
+3. 检查 API → 测试 API 响应时间
+   ├── API 慢 → 检查网络/API 状态
+   └── API 正常 → 检查配置优化
+```
+
+### 5 分钟快速诊断清单
+
+**问题排查前 5 分钟必做检查**：
+
+```bash
+# 1. 服务状态（30 秒）
+openclaw status
+openclaw health
+
+# 2. 诊断检查（30 秒）
+openclaw doctor
+
+# 3. 渠道状态（1 分钟）
+openclaw channels status --probe
+
+# 4. 最近错误（1 分钟）
+openclaw logs --level error --tail 20
+
+# 5. 资源使用（1 分钟）
+ps aux | grep openclaw
+df -h ~/.clawdbot
+
+# 6. 配置验证（30 秒）
+openclaw config get | head -20
+
+# 7. 收集诊断包（1 分钟）
+openclaw support collect  # 如果支持此命令
+```
+
+### 常见故障模式识别
+
+| 故障模式 | 典型症状 | 快速判断 | 立即行动 |
+|---------|---------|---------|---------|
+| 配置错误 | 服务无法启动 | `openclaw doctor` 报错 | 修复配置 |
+| 端口占用 | `EADDRINUSE` | `lsof -i :18789` 有进程 | kill 或换端口 |
+| 凭证过期 | 渠道离线 | `channels status` offline | 重新登录 |
+| 内存泄漏 | 内存持续增长 | `ps` 显示 RSS 增长 | 重启 + 清理会话 |
+| 网络问题 | 连接超时 | `ping` 失败 | 检查网络 |
+| API 限制 | 429 错误 | 日志显示 rate limit | 等待 + 降级 |
+| 磁盘满 | 写入失败 | `df -h` 显示 100% | 清理磁盘 |
+| 权限问题 | `EACCES` | 日志显示 permission denied | 修复权限 |
+
+### 诊断命令速查表
+
+**服务管理**：
+```bash
+openclaw status              # 查看状态
+openclaw health             # 健康检查
+openclaw doctor             # 诊断配置
+openclaw service restart    # 重启服务
+```
+
+**日志查看**：
+```bash
+openclaw logs --tail 50                    # 最近 50 行
+openclaw logs --level error --since "1h"   # 最近 1 小时错误
+openclaw logs --channel whatsapp           # WhatsApp 渠道日志
+openclaw logs --follow                     # 实时日志
+```
+
+**渠道管理**：
+```bash
+openclaw channels status              # 渠道状态
+openclaw channels status --probe      # 深度探测
+openclaw channels login whatsapp      # 登录渠道
+openclaw channels logout whatsapp     # 登出渠道
+```
+
+**配置管理**：
+```bash
+openclaw config get                          # 查看配置
+openclaw config get channels.telegram        # 查看特定配置
+openclaw config edit                         # 编辑配置
+openclaw config set logging.level debug      # 设置配置
+```
+
+**诊断工具**：
+```bash
+lsof -i :18789                    # 检查端口占用
+ps aux | grep openclaw            # 查看进程
+df -h ~/.clawdbot                 # 检查磁盘
+top -p $(pgrep -f openclaw)       # 查看资源使用
+```
+
+---
+
+## 📝 变更历史
+
+| 版本 | 日期 | 变更内容 |
+|------|------|----------|
+| 2026.2.17 | 2026-03-05 | 添加诊断决策树和快速参考卡片 |
+| 2026.2.17 | 2026-02-04 | 初始翻译版本 | |
