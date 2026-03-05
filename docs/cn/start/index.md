@@ -5,6 +5,8 @@ read_when:
   - 新用户开始使用前
   - 选择学习路径时
 title: 入门指南
+version: "2026.2.17"
+last_updated: "2026-03-05"
 ---
 
 # 入门指南
@@ -127,3 +129,179 @@ openclaw dashboard
 准备好了吗？让我们开始吧！
 
 👉 [快速入门](/start/quick-start)
+
+---
+
+## 💡 最佳实践
+
+### 新手上路建议
+
+**第一次使用 OpenClaw？** 遵循以下建议可以快速上手并避免常见问题：
+
+1. **从 WhatsApp 开始** - WhatsApp 配置最简单，文档最完善
+2. **使用备用号码** - 避免使用主用手机号码，推荐使用 eSIM 或备用手机
+3. **完成新手引导** - `openclaw onboard` 会自动配置大部分设置
+4. **先测试再部署** - 使用 `openclaw message send` 测试消息发送
+5. **阅读故障排除** - 遇到问题先查看 [故障排除](/operations/troubleshooting)
+
+### 配置管理最佳实践
+
+**配置文件管理**：
+
+```bash
+# 1. 定期备份配置
+cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak.$(date +%Y%m%d)
+
+# 2. 使用 doctor 检查配置
+openclaw doctor
+
+# 3. 验证配置语法
+openclaw config get
+```
+
+**环境变量管理**：
+
+```bash
+# 推荐：使用 .env 文件管理敏感信息
+# ~/.openclaw/.env
+ANTHROPIC_API_KEY=sk-ant-xxx
+TELEGRAM_BOT_TOKEN=xxx
+
+# 在配置文件中引用
+# openclaw.json:
+{
+  "models": {
+    "providers": {
+      "anthropic": {
+        "apiKey": "${ANTHROPIC_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+### 安全最佳实践
+
+**令牌和密钥管理**：
+
+| 做法 | 推荐 | 不推荐 |
+|------|------|--------|
+| API 密钥存储 | 环境变量或凭据存储 | 硬编码在配置文件 |
+| Gateway 令牌 | 使用强随机令牌 | 使用默认令牌 |
+| 配置文件权限 | `chmod 600` | 全局可读 |
+| 备份配置 | 加密备份 | 明文备份 |
+
+**访问控制**：
+
+```json5
+{
+  // 启用网关认证
+  gateway: {
+    auth: {
+      token: "${GATEWAY_TOKEN}"  // 使用环境变量
+    }
+  },
+  
+  // 配置白名单
+  channels: {
+    whatsapp: {
+      dmPolicy: "allowlist",
+      allowFrom: ["+15551234567"]  // 只允许信任的号码
+    }
+  }
+}
+```
+
+### 性能优化建议
+
+**消息队列优化**：
+
+```json5
+{
+  messages: {
+    queue: {
+      mode: "collect",
+      debounceMs: 500,    // 减少收集窗口（默认 1000ms）
+      cap: 10             // 减小批量大小（默认 20）
+    }
+  }
+}
+```
+
+**会话历史管理**：
+
+```json5
+{
+  agents: {
+    defaults: {
+      historyLimit: {
+        messages: 50,      // 减少历史消息数（默认 100）
+        days: 7,           // 限制历史保存天数（默认 30）
+        maxTokens: 50000   // 限制 token 数量
+      }
+    }
+  }
+}
+```
+
+### 监控和日志
+
+**日志级别建议**：
+
+| 环境 | 推荐级别 | 说明 |
+|------|---------|------|
+| 开发 | `debug` | 查看详细调试信息 |
+| 测试 | `info` | 记录关键操作 |
+| 生产 | `warn` | 仅记录警告和错误 |
+
+**监控命令**：
+
+```bash
+# 实时日志
+openclaw logs --follow
+
+# 查看错误
+openclaw logs --level error --since "1 hour"
+
+# 健康检查
+openclaw health
+
+# 渠道状态
+openclaw channels status --probe
+```
+
+### 常见问题预防
+
+**定期维护任务**：
+
+```bash
+# 每周：检查服务状态
+openclaw status
+
+# 每月：清理旧会话
+openclaw sessions prune --older-than 30d
+
+# 每月：更新配置备份
+cp ~/.openclaw/openclaw.json ~/.openclaw/backup.$(date +%Y%m).json
+
+# 每季度：检查并更新
+openclaw doctor
+```
+
+**避免常见错误**：
+
+1. ❌ **不要**在配置文件中硬编码 API 密钥
+2. ❌ **不要**使用默认 Gateway 令牌
+3. ❌ **不要**忽略 `openclaw doctor` 的警告
+4. ✅ **要**定期备份配置文件
+5. ✅ **要**使用环境变量管理敏感信息
+6. ✅ **要**定期查看日志和监控
+
+---
+
+## 📝 变更历史
+
+| 版本 | 日期 | 变更内容 |
+|------|------|----------|
+| 2026.2.17 | 2026-03-05 | 添加版本标注和最佳实践章节 |
+| 2026.2.17 | 2026-02-04 | 初始翻译版本 |

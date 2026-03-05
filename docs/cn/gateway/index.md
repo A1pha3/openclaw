@@ -3,6 +3,8 @@ read_when:
   - 运行或调试 Gateway 网关进程时
 summary: Gateway 网关服务、生命周期和运维的运行手册
 title: Gateway 网关运行手册
+version: "2026.2.17"
+last_updated: "2026-03-05"
 x-i18n:
   generated_at: "2026-02-03T07:50:03Z"
   model: claude-opus-4-5
@@ -333,3 +335,356 @@ Windows 安装应使用 **WSL2** 并遵循上面的 Linux systemd 部分。
 
 - 淘汰 `openclaw gateway` 和旧版 TCP 控制端口的使用。
 - 更新客户端以使用带有强制 connect 和结构化 presence 的 WS 协议。
+
+---
+
+## 💡 运维最佳实践
+
+### 启动和重启策略
+
+**推荐启动方式**：
+
+```bash
+# 1. 首次启动（前台，查看日志）
+openclaw gateway --port 18789 --verbose
+
+# 2. 生产环境（后台，使用 systemd）
+systemctl --user enable --now openclaw-gateway.service
+
+# 3. 生产环境（后台，使用 launchd）
+openclaw gateway install
+launchctl load ~/Library/LaunchAgents/bot.molt.gateway.plist
+
+# 4. 开发环境（自动重载）
+pnpm gateway:watch
+```
+
+**重启策略**：
+
+| 场景 | 推荐操作 | 说明 |
+|------|---------|------|
+| 配置更改 | `openclaw gateway restart` | 热重载配置 |
+| 内存泄漏 | `systemctl --user restart` | 完全重启进程 |
+| 端口占用 | `openclaw gateway --force` | 强制释放端口 |
+| 配置错误 | 修复配置后重启 | 检查日志定位错误 |
+
+### 配置管理最佳实践
+
+**配置文件备份**：
+
+```bash
+# 定期备份配置
+cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak.$(date +%Y%m%d)
+
+# 保留最近 7 个备份
+find ~/.openclaw -name "*.bak.*" -mtime +7 -delete
+```
+
+**配置验证**：
+
+```bash
+# 启动前验证配置
+openclaw config get
+
+# 检查配置语法
+jq . ~/.openclaw/openclaw.json
+
+# 运行健康检查
+openclaw health
+```
+
+**敏感信息管理**：
+
+```bash
+# 使用环境变量存储敏感信息
+export GATEWAY_TOKEN=$(openssl rand -hex 32)
+export ANTHROPIC_API_KEY="sk-ant-xxx"
+
+# 在配置文件中引用
+# openclaw.json:
+{
+  "gateway": {
+    "auth": {
+      "token": "${GATEWAY_TOKEN}"
+    }
+  }
+}
+```
+
+### 监控和告警
+
+**健康检查脚本**：
+
+```bash
+#!/bin/bash
+# ~/bin/check-gateway.sh
+
+# 检查服务状态
+if ! systemctl --user is-active --quiet openclaw-gateway; then
+    echo "CRITICAL: Gateway 服务未运行"
+    exit 2
+fi
+
+# 检查 RPC 可达性
+if ! openclaw gateway status --no-probe | grep -q "running"; then
+    echo "WARNING: Gateway 服务异常"
+    exit 1
+fi
+
+# 检查 WebSocket 连接
+if ! curl -s http://127.0.0.1:18789/health | jq -e '.ok' > /dev/null; then
+    echo "CRITICAL: Gateway 健康检查失败"
+    exit 2
+fi
+
+echo "OK: Gateway 运行正常"
+exit 0
+```
+
+**监控指标**：
+
+```bash
+# 检查 Gateway 状态
+openclaw gateway status --deep
+
+# 查看最近错误
+openclaw logs --level error --since "1 hour"
+
+# 监控内存使用
+ps aux | grep "openclaw gateway" | awk '{print $6}'
+
+# 监控连接数
+lsof -i :18789 | wc -l
+```
+
+**日志轮转配置**（systemd）：
+
+```ini
+# /etc/systemd/journald.d/openclaw.conf
+[Journal]
+# 日志保留 7 天
+MaxRetentionSec=7day
+# 限制日志大小
+SystemMaxUse=500M
+```
+
+### 性能优化
+
+**内存管理**：
+
+```json5
+{
+  // 限制会话历史大小
+  agents: {
+    defaults: {
+      historyLimit: {
+        messages: 100,      // 减少历史消息数
+        maxTokens: 100000   // 限制 token 使用
+      }
+    }
+  },
+  
+  // 优化消息队列
+  messages: {
+    queue: {
+      mode: "collect",
+      debounceMs: 500,      // 减少收集窗口
+      cap: 10               // 减小批量大小
+    }
+  }
+}
+```
+
+**连接优化**：
+
+```json5
+{
+  gateway: {
+    // 限制 WebSocket 连接数
+    maxConnections: 100,
+    
+    // 设置心跳间隔
+    pingInterval: 30000,    // 30 秒
+    
+    // 设置超时
+    timeout: 10000          // 10 秒
+  }
+}
+```
+
+### 故障恢复
+
+**常见问题快速恢复**：
+
+| 问题 | 快速恢复命令 | 根本解决 |
+|------|------------|---------|
+| 端口占用 | `openclaw gateway --force` | 检查冲突进程 |
+| 配置错误 | `openclaw doctor` | 修复配置文件 |
+| 内存泄漏 | `systemctl restart` | 升级到新版本 |
+| WebSocket 断开 | 重启客户端 | 检查网络连接 |
+| 渠道离线 | `openclaw channels status` | 重新登录渠道 |
+
+**备份和恢复**：
+
+```bash
+# 完整备份
+tar -czf openclaw-backup.$(date +%Y%m%d).tar.gz \
+    ~/.openclaw/openclaw.json \
+    ~/.openclaw/credentials/ \
+    ~/.openclaw/sessions/
+
+# 恢复配置
+tar -xzf openclaw-backup.YYYYMMDD.tar.gz -C ~/
+```
+
+### 安全加固
+
+**访问控制**：
+
+```json5
+{
+  gateway: {
+    auth: {
+      // 使用强随机令牌
+      token: "${GATEWAY_TOKEN}",
+      
+      // 限制 IP 访问（可选）
+      allowIPs: ["127.0.0.1", "192.168.1.0/24"]
+    }
+  },
+  
+  channels: {
+    whatsapp: {
+      // 启用白名单
+      dmPolicy: "allowlist",
+      allowFrom: ["+15551234567"]
+    }
+  }
+}
+```
+
+**文件权限**：
+
+```bash
+# 设置配置文件权限
+chmod 600 ~/.openclaw/openclaw.json
+chmod 700 ~/.openclaw/credentials/
+chmod 700 ~/.openclaw/sessions/
+
+# 检查权限
+ls -la ~/.openclaw/
+```
+
+**定期更新令牌**：
+
+```bash
+# 生成新令牌
+NEW_TOKEN=$(openssl rand -hex 32)
+
+# 更新配置文件
+jq --arg token "$NEW_TOKEN" '.gateway.auth.token = $token' \
+    ~/.openclaw/openclaw.json > /tmp/openclaw.json && \
+    mv /tmp/openclaw.json ~/.openclaw/openclaw.json
+
+# 重启 Gateway
+openclaw gateway restart
+```
+
+### 扩展和负载均衡
+
+**多 Gateway 部署**：
+
+```bash
+# Gateway 1 - 端口 18789
+openclaw gateway --port 18789 --config ~/.openclaw/gateway1.json
+
+# Gateway 2 - 端口 18790
+openclaw gateway --port 18790 --config ~/.openclaw/gateway2.json
+
+# 使用 Nginx 负载均衡
+# /etc/nginx/conf.d/openclaw.conf
+upstream openclaw {
+    server 127.0.0.1:18789;
+    server 127.0.0.1:18790;
+}
+
+server {
+    listen 80;
+    location / {
+        proxy_pass http://openclaw;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+**渠道隔离**：
+
+```json5
+// Gateway 1 - WhatsApp
+{
+  "channels": {
+    "whatsapp": { /* 配置 */ }
+  }
+}
+
+// Gateway 2 - Telegram
+{
+  "channels": {
+    "telegram": { /* 配置 */ }
+  }
+}
+```
+
+### 定期维护任务
+
+**每日检查**：
+
+```bash
+# 检查服务状态
+openclaw gateway status
+
+# 检查错误日志
+openclaw logs --level error --since "24 hours"
+
+# 检查渠道状态
+openclaw channels status
+```
+
+**每周维护**：
+
+```bash
+# 清理旧会话
+openclaw sessions prune --older-than 7d
+
+# 备份配置
+cp ~/.openclaw/openclaw.json ~/.openclaw/weekly.$(date +%Y%m%d).json
+
+# 检查更新
+openclaw --version
+```
+
+**每月维护**：
+
+```bash
+# 深度清理
+openclaw sessions prune --older-than 30d
+
+# 完整备份
+tar -czf openclaw-backup.$(date +%Y%m).tar.gz ~/.openclaw/
+
+# 安全审计
+# - 检查配置文件权限
+# - 更新 Gateway 令牌
+# - 审查访问日志
+```
+
+---
+
+## 📝 变更历史
+
+| 版本 | 日期 | 变更内容 |
+|------|------|----------|
+| 2026.2.17 | 2026-03-05 | 添加运维最佳实践章节 |
+| 2026.2.17 | 2026-02-03 | 初始翻译版本 |

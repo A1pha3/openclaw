@@ -3,6 +3,8 @@ read_when:
   - 正在开发 Gateway 网关协议、客户端或传输层
 summary: "Gateway 网关架构完整指南：组件、流程、协议和连接生命周期"
 title: "Gateway 网关架构"
+version: "2026.2.17"
+last_updated: "2026-03-05"
 ---
 
 # Gateway 网关架构

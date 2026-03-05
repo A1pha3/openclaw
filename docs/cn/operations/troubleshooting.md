@@ -5,6 +5,8 @@ read_when:
   - 使用 openclaw doctor 等工具时
   - 排查各种错误代码时
 title: 故障排除
+version: "2026.2.17"
+last_updated: "2026-03-05"
 ---
 
 # 故障排除

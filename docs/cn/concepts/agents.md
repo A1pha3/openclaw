@@ -6,6 +6,8 @@ read_when:
   - 配置沙箱和工具限制时
   - 调试代理行为问题时
 title: "AI 代理系统"
+version: "2026.2.17"
+last_updated: "2026-03-05"
 ---
 
 # AI 代理系统
@@ -591,4 +593,3 @@ openclaw gateway --verbose
 ---
 
 > **💡 专家提示**：为不同的使用场景创建专门的代理——开发用高性能模型（Opus）、日常用平衡模型（Sonnet）、快速查询用轻量模型（Haiku）！
-

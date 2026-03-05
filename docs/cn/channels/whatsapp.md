@@ -3,6 +3,8 @@ read_when:
   - 处理 WhatsApp/网页渠道行为或收件箱路由时
 summary: WhatsApp（网页渠道）集成：登录、收件箱、回复、媒体和运维
 title: WhatsApp
+version: "2026.2.17"
+last_updated: "2026-03-05"
 x-i18n:
   generated_at: "2026-02-03T07:46:24Z"
   model: claude-opus-4-5

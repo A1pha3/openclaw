@@ -4,6 +4,8 @@ read_when:
   - 停用或更改 `openclaw-*` Skills
 summary: OpenClaw 的智能体工具接口（browser、canvas、nodes、message、cron），替代旧版 `openclaw-*` Skills
 title: 工具
+version: "2026.2.17"
+last_updated: "2026-03-05"
 x-i18n:
   generated_at: "2026-02-03T10:12:41Z"
   model: claude-opus-4-5

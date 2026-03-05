@@ -5,6 +5,8 @@ read_when:
   - 你想掌握配置文件的结构设计和最佳实践
   - 你在调试配置相关问题或需要配置验证
 title: "配置概述"
+version: "2026.2.17"
+last_updated: "2026-03-05"
 ---
 
 # ⚙️ OpenClaw 配置系统完全指南
@@ -794,26 +796,476 @@ openclaw config get --all
 
 ---
 
-## 参考资料
+## 💡 配置最佳实践
 
-### 核心文档
+### 配置管理最佳实践
 
-- [配置参考](/config/reference) - 所有配置项的详细说明
-- [配置示例](/config/examples) - 常见场景的配置模板
-- [故障排除](/help/troubleshooting) - 常见问题解决方案
-
-### 进阶阅读
-
-- [环境变量](/environment) - 环境变量配置详解
-- [日志配置](/logging) - 日志记录配置
-- [安全配置](/security) - 安全策略配置
-
-### 相关命令
+**1. 配置文件组织**
 
 ```bash
-# 配置管理命令
-openclaw config get     # 查看配置
-openclaw config set    # 设置配置
-openclaw config edit   # 编辑配置
-openclaw doctor        # 诊断配置
+# 推荐的目录结构
+~/.openclaw/
+├── openclaw.json              # 主配置文件
+├── openclaw.local.json        # 本地覆盖配置（不纳入版本控制）
+├── .env                       # 环境变量文件
+├── credentials/               # 凭据目录（权限 700）
+│   ├── anthropic/
+│   ├── openai/
+│   └── telegram/
+├── sessions/                  # 会话数据
+├── workspace/                 # 工作区
+├── logs/                      # 日志文件
+└── backups/                   # 配置备份
+    └── openclaw.20260305.json
 ```
+
+**2. 配置文件备份策略**
+
+```bash
+#!/bin/bash
+# ~/.openclaw/scripts/backup-config.sh
+
+BACKUP_DIR="~/.openclaw/backups"
+DATE=$(date +%Y%m%d)
+CONFIG_FILE="~/.openclaw/openclaw.json"
+
+# 创建备份
+mkdir -p "$BACKUP_DIR"
+cp "$CONFIG_FILE" "$BACKUP_DIR/openclaw.$DATE.json"
+
+# 保留最近 30 天的备份
+find "$BACKUP_DIR" -name "*.json" -mtime +30 -delete
+
+echo "配置已备份到：$BACKUP_DIR/openclaw.$DATE.json"
+```
+
+**3. 配置验证脚本**
+
+```bash
+#!/bin/bash
+# ~/.openclaw/scripts/validate-config.sh
+
+CONFIG_FILE="~/.openclaw/openclaw.json"
+
+# 检查文件是否存在
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "❌ 配置文件不存在：$CONFIG_FILE"
+    exit 1
+fi
+
+# 检查 JSON5 语法
+if ! npx json5 -c "$CONFIG_FILE" 2>/dev/null; then
+    echo "❌ JSON5 语法错误"
+    exit 1
+fi
+
+# 检查文件权限
+PERMS=$(stat -c %a "$CONFIG_FILE" 2>/dev/null || stat -f %Lp "$CONFIG_FILE")
+if [ "$PERMS" -gt 600 ]; then
+    echo "⚠️  配置文件权限不安全：$PERMS（建议 600）"
+fi
+
+# 运行 openclaw doctor
+if ! command -v openclaw &> /dev/null; then
+    echo "⚠️  openclaw 未安装，跳过 doctor 检查"
+else
+    openclaw doctor
+fi
+
+echo "✅ 配置验证通过"
+```
+
+### 安全配置最佳实践
+
+**1. 敏感信息管理**
+
+```bash
+# ✅ 推荐：使用环境变量
+export ANTHROPIC_API_KEY="sk-ant-xxx"
+export TELEGRAM_BOT_TOKEN="xxx"
+export GATEWAY_TOKEN=$(openssl rand -hex 32)
+
+# 在配置文件中引用
+# openclaw.json:
+{
+  "models": {
+    "providers": {
+      "anthropic": {
+        "apiKey": "${ANTHROPIC_API_KEY}"
+      }
+    }
+  },
+  "gateway": {
+    "auth": {
+      "token": "${GATEWAY_TOKEN}"
+    }
+  }
+}
+
+# ❌ 不推荐：硬编码在配置文件中
+{
+  "models": {
+    "providers": {
+      "anthropic": {
+        "apiKey": "sk-ant-xxx"  // 不要这样做！
+      }
+    }
+  }
+}
+```
+
+**2. 文件权限设置**
+
+```bash
+# 设置安全的文件权限
+chmod 600 ~/.openclaw/openclaw.json          # 仅所有者可读写
+chmod 700 ~/.openclaw/credentials/           # 仅所有者可访问
+chmod 700 ~/.openclaw/sessions/              # 仅所有者可访问
+chmod 644 ~/.openclaw/.env                   # 只读（如果必须包含）
+
+# 检查权限
+ls -la ~/.openclaw/
+
+# 推荐输出：
+# drwx------  用户  组  .openclaw
+# -rw-------  用户  组  openclaw.json
+# drwx------  用户  组  credentials/
+```
+
+**3. 访问控制配置**
+
+```json5
+{
+  // 网关访问控制
+  gateway: {
+    auth: {
+      type: "token",
+      token: "${GATEWAY_TOKEN}",
+      // 可选：限制 IP 访问
+      allowIPs: ["127.0.0.1", "192.168.1.0/24"]
+    }
+  },
+  
+  // 渠道访问控制
+  channels: {
+    whatsapp: {
+      dmPolicy: "allowlist",  // 白名单模式
+      allowFrom: [
+        "+15551234567",       // 允许的号码
+        "+15559876543"
+      ]
+    },
+    telegram: {
+      groups: {
+        "*": {
+          requireMention: true,        // 群组中需要@机器人
+          allowlistOnly: true,         // 仅允许白名单群组
+          allowlist: [
+            "-1001234567890"           // 允许的群组 ID
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+### 性能优化配置
+
+**1. 内存管理**
+
+```json5
+{
+  agents: {
+    defaults: {
+      // 限制会话历史大小
+      historyLimit: {
+        messages: 100,          // 最多保留 100 条消息
+        days: 7,                // 最多保留 7 天
+        maxTokens: 100000       // 最多 100k tokens
+      },
+      
+      // 限制并发请求
+      concurrency: {
+        max: 5,                 // 最多 5 个并发请求
+        perChannel: 2           // 每个渠道最多 2 个
+      }
+    }
+  },
+  
+  // 消息队列优化
+  messages: {
+    queue: {
+      mode: "collect",
+      debounceMs: 500,          // 减少收集窗口（默认 1000ms）
+      cap: 10                   // 减小批量大小（默认 20）
+    }
+  }
+}
+```
+
+**2. 日志优化**
+
+```json5
+{
+  logging: {
+    // 生产环境使用 warn 级别
+    level: "warn",
+    
+    // 限制日志文件大小
+    maxSize: "100M",
+    maxFiles: "7d",
+    
+    // 启用日志脱敏
+    redactSensitive: "tools",
+    
+    // 结构化日志（便于分析）
+    format: "json"
+  }
+}
+```
+
+**3. 连接优化**
+
+```json5
+{
+  gateway: {
+    // WebSocket 连接优化
+    ws: {
+      pingInterval: 30000,      // 30 秒心跳
+      pongTimeout: 10000,       // 10 秒超时
+      maxConnections: 100       // 最大连接数
+    },
+    
+    // HTTP 超时设置
+    http: {
+      timeout: 30000,           // 30 秒超时
+      keepAlive: true           // 启用长连接
+    }
+  }
+}
+```
+
+### 多环境配置模式
+
+**1. 开发/生产环境分离**
+
+```bash
+# 使用环境变量区分环境
+export OPENCLAW_ENV="production"  # 或 "development"
+
+# openclaw.json:
+{
+  agents: {
+    defaults: {
+      // 根据环境选择模型
+      model: "${OPENCLAW_ENV=development}:anthropic/claude-sonnet-4-5:anthropic/claude-opus-4-5",
+      
+      // 开发环境使用更大的上下文
+      maxTokens: "${OPENCLAW_ENV=development}:16384:8192"
+    }
+  },
+  
+  logging: {
+    // 开发环境使用 debug 级别
+    level: "${OPENCLAW_ENV=development}:debug:warn"
+  }
+}
+```
+
+**2. 使用本地覆盖文件**
+
+```bash
+# openclaw.json - 主配置文件（纳入版本控制）
+{
+  "agents": {
+    "defaults": {
+      "model": "anthropic/claude-sonnet-4-5"
+    }
+  }
+}
+
+# openclaw.local.json - 本地覆盖（不纳入版本控制）
+{
+  "agents": {
+    "defaults": {
+      "model": "anthropic/claude-opus-4-5",  // 覆盖主配置
+      "temperature": 0.9                      // 新增配置
+    }
+  },
+  "logging": {
+    "level": "debug"                          // 开发调试用
+  }
+}
+```
+
+**3. 环境特定配置文件**
+
+```bash
+# 不同环境使用不同配置文件
+export OPENCLAW_CONFIG_PATH="~/.openclaw/openclaw.production.json"
+
+# 或使用别名
+alias openclaw-dev='OPENCLAW_CONFIG_PATH=~/.openclaw/openclaw.development.json openclaw'
+alias openclaw-prod='OPENCLAW_CONFIG_PATH=~/.openclaw/openclaw.production.json openclaw'
+```
+
+### 配置模板库
+
+**1. 最小配置模板**
+
+```json5
+// 适合快速测试
+{
+  "agents": {
+    "defaults": {
+      "model": "anthropic/claude-sonnet-4-5"
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true
+    }
+  }
+}
+```
+
+**2. 标准配置模板**
+
+```json5
+// 适合单用户生产环境
+{
+  "agents": {
+    "defaults": {
+      "workspace": "~/.openclaw/workspace",
+      "model": "anthropic/claude-opus-4-5",
+      "temperature": 0.7,
+      "maxTokens": 8192,
+      "sandbox": {
+        "mode": "non-main"
+      }
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "dmPolicy": "pairing"
+    },
+    "telegram": {
+      "enabled": true,
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "port": 18789,
+    "auth": {
+      "token": "${GATEWAY_TOKEN}"
+    }
+  },
+  "logging": {
+    "level": "info",
+    "redactSensitive": "tools"
+  }
+}
+```
+
+**3. 多租户配置模板**
+
+```json5
+// 适合多用户/多机器人场景
+{
+  "agents": {
+    "defaults": {
+      "model": "anthropic/claude-opus-4-5",
+      "sandbox": {
+        "mode": "non-main"
+      }
+    },
+    // 为不同渠道定义不同的代理配置
+    "channels": {
+      "telegram-support": {
+        "model": "anthropic/claude-sonnet-4-5",
+        "temperature": 0.5
+      },
+      "telegram-sales": {
+        "model": "anthropic/claude-opus-4-5",
+        "temperature": 0.8
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
+      // 不同群组使用不同配置
+      "groups": {
+        "-1001234567890": {
+          "agent": "telegram-support",
+          "requireMention": true
+        },
+        "-1009876543210": {
+          "agent": "telegram-sales",
+          "requireMention": false
+        }
+      }
+    }
+  }
+}
+```
+
+### 配置调试技巧
+
+**1. 查看配置加载过程**
+
+```bash
+# 查看详细配置加载日志
+openclaw gateway --verbose 2>&1 | grep -i config
+
+# 查看最终生效的配置
+openclaw config get --verbose
+
+# 查看配置来源
+openclaw config get --show-sources
+```
+
+**2. 配置差异对比**
+
+```bash
+# 对比当前配置与默认配置
+openclaw config diff
+
+# 对比两个配置文件
+diff -u ~/.openclaw/openclaw.json ~/.openclaw/openclaw.local.json
+
+# 使用 jq 对比特定字段
+jq '.agents.defaults' ~/.openclaw/openclaw.json
+```
+
+**3. 配置热测试**
+
+```bash
+# 在不重启的情况下测试配置更改
+openclaw config set logging.level debug
+
+# 观察日志变化
+openclaw logs --follow | grep "config"
+
+# 如果出现问题，快速回滚
+openclaw config set logging.level info
+```
+
+---
+
+## 📝 变更历史
+
+| 版本 | 日期 | 变更内容 |
+|------|------|----------|
+| 2026.2.17 | 2026-03-05 | 添加配置最佳实践章节 |
+| 2026.2.17 | 2026-02-04 | 初始翻译版本 |
