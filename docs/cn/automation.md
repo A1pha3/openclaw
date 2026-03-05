@@ -721,8 +721,8 @@ curl -X POST http://localhost:18790/webhook/test -d '{}'
 
 ## 📖 相关文档
 
-- [Cron 任务命令](/zh-CN/cli/cron)——CLI 命令详解
-- [配置参考](/zh-CN/config/reference)——完整配置选项
-- [消息系统](/zh-CN/concepts/messages)——消息处理详解
-- [工具系统](/zh-CN/tools)——可用工具列表
-- [故障排除](/zh-CN/help/troubleshooting)——问题解决指南
+- [Cron 任务命令](/cli/cron)——CLI 命令详解
+- [配置参考](/config/reference)——完整配置选项
+- [消息系统](/concepts/messages)——消息处理详解
+- [工具系统](/tools)——可用工具列表
+- [故障排除](/help/troubleshooting)——问题解决指南

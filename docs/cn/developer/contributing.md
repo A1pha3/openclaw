@@ -241,7 +241,7 @@ async function fetchWithRetry(url: string): Promise<Response> {
 ### 文档位置
 
 - 英文文档: `docs/`
-- 中文文档: `docs/zh-CN/`
+- 中文文档: `docs/`
 
 ### 文档格式
 
@@ -251,8 +251,8 @@ async function fetchWithRetry(url: string): Promise<Response> {
 
 ```markdown
 # 正确的链接
-[配置参考](/zh-CN/config/reference)
-[网关配置](/zh-CN/concepts/gateway#配置)
+[配置参考](/config/reference)
+[网关配置](/concepts/gateway#配置)
 
 # 错误的链接
 [配置参考](./reference.md)
@@ -344,7 +344,7 @@ async function fetchWithRetry(url: string): Promise<Response> {
 
 ## 相关文档
 
-- [开发指南](/zh-CN/developer)
-- [项目结构](/zh-CN/developer/project-structure)
-- [测试指南](/zh-CN/developer/testing)
-- [插件开发](/zh-CN/developer/plugin-development)
+- [开发指南](/developer)
+- [项目结构](/developer/project-structure)
+- [测试指南](/developer/testing)
+- [插件开发](/developer/plugin-development)

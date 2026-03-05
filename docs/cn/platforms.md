@@ -785,7 +785,7 @@ openclaw doctor --verbose
 
 ## 📖 相关文档
 
-- [安装指南](/zh-CN/start/installation)——详细安装步骤
-- [配置参考](/zh-CN/config/reference)——完整配置选项
-- [运维指南](/zh-CN/operations)——生产环境运维
-- [故障排除](/zh-CN/help/troubleshooting)——问题解决指南
+- [安装指南](/start/installation)——详细安装步骤
+- [配置参考](/config/reference)——完整配置选项
+- [运维指南](/operations)——生产环境运维
+- [故障排除](/help/troubleshooting)——问题解决指南

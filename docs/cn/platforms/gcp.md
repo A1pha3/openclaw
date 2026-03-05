@@ -31,7 +31,7 @@ Gateway 可以通过以下方式访问：
 
 本指南使用 GCP Compute Engine 上的 Debian。
 Ubuntu 也可以；相应地映射软件包。
-对于通用 Docker 流程，请参阅 [Docker](/zh-CN/install/docker)。
+对于通用 Docker 流程，请参阅 [Docker](/install/docker)。
 
 ---
 
@@ -267,7 +267,7 @@ services:
       - "127.0.0.1:${OPENCLAW_GATEWAY_PORT}:18789"
 
       # 可选：仅当您针对此 VM 运行 iOS/Android 节点并需要 Canvas 主机时。
-      # 如果您公开它，请阅读 /zh-CN/gateway/security 并相应配置防火墙。
+      # 如果您公开它，请阅读 /gateway/security 并相应配置防火墙。
       # - "18793:18793"
     command:
       [
@@ -497,6 +497,6 @@ gcloud compute instances start openclaw-gateway --zone=us-central1-a
 
 ## 后续步骤
 
-- 设置消息通道：[Channels](/zh-CN/channels)
-- 将本地设备配对为节点：[Nodes](/zh-CN/nodes)
-- 配置 Gateway：[Gateway configuration](/zh-CN/gateway/configuration)
+- 设置消息通道：[Channels](/channels)
+- 将本地设备配对为节点：[Nodes](/nodes)
+- 配置 Gateway：[Gateway configuration](/gateway/configuration)

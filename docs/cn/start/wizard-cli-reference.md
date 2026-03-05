@@ -9,7 +9,7 @@ sidebarTitle: "CLI 完整参考"
 
 # CLI 配置向导完整参考
 
-本文档是 `openclaw onboard` 命令的完整参考手册。快速入门指南请参考 [CLI 配置向导](/zh-CN/start/wizard)。
+本文档是 `openclaw onboard` 命令的完整参考手册。快速入门指南请参考 [CLI 配置向导](/start/wizard)。
 
 ---
 
@@ -139,7 +139,7 @@ sidebarTitle: "CLI 完整参考"
 - 首次运行引导仪式所需的种子文件
 - AI 代理的工作目录和资源
 
-**工作区布局**：详见 [代理工作区](/zh-CN/concepts/agent-workspace)。
+**工作区布局**：详见 [代理工作区](/concepts/agent-workspace)。
 
 ---
 
@@ -169,14 +169,14 @@ sidebarTitle: "CLI 完整参考"
 
 | 渠道 | 认证方式 | 复杂度 |
 |------|----------|--------|
-| [WhatsApp](/zh-CN/channels/whatsapp) | 可选 QR 扫码登录 | ⭐⭐ |
-| [Telegram](/zh-CN/channels/telegram) | Bot Token | ⭐ |
-| [Discord](/zh-CN/channels/discord) | Bot Token | ⭐ |
-| [Google Chat](/zh-CN/channels/googlechat) | 服务账号 JSON + Webhook 受众 | ⭐⭐ |
-| [Mattermost 插件](/zh-CN/channels/mattermost) | Bot Token + 基础 URL | ⭐⭐ |
-| [Signal](/zh-CN/channels/signal) | 可选 `signal-cli` 安装 + 账号配置 | ⭐⭐⭐ |
-| [BlueBubbles](/zh-CN/channels/bluebubbles) | 服务器 URL + 密码 + Webhook | ⭐⭐ |
-| [iMessage](/zh-CN/channels/imessage) | 遗留 `imsg` CLI 路径 + 数据库访问 | ⭐⭐⭐ |
+| [WhatsApp](/channels/whatsapp) | 可选 QR 扫码登录 | ⭐⭐ |
+| [Telegram](/channels/telegram) | Bot Token | ⭐ |
+| [Discord](/channels/discord) | Bot Token | ⭐ |
+| [Google Chat](/channels/googlechat) | 服务账号 JSON + Webhook 受众 | ⭐⭐ |
+| [Mattermost 插件](/channels/mattermost) | Bot Token + 基础 URL | ⭐⭐ |
+| [Signal](/channels/signal) | 可选 `signal-cli` 安装 + 账号配置 | ⭐⭐⭐ |
+| [BlueBubbles](/channels/bluebubbles) | 服务器 URL + 密码 + Webhook | ⭐⭐ |
+| [iMessage](/channels/imessage) | 遗留 `imsg` CLI 路径 + 数据库访问 | ⭐⭐⭐ |
 
 **私信（DM）安全**：
 
@@ -345,7 +345,7 @@ sidebarTitle: "CLI 完整参考"
 <summary><strong>Vercel AI Gateway</strong></summary>
 
 - 提示输入 `AI_GATEWAY_API_KEY`
-- 详情：[Vercel AI Gateway](/zh-CN/providers/vercel-ai-gateway)
+- 详情：[Vercel AI Gateway](/providers/vercel-ai-gateway)
 
 </details>
 
@@ -353,7 +353,7 @@ sidebarTitle: "CLI 完整参考"
 <summary><strong>Cloudflare AI Gateway</strong></summary>
 
 - 提示输入账户 ID、网关 ID 和 `CLOUDFLARE_AI_GATEWAY_API_KEY`
-- 详情：[Cloudflare AI Gateway](/zh-CN/providers/cloudflare-ai-gateway)
+- 详情：[Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
 
 </details>
 
@@ -361,7 +361,7 @@ sidebarTitle: "CLI 完整参考"
 <summary><strong>MiniMax M2.5</strong></summary>
 
 - 配置自动写入
-- 详情：[MiniMax](/zh-CN/providers/minimax)
+- 详情：[MiniMax](/providers/minimax)
 
 </details>
 
@@ -369,7 +369,7 @@ sidebarTitle: "CLI 完整参考"
 <strong>Synthetic（Anthropic 兼容）</strong>
 
 - 提示输入 `SYNTHETIC_API_KEY`
-- 详情：[Synthetic](/zh-CN/providers/synthetic)
+- 详情：[Synthetic](/providers/synthetic)
 
 </details>
 
@@ -377,7 +377,7 @@ sidebarTitle: "CLI 完整参考"
 <summary><strong>Moonshot 和 Kimi Coding</strong></summary>
 
 - Moonshot (Kimi K2) 和 Kimi Coding 配置自动写入
-- 详情：[Moonshot AI (Kimi + Kimi Coding)](/zh-CN/providers/moonshot)
+- 详情：[Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
 
 </details>
 
@@ -507,9 +507,9 @@ sidebarTitle: "CLI 完整参考"
 
 | 文档 | 链接 |
 |------|------|
-| **配置中心** | [CLI 配置向导](/zh-CN/start/wizard) |
-| **自动化和脚本** | [CLI 自动化](/zh-CN/start/wizard-cli-automation) |
-| **命令参考** | [`openclaw onboard`](/zh-CN/cli/onboard) |
+| **配置中心** | [CLI 配置向导](/start/wizard) |
+| **自动化和脚本** | [CLI 自动化](/start/wizard-cli-automation) |
+| **命令参考** | [`openclaw onboard`](/cli/onboard) |
 
 ---
 

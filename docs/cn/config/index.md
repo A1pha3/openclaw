@@ -538,19 +538,19 @@ $${VAR} → 转义为 ${VAR}
 
 | 级别 | 主题 | 资源 |
 |-----|------|-----|
-| ⭐ | 基础配置创建 | [快速开始](/zh-CN/start/quick-start) |
-| ⭐⭐ | 模块化配置 | [配置参考](/zh-CN/config/reference) |
-| ⭐⭐⭐ | 高级功能使用 | [配置示例](/zh-CN/config/examples) |
-| ⭐⭐⭐⭐ | 企业级配置 | [安全配置](/zh-CN/config/security) |
+| ⭐ | 基础配置创建 | [快速开始](/start/quick-start) |
+| ⭐⭐ | 模块化配置 | [配置参考](/config/reference) |
+| ⭐⭐⭐ | 高级功能使用 | [配置示例](/config/examples) |
+| ⭐⭐⭐⭐ | 企业级配置 | [安全配置](/config/security) |
 
 ---
 
 ## 相关文档
 
-- [配置参考](/zh-CN/config/reference) - 完整配置项说明
-- [配置示例](/zh-CN/config/examples) - 更多配置示例
-- [安全配置](/zh-CN/config/security) - 安全相关设置
-- [CLI 参考](/zh-CN/cli) - 命令行工具
+- [配置参考](/config/reference) - 完整配置项说明
+- [配置示例](/config/examples) - 更多配置示例
+- [安全配置](/config/security) - 安全相关设置
+- [CLI 参考](/cli) - 命令行工具
 
 ---
 

@@ -804,7 +804,7 @@ openclaw doctor --tools
 
 ## 📖 相关文档
 
-- [配置参考](/zh-CN/config/reference)——完整配置选项
-- [开发者指南](/zh-CN/developer)——开发环境搭建
-- [插件开发](/zh-CN/developer/plugin-development)——开发扩展插件
-- [故障排除](/zh-CN/help/troubleshooting)——问题解决指南
+- [配置参考](/config/reference)——完整配置选项
+- [开发者指南](/developer)——开发环境搭建
+- [插件开发](/developer/plugin-development)——开发扩展插件
+- [故障排除](/help/troubleshooting)——问题解决指南

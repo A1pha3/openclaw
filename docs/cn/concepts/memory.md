@@ -2,49 +2,162 @@
 read_when:
   - 你想了解记忆文件布局和工作流程
   - 你想调整自动压缩前的记忆刷新
-summary: OpenClaw 记忆的工作原理（工作空间文件 + 自动记忆刷新）
-title: 记忆
-x-i18n:
-  generated_at: "2026-02-03T07:47:38Z"
-  model: claude-opus-4-5
-  provider: pi
-  source_hash: f3a7f5d9f61f9742eb3a8adbc3ccaddeadb7e48ceccdfb595327d6d1f55cd00e
-  source_path: concepts/memory.md
-  workflow: 15
+  - 你需要配置记忆搜索和向量索引
+summary: "记忆系统完整指南：记忆文件布局、自动刷新、向量搜索、混合搜索和最佳实践"
+title: "记忆系统"
 ---
 
-# 记忆
+# 记忆系统
 
-OpenClaw 记忆是**智能体工作空间中的纯 Markdown 文件**。这些文件是唯一的事实来源；模型只"记住"写入磁盘的内容。
+## 🎯 学习目标
 
-记忆搜索工具由活动的记忆插件提供（默认：`memory-core`）。使用 `plugins.slots.memory = "none"` 禁用记忆插件。
+完成本文档学习后，你将能够：
 
-## 记忆文件（Markdown）
+### 基础目标（必掌握）
 
-默认工作空间布局使用两个记忆层：
+- [ ] 理解 OpenClaw 记忆系统的核心概念
+- [ ] 掌握记忆文件的布局和使用方式
+- [ ] 了解自动记忆刷新的触发机制
+- [ ] 配置基本的向量记忆搜索
 
-- `memory/YYYY-MM-DD.md`
-  - 每日日志（仅追加）。
-  - 在会话开始时读取今天和昨天的内容。
-- `MEMORY.md`（可选）
-  - 精心整理的长期记忆。
-  - **仅在主要的私人会话中加载**（绝不在群组上下文中加载）。
+### 进阶目标（建议掌握）
 
-这些文件位于工作空间下（`agents.defaults.workspace`，默认 `~/.openclaw/workspace`）。完整布局参见[智能体工作空间](/concepts/agent-workspace)。
+- [ ] 掌握混合搜索（BM25 + 向量）配置
+- [ ] 优化记忆索引性能和缓存策略
+- [ ] 集成自定义嵌入提供商
+- [ ] 调试记忆搜索问题
 
-## 何时写入记忆
+---
 
-- 决策、偏好和持久性事实写入 `MEMORY.md`。
-- 日常笔记和运行上下文写入 `memory/YYYY-MM-DD.md`。
-- 如果有人说"记住这个"，就写下来（不要只保存在内存中）。
-- 这个领域仍在发展中。提醒模型存储记忆会有帮助；它会知道该怎么做。
-- 如果你想让某些内容持久保存，**请要求机器人将其写入**记忆。
+## 💡 为什么需要记忆系统？
 
-## 自动记忆刷新（压缩前触发）
+### 类比：记忆就像智能体的"外置大脑"
 
-当会话**接近自动压缩**时，OpenClaw 会触发一个**静默的智能体回合**，提醒模型在上下文被压缩**之前**写入持久记忆。默认提示明确说明模型*可以回复*，但通常 `NO_REPLY` 是正确的响应，因此用户永远不会看到这个回合。
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    记忆系统类比                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  人类记忆模式：                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  工作记忆（短期）        长期记忆                                │   │
+│  │  • 当前对话的上下文      • 重要的知识和经验                      │   │
+│  │  • 容量有限            • 持久保存                               │   │
+│  │  • 会话结束就丢失       • 可以随时提取                           │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  OpenClaw 记忆系统：                                                    │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  会话上下文（短期）      记忆文件（长期）                         │   │
+│  │  • 当前对话历史         • MEMORY.md（精选记忆）                  │   │
+│  │  • Token 限制           • memory/YYYY-MM-DD.md（每日日志）      │   │
+│  │  • 压缩后会丢失细节     • 持久存储在磁盘                         │   │
+│  │                         • 向量索引支持语义搜索                  │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  核心价值：                                                              │
+│  ✅ 打破上下文窗口限制 — 重要信息不丢失                                 │
+│  ✅ 跨会话连续性 — 昨天的对话今天记得                                   │
+│  ✅ 语义检索 — 用自然语言找到相关记忆                                   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
-这由 `agents.defaults.compaction.memoryFlush` 控制：
+### 核心概念
+
+| 概念 | 说明 |
+|------|------|
+| **记忆文件** | 纯 Markdown 文件，是唯一事实来源 |
+| **自动刷新** | 压缩前触发静默回合写入持久记忆 |
+| **向量搜索** | 语义检索记忆，支持模糊匹配 |
+| **混合搜索** | 向量 + BM25 关键词，兼顾语义和精确 |
+
+---
+
+## 📁 记忆文件布局
+
+### 文件结构
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    记忆文件结构                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ~/.openclaw/workspace/                                                 │
+│  ├── MEMORY.md              ──► 精选长期记忆                            │
+│  │   • 重要决策和偏好                                               │    │
+│  │   • 用户档案和习惯                                               │    │
+│  │   • 项目规则和约定                                               │    │
+│  │   • 仅在主私聊会话中加载                                          │    │
+│  │                                                                   │    │
+│  └── memory/                ──► 每日记忆日志                            │
+│      ├── 2026-03-05.md      • 按日期组织                             │    │
+│      ├── 2026-03-04.md      • 追加式写入                             │    │
+│      └── 2026-03-03.md      • 会话开始时加载今天+昨天                  │    │
+│                                                                         │
+│  加载规则：                                                              │
+│  • MEMORY.md：仅主私聊会话加载                                          │
+│  • memory/*.md：所有会话加载（今天+昨天）                              │
+│  • 群组会话：不加载 MEMORY.md                                           │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 写入策略
+
+| 内容类型 | 目标文件 | 写入时机 |
+|----------|----------|----------|
+| 重要决策、偏好 | `MEMORY.md` | 需要长期保留时 |
+| 日常笔记、上下文 | `memory/YYYY-MM-DD.md` | 会话进行中 |
+| 临时信息 | 不写入 | 依靠会话上下文 |
+
+### 写入原则
+
+```
+✅ 应写入记忆：
+- "记住我喜欢简洁的回答"
+- "这个项目使用 TypeScript"
+- "用户首选中文回复"
+- "API 密钥存储在凭证目录"
+
+❌ 不需要写入：
+- 当前正在讨论的临时问题
+- 会话内可获取的信息
+- 敏感凭证信息
+```
+
+---
+
+## 🔄 自动记忆刷新
+
+### 刷新机制
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    自动记忆刷新流程                                      │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  会话进行中 ──► Token 使用增长 ──► 接近压缩阈值                          │
+│                     │                                                   │
+│                     ▼                                                   │
+│              触发记忆刷新                                                │
+│                     │                                                   │
+│                     ▼                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  静默智能体回合                                                  │   │
+│  │  • 系统提示："Session nearing compaction. Store durable memories."│   │
+│  │  • 用户提示："Write lasting notes; reply NO_REPLY if nothing."   │   │
+│  │  • 智能体分析上下文，写入记忆文件                                │   │
+│  │  • 返回 NO_REPLY（用户看不到）                                   │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                     │                                                   │
+│                     ▼                                                   │
+│              压缩执行（记忆已安全保存）                                  │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 配置参数
 
 ```json5
 {
@@ -64,307 +177,276 @@ OpenClaw 记忆是**智能体工作空间中的纯 Markdown 文件**。这些文
 }
 ```
 
-详情：
+### 参数说明
 
-- **软阈值**：当会话 token 估计超过 `contextWindow - reserveTokensFloor - softThresholdTokens` 时触发刷新。
-- 默认**静默**：提示包含 `NO_REPLY`，因此不会发送任何内容。
-- **两个提示**：一个用户提示加一个系统提示附加提醒。
-- **每个压缩周期刷新一次**（在 `sessions.json` 中跟踪）。
-- **工作空间必须可写**：如果会话以 `workspaceAccess: "ro"` 或 `"none"` 在沙箱中运行，则跳过刷新。
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `enabled` | 是否启用自动刷新 | `true` |
+| `softThresholdTokens` | 触发刷新的剩余 Token 数 | `4000` |
+| `systemPrompt` | 系统提示内容 | "Session nearing..." |
+| `prompt` | 用户提示内容 | "Write lasting notes..." |
 
-完整的压缩生命周期参见[会话管理 + 压缩](/reference/session-management-compaction)。
+### 触发计算
 
-## 向量记忆搜索
+```
+触发时机 = 上下文窗口 - reserveTokensFloor - softThresholdTokens
 
-OpenClaw 可以在 `MEMORY.md` 和 `memory/*.md`（以及你选择加入的任何额外目录或文件）上构建小型向量索引，以便语义查询可以找到相关笔记，即使措辞不同。
-
-默认值：
-
-- 默认启用。
-- 监视记忆文件的更改（去抖动）。
-- 默认使用远程嵌入。如果未设置 `memorySearch.provider`，OpenClaw 自动选择：
-  1. 如果配置了 `memorySearch.local.modelPath` 且文件存在，则使用 `local`。
-  2. 如果可以解析 OpenAI 密钥，则使用 `openai`。
-  3. 如果可以解析 Gemini 密钥，则使用 `gemini`。
-  4. 否则记忆搜索保持禁用状态直到配置完成。
-- 本地模式使用 node-llama-cpp，可能需要运行 `pnpm approve-builds`。
-- 使用 sqlite-vec（如果可用）在 SQLite 中加速向量搜索。
-
-远程嵌入**需要**嵌入提供商的 API 密钥。OpenClaw 从身份验证配置文件、`models.providers.*.apiKey` 或环境变量解析密钥。Codex OAuth 仅涵盖聊天/补全，**不**满足记忆搜索的嵌入需求。对于 Gemini，使用 `GEMINI_API_KEY` 或 `models.providers.google.apiKey`。使用自定义 OpenAI 兼容端点时，设置 `memorySearch.remote.apiKey`（以及可选的 `memorySearch.remote.headers`）。
-
-### 额外记忆路径
-
-如果你想索引默认工作空间布局之外的 Markdown 文件，添加显式路径：
-
-```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      extraPaths: ["../team-docs", "/srv/shared-notes/overview.md"]
-    }
-  }
-}
+例如（200K 窗口）：
+200000 - 20000 - 4000 = 176000 Token 时触发
 ```
 
-说明：
+### 刷新规则
 
-- 路径可以是绝对路径或工作空间相对路径。
-- 目录会递归扫描 `.md` 文件。
-- 仅索引 Markdown 文件。
-- 符号链接被忽略（文件或目录）。
+| 规则 | 说明 |
+|------|------|
+| **静默执行** | 默认返回 NO_REPLY，用户无感知 |
+| **每周期一次** | 在 sessions.json 中跟踪，避免重复 |
+| **沙箱限制** | workspaceAccess 为 ro/none 时跳过 |
+| **工作区可写** | 必须有写入权限才能执行 |
 
-### Gemini 嵌入（原生）
+---
 
-将提供商设置为 `gemini` 以直接使用 Gemini 嵌入 API：
+## 🔍 向量记忆搜索
 
-```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      provider: "gemini",
-      model: "gemini-embedding-001",
-      remote: {
-        apiKey: "YOUR_GEMINI_API_KEY"
-      }
-    }
-  }
-}
+### 搜索架构
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    向量记忆搜索架构                                      │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  用户查询 "如何配置 GitHub 登录？"                                      │
+│     │                                                                   │
+│     ▼                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  查询嵌入（Embedding）                                          │   │
+│  │  • 将查询转换为向量                                            │   │
+│  │  • 提供商：local / openai / gemini                             │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│     │                                                                   │
+│     ▼                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  向量索引检索                                                    │   │
+│  │  • 计算余弦相似度                                              │   │
+│  │  • 返回最相关的片段                                            │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│     │                                                                   │
+│     ▼                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  混合搜索（可选）                                                │   │
+│  │  • 向量相似度 + BM25 关键词匹配                                 │   │
+│  │  • 合并排序结果                                                 │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│     │                                                                   │
+│     ▼                                                                   │
+│  返回结果：片段 + 文件路径 + 行号 + 相关度分数                          │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-说明：
+### 提供商配置
 
-- `remote.baseUrl` 是可选的（默认为 Gemini API 基础 URL）。
-- `remote.headers` 让你可以在需要时添加额外的标头。
-- 默认模型：`gemini-embedding-001`。
-
-如果你想使用**自定义 OpenAI 兼容端点**（OpenRouter、vLLM 或代理），可以使用 `remote` 配置与 OpenAI 提供商：
+#### OpenAI 嵌入
 
 ```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      provider: "openai",
-      model: "text-embedding-3-small",
-      remote: {
-        baseUrl: "https://api.example.com/v1/",
-        apiKey: "YOUR_OPENAI_COMPAT_API_KEY",
-        headers: { "X-Custom-Header": "value" }
-      }
-    }
-  }
-}
-```
-
-如果你不想设置 API 密钥，使用 `memorySearch.provider = "local"` 或设置 `memorySearch.fallback = "none"`。
-
-回退：
-
-- `memorySearch.fallback` 可以是 `openai`、`gemini`、`local` 或 `none`。
-- 回退提供商仅在主嵌入提供商失败时使用。
-
-批量索引（OpenAI + Gemini）：
-
-- OpenAI 和 Gemini 嵌入默认启用。设置 `agents.defaults.memorySearch.remote.batch.enabled = false` 以禁用。
-- 默认行为等待批处理完成；如果需要可以调整 `remote.batch.wait`、`remote.batch.pollIntervalMs` 和 `remote.batch.timeoutMinutes`。
-- 设置 `remote.batch.concurrency` 以控制我们并行提交多少个批处理作业（默认：2）。
-- 批处理模式在 `memorySearch.provider = "openai"` 或 `"gemini"` 时适用，并使用相应的 API 密钥。
-- Gemini 批处理作业使用异步嵌入批处理端点，需要 Gemini Batch API 可用。
-
-为什么 OpenAI 批处理快速又便宜：
-
-- 对于大型回填，OpenAI 通常是我们支持的最快选项，因为我们可以在单个批处理作业中提交许多嵌入请求，让 OpenAI 异步处理它们。
-- OpenAI 为 Batch API 工作负载提供折扣定价，因此大型索引运行通常比同步发送相同请求更便宜。
-- 详情参见 OpenAI Batch API 文档和定价：
-  - https://platform.openai.com/docs/api-reference/batch
-  - https://platform.openai.com/pricing
-
-配置示例：
-
-```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      provider: "openai",
-      model: "text-embedding-3-small",
-      fallback: "openai",
-      remote: {
-        batch: { enabled: true, concurrency: 2 }
-      },
-      sync: { watch: true }
-    }
-  }
-}
-```
-
-工具：
-
-- `memory_search` — 返回带有文件 + 行范围的片段。
-- `memory_get` — 按路径读取记忆文件内容。
-
-本地模式：
-
-- 设置 `agents.defaults.memorySearch.provider = "local"`。
-- 提供 `agents.defaults.memorySearch.local.modelPath`（GGUF 或 `hf:` URI）。
-- 可选：设置 `agents.defaults.memorySearch.fallback = "none"` 以避免远程回退。
-
-### 记忆工具的工作原理
-
-- `memory_search` 从 `MEMORY.md` + `memory/**/*.md` 语义搜索 Markdown 块（目标约 400 个 token，80 个 token 重叠）。它返回片段文本（上限约 700 个字符）、文件路径、行范围、分数、提供商/模型，以及我们是否从本地回退到远程嵌入。不返回完整文件内容。
-- `memory_get` 读取特定的记忆 Markdown 文件（工作空间相对路径），可选从起始行开始读取 N 行。`MEMORY.md` / `memory/` 之外的路径仅在明确列在 `memorySearch.extraPaths` 中时才允许。
-- 两个工具仅在智能体的 `memorySearch.enabled` 解析为 true 时启用。
-
-### 索引内容（及时机）
-
-- 文件类型：仅 Markdown（`MEMORY.md`、`memory/**/*.md`，以及 `memorySearch.extraPaths` 下的任何 `.md` 文件）。
-- 索引存储：每个智能体的 SQLite 位于 `~/.openclaw/memory/<agentId>.sqlite`（可通过 `agents.defaults.memorySearch.store.path` 配置，支持 `{agentId}` 令牌）。
-- 新鲜度：监视器监视 `MEMORY.md`、`memory/` 和 `memorySearch.extraPaths`，标记索引为脏（去抖动 1.5 秒）。同步在会话开始时、搜索时或按间隔安排，并异步运行。会话记录使用增量阈值触发后台同步。
-- 重新索引触发器：索引存储嵌入的**提供商/模型 + 端点指纹 + 分块参数**。如果其中任何一个发生变化，OpenClaw 会自动重置并重新索引整个存储。
-
-### 混合搜索（BM25 + 向量）
-
-启用时，OpenClaw 结合：
-
-- **向量相似度**（语义匹配，措辞可以不同）
-- **BM25 关键词相关性**（精确令牌如 ID、环境变量、代码符号）
-
-如果你的平台上全文搜索不可用，OpenClaw 会回退到纯向量搜索。
-
-#### 为什么使用混合搜索？
-
-向量搜索擅长"这意味着同一件事"：
-
-- "Mac Studio gateway host" vs "运行 gateway 的机器"
-- "debounce file updates" vs "避免每次写入都索引"
-
-但它在精确的高信号令牌上可能较弱：
-
-- ID（`a828e60`、`b3b9895a…`）
-- 代码符号（`memorySearch.query.hybrid`）
-- 错误字符串（"sqlite-vec unavailable"）
-
-BM25（全文）正好相反：擅长精确令牌，弱于释义。
-混合搜索是务实的中间地带：**同时使用两种检索信号**，这样你可以在"自然语言"查询和"大海捞针"查询上都获得好结果。
-
-#### 我们如何合并结果（当前设计）
-
-实现概述：
-
-1. 从双方检索候选池：
-
-- **向量**：按余弦相似度取前 `maxResults * candidateMultiplier` 个。
-- **BM25**：按 FTS5 BM25 排名取前 `maxResults * candidateMultiplier` 个（越低越好）。
-
-2. 将 BM25 排名转换为 0..1 范围的分数：
-
-- `textScore = 1 / (1 + max(0, bm25Rank))`
-
-3. 按块 id 合并候选并计算加权分数：
-
-- `finalScore = vectorWeight * vectorScore + textWeight * textScore`
-
-说明：
-
-- 在配置解析中 `vectorWeight` + `textWeight` 归一化为 1.0，因此权重表现为百分比。
-- 如果嵌入不可用（或提供商返回零向量），我们仍然运行 BM25 并返回关键词匹配。
-- 如果无法创建 FTS5，我们保持纯向量搜索（不会硬失败）。
-
-这不是"IR 理论完美"的，但它简单、快速，并且往往能提高真实笔记的召回率/精确率。
-如果我们以后想要更复杂的方案，常见的下一步是倒数排名融合（RRF）或在混合之前进行分数归一化（最小/最大或 z 分数）。
-
-配置：
-
-```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      query: {
-        hybrid: {
-          enabled: true,
-          vectorWeight: 0.7,
-          textWeight: 0.3,
-          candidateMultiplier: 4
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        provider: "openai",
+        model: "text-embedding-3-small",
+        remote: {
+          apiKey: "${OPENAI_API_KEY}",
+          batch: { enabled: true, concurrency: 2 }
         }
       }
     }
   }
 }
 ```
+
+#### Gemini 嵌入
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        provider: "gemini",
+        model: "gemini-embedding-001",
+        remote: {
+          apiKey: "${GEMINI_API_KEY}"
+        }
+      }
+    }
+  }
+}
+```
+
+#### 本地嵌入
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        provider: "local",
+        local: {
+          modelPath: "hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf"
+        },
+        fallback: "none"
+      }
+    }
+  }
+}
+```
+
+### 提供商对比
+
+| 提供商 | 优势 | 劣势 | 适用场景 |
+|------|------|------|----------|
+| **OpenAI** | 快速、批处理便宜 | 需要网络、API 成本 | 大型索引、生产环境 |
+| **Gemini** | 免费额度、原生支持 | 速率限制 | 个人使用、中小索引 |
+| **Local** | 完全离线、无成本 | CPU 密集、首次下载慢 | 隐私优先、离线场景 |
+
+---
+
+## 🎯 混合搜索
+
+### 为什么需要混合搜索？
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    向量搜索 vs BM25 对比                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  向量搜索擅长（语义匹配）：                                              │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  查询："Mac Studio 上运行 gateway"                              │   │
+│  │  匹配："运行 gateway 的机器" ✅                                  │   │
+│  │                                                                 │   │
+│  │  查询："防抖动文件更新"                                          │   │
+│  │  匹配："避免每次写入都索引" ✅                                   │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  向量搜索弱点（精确匹配）：                                              │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  查询："a828e60 会话 ID"                                         │   │
+│  │  匹配：可能找不到完全相同的 ID ❌                                 │   │
+│  │                                                                 │   │
+│  │  查询："memorySearch.query.hybrid 配置"                          │   │
+│  │  匹配：无法精确定位代码路径 ❌                                    │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  BM25 搜索擅长（关键词匹配）：                                           │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  • ID、哈希值、UUID                                             │   │
+│  │  • 代码符号和配置路径                                            │   │
+│  │  • 错误字符串和状态码                                            │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  混合搜索 = 两全其美！                                                   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 合并算法
+
+```
+向量候选 ──► 取前 N × 倍数 ──┐
+                              ├──► 按块 ID 合并 ──► 加权求和 ──► 最终结果
+BM25 候选 ──► 取前 N × 倍数 ──┘
+
+finalScore = vectorWeight × vectorScore + textWeight × textScore
+```
+
+### 配置示例
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        query: {
+          hybrid: {
+            enabled: true,
+            vectorWeight: 0.7,
+            textWeight: 0.3,
+            candidateMultiplier: 4
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `enabled` | 是否启用混合搜索 | `true` |
+| `vectorWeight` | 向量相似度权重 | `0.7` |
+| `textWeight` | BM25 权重 | `0.3` |
+| `candidateMultiplier` | 候选池倍数 | `4` |
+
+---
+
+## 🛠️ 记忆工具
+
+### memory_search
+
+返回相关记忆片段：
+
+```bash
+# 语义搜索
+memory_search("如何配置 OpenAI API")
+
+# 带参数搜索
+memory_search("GitHub Actions 部署", { maxResults: 5 })
+```
+
+**返回格式**：
+```json
+{
+  "fragments": [
+    {
+      "text": "片段内容...",
+      "file": "MEMORY.md",
+      "lineStart": 10,
+      "lineEnd": 15,
+      "score": 0.89,
+      "provider": "openai",
+      "model": "text-embedding-3-small"
+    }
+  ]
+}
+```
+
+### memory_get
+
+读取记忆文件内容：
+
+```bash
+# 读取整个文件
+memory_get("MEMORY.md")
+
+# 读取指定行数
+memory_get("memory/2026-03-05.md", { startLine: 1, maxLines: 50 })
+```
+
+---
+
+## ⚡ 性能优化
 
 ### 嵌入缓存
 
-OpenClaw 可以在 SQLite 中缓存**块嵌入**，这样重新索引和频繁更新（特别是会话记录）不会重新嵌入未更改的文本。
-
-配置：
-
 ```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      cache: {
-        enabled: true,
-        maxEntries: 50000
-      }
-    }
-  }
-}
-```
-
-### 会话记忆搜索（实验性）
-
-你可以选择性地索引**会话记录**并通过 `memory_search` 呈现它们。
-这由实验性标志控制。
-
-```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      experimental: { sessionMemory: true },
-      sources: ["memory", "sessions"]
-    }
-  }
-}
-```
-
-说明：
-
-- 会话索引是**选择加入**的（默认关闭）。
-- 会话更新被去抖动并在超过增量阈值后**异步索引**（尽力而为）。
-- `memory_search` 永远不会阻塞索引；在后台同步完成之前，结果可能略有延迟。
-- 结果仍然只包含片段；`memory_get` 仍然仅限于记忆文件。
-- 会话索引按智能体隔离（仅索引该智能体的会话日志）。
-- 会话日志存储在磁盘上（`~/.openclaw/agents/<agentId>/sessions/*.jsonl`）。任何具有文件系统访问权限的进程/用户都可以读取它们，因此将磁盘访问视为信任边界。对于更严格的隔离，在单独的操作系统用户或主机下运行智能体。
-
-增量阈值（显示默认值）：
-
-```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      sync: {
-        sessions: {
-          deltaBytes: 100000,   // ~100 KB
-          deltaMessages: 50     // JSONL 行数
-        }
-      }
-    }
-  }
-}
-```
-
-### SQLite 向量加速（sqlite-vec）
-
-当 sqlite-vec 扩展可用时，OpenClaw 将嵌入存储在 SQLite 虚拟表（`vec0`）中，并在数据库中执行向量距离查询。这使搜索保持快速，无需将每个嵌入加载到 JS 中。
-
-配置（可选）：
-
-```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      store: {
-        vector: {
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        cache: {
           enabled: true,
-          extensionPath: "/path/to/sqlite-vec"
+          maxEntries: 50000
         }
       }
     }
@@ -372,33 +454,24 @@ agents: {
 }
 ```
 
-说明：
+| 优势 | 说明 |
+|------|------|
+| **减少 API 调用** | 未更改的块不重新嵌入 |
+| **加快索引** | 重新索引时复用缓存 |
+| **降低成本** | 远程嵌入按使用量计费 |
 
-- `enabled` 默认为 true；禁用时，搜索回退到对存储嵌入的进程内余弦相似度计算。
-- 如果 sqlite-vec 扩展缺失或加载失败，OpenClaw 会记录错误并继续使用 JS 回退（无向量表）。
-- `extensionPath` 覆盖捆绑的 sqlite-vec 路径（对于自定义构建或非标准安装位置很有用）。
-
-### 本地嵌入自动下载
-
-- 默认本地嵌入模型：`hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf`（约 0.6 GB）。
-- 当 `memorySearch.provider = "local"` 时，`node-llama-cpp` 解析 `modelPath`；如果 GGUF 缺失，它会**自动下载**到缓存（或 `local.modelCacheDir`，如果已设置），然后加载它。下载在重试时会续传。
-- 原生构建要求：运行 `pnpm approve-builds`，选择 `node-llama-cpp`，然后运行 `pnpm rebuild node-llama-cpp`。
-- 回退：如果本地设置失败且 `memorySearch.fallback = "openai"`，我们自动切换到远程嵌入（`openai/text-embedding-3-small`，除非被覆盖）并记录原因。
-
-### 自定义 OpenAI 兼容端点示例
+### SQLite 向量加速
 
 ```json5
-agents: {
-  defaults: {
-    memorySearch: {
-      provider: "openai",
-      model: "text-embedding-3-small",
-      remote: {
-        baseUrl: "https://api.example.com/v1/",
-        apiKey: "YOUR_REMOTE_API_KEY",
-        headers: {
-          "X-Organization": "org-id",
-          "X-Project": "project-id"
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        store: {
+          vector: {
+            enabled: true,
+            extensionPath: "/path/to/sqlite-vec"
+          }
         }
       }
     }
@@ -406,7 +479,201 @@ agents: {
 }
 ```
 
-说明：
+### 批处理模式
 
-- `remote.*` 优先于 `models.providers.openai.*`。
-- `remote.headers` 与 OpenAI 标头合并；键冲突时 remote 优先。省略 `remote.headers` 以使用 OpenAI 默认值。
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        remote: {
+          batch: {
+            enabled: true,
+            concurrency: 2,
+            wait: true,
+            pollIntervalMs: 5000,
+            timeoutMinutes: 30
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+## 🔧 高级配置
+
+### 额外记忆路径
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        extraPaths: [
+          "../team-docs",           // 工作区相对路径
+          "/srv/shared-notes"       // 绝对路径
+        ]
+      }
+    }
+  }
+}
+```
+
+### 自定义 OpenAI 兼容端点
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        provider: "openai",
+        model: "text-embedding-3-small",
+        remote: {
+          baseUrl: "https://api.example.com/v1/",
+          apiKey: "${CUSTOM_API_KEY}",
+          headers: {
+            "X-Organization": "org-id",
+            "X-Project": "project-id"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### 回退配置
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        provider: "local",
+        fallback: "openai",  // local 失败时回退到 openai
+        local: {
+          modelPath: "hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf",
+          modelCacheDir: "/tmp/embedding-cache"
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+## 🧪 会话记忆搜索（实验性）
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        experimental: {
+          sessionMemory: true
+        },
+        sources: ["memory", "sessions"],
+        sync: {
+          sessions: {
+            deltaBytes: 100000,
+            deltaMessages: 50
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### 注意事项
+
+| 注意点 | 说明 |
+|--------|------|
+| **默认关闭** | 需要显式启用 |
+| **异步索引** | 不阻塞搜索，可能有延迟 |
+| **仅返回片段** | 不返回完整会话内容 |
+| **按智能体隔离** | 只索引当前智能体的会话 |
+| **磁盘访问** | 会话文件可被任何有权限的进程读取 |
+
+---
+
+## 🐛 故障排查
+
+### 常见问题
+
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+| 搜索无结果 | 索引未构建 | 检查记忆文件存在，等待索引完成 |
+| `sqlite-vec unavailable` | 扩展未加载 | 设置 `store.vector.enabled = false` 使用 JS 回退 |
+| 本地嵌入失败 | 模型下载失败 | 运行 `pnpm approve-builds`，检查网络 |
+| 批处理超时 | 大量文档 | 增加 `remote.batch.timeoutMinutes` |
+
+### 调试命令
+
+```bash
+# 检查记忆文件
+ls -la ~/.openclaw/workspace/memory/
+
+# 检查索引文件
+ls -la ~/.openclaw/memory/
+
+# 查看索引状态
+openclaw status --verbose
+```
+
+---
+
+## 🎯 最佳实践
+
+### 记忆写入
+
+| 实践 | 说明 |
+|------|------|
+| **主动请求** | 明确要求 AI 写入记忆 |
+| **分类存储** | 重要信息放 MEMORY.md，日常笔记放每日日志 |
+| **定期整理** | 清理过时信息，保持 MEMORY.md 精简 |
+
+### 性能优化
+
+| 实践 | 说明 |
+|------|------|
+| **启用缓存** | 减少重复嵌入 |
+| **批处理** | 大型索引使用 OpenAI 批处理 |
+| **本地回退** | 隐私敏感场景使用本地嵌入 |
+
+### 隐私安全
+
+| 实践 | 说明 |
+|------|------|
+| **敏感信息** | 不要写入 API 密钥、密码等 |
+| **会话索引** | 注意会话文件的访问权限 |
+| **沙箱隔离** | 多用户时使用独立工作区 |
+
+---
+
+## 📚 相关文档
+
+| 文档 | 链接 |
+|------|------|
+| [智能体工作区](/concepts/agent-workspace) | 工作区布局和文件 |
+| [压缩](/concepts/compaction) | 压缩和记忆刷新 |
+| [配置参考](/config/reference) | 完整配置选项 |
+
+---
+
+## 🎯 知识点回顾
+
+| 技能 | 掌握程度 |
+|------|----------|
+| 配置记忆文件 | ⭐⭐⭐⭐⭐ |
+| 使用记忆搜索 | ⭐⭐⭐⭐ |
+| 配置混合搜索 | ⭐⭐⭐ |
+| 性能优化 | ⭐⭐⭐ |
+
+---
+
+> **💡 专家提示**：主动要求 AI 将重要信息写入记忆（"请记住这个配置"），而不要依赖它自动记忆！

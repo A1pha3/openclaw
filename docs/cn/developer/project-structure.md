@@ -9,7 +9,7 @@ title: 项目结构
 
 # 项目结构
 
-本文档详细介绍 OpenClaw 代码库的组织结构，帮助开发者快速理解项目布局、定位代码文件以及掌握添加新功能的最佳实践。在深入代码之前，建议您先阅读[开发者手册](/zh-CN/developer/index)了解整体开发流程。本文档是代码导航的参考指南，按模块功能组织，而非按字母顺序列出所有文件。
+本文档详细介绍 OpenClaw 代码库的组织结构，帮助开发者快速理解项目布局、定位代码文件以及掌握添加新功能的最佳实践。在深入代码之前，建议您先阅读[开发者手册](/developer/index)了解整体开发流程。本文档是代码导航的参考指南，按模块功能组织，而非按字母顺序列出所有文件。
 
 ## 学习目标
 
@@ -905,9 +905,9 @@ OpenClaw 的版本号分布在多个位置，需要同步更新：
 
 | 文档 | 说明 |
 |------|------|
-| [开发者手册](/zh-CN/developer) | 开发环境搭建和规范 |
-| [测试指南](/zh-CN/developer/testing) | 测试最佳实践 |
-| [贡献指南](/zh-CN/developer/contributing) | 贡献代码指南 |
-| [插件开发](/zh-CN/developer/plugin-development) | 插件开发详细指南 |
-| [架构文档](/zh-CN/concepts/architecture) | 系统架构设计 |
-| [API 参考](/zh-CN/reference) | API 详细文档 |
+| [开发者手册](/developer) | 开发环境搭建和规范 |
+| [测试指南](/developer/testing) | 测试最佳实践 |
+| [贡献指南](/developer/contributing) | 贡献代码指南 |
+| [插件开发](/developer/plugin-development) | 插件开发详细指南 |
+| [架构文档](/concepts/architecture) | 系统架构设计 |
+| [API 参考](/reference) | API 详细文档 |

@@ -676,19 +676,19 @@ agents（多个代理）+ bindings（路由规则）+ channels（多个渠道）
 
 | 级别 | 主题 | 资源 |
 |-----|------|-----|
-| ⭐ | 基础配置 | [配置概述](/zh-CN/config/index) |
-| ⭐⭐ | 配置示例 | [配置示例](/zh-CN/config/examples) |
-| ⭐⭐⭐ | 高级配置 | [安全配置](/zh-CN/config/security) |
-| ⭐⭐⭐⭐ | 企业部署 | [运维指南](/zh-CN/operators) |
+| ⭐ | 基础配置 | [配置概述](/config/index) |
+| ⭐⭐ | 配置示例 | [配置示例](/config/examples) |
+| ⭐⭐⭐ | 高级配置 | [安全配置](/config/security) |
+| ⭐⭐⭐⭐ | 企业部署 | [运维指南](/operators) |
 
 ---
 
 ## 相关文档
 
-- [配置概述](/zh-CN/config/index) - 配置系统介绍
-- [配置示例](/zh-CN/config/examples) - 完整配置示例
-- [CLI 参考](/zh-CN/cli) - 命令行工具
-- [故障排除](/zh-CN/help/troubleshooting) - 问题排查
+- [配置概述](/config/index) - 配置系统介绍
+- [配置示例](/config/examples) - 完整配置示例
+- [CLI 参考](/cli) - 命令行工具
+- [故障排除](/help/troubleshooting) - 问题排查
 
 ---
 

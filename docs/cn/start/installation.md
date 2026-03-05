@@ -99,7 +99,7 @@ npm --version
 pnpm --version
 ```
 
-**如果版本不符合要求**，请参考[新手上路指南](/zh-CN/start/getting-started)中的 Node.js 安装说明。
+**如果版本不符合要求**，请参考[新手上路指南](/start/getting-started)中的 Node.js 安装说明。
 
 ### 平台特定要求
 
@@ -863,10 +863,10 @@ lsof -i :18789
 
 | 主题 | 文档链接 | 预计时间 |
 |------|----------|----------|
-| **快速上手** | [快速入门](/zh-CN/start/quick-start) | 5 分钟 |
-| **完整指南** | [新手上路](/zh-CN/start/getting-started) | 30 分钟 |
-| **向导模式** | [向导详解](/zh-CN/start/wizard) | 20 分钟 |
-| **配置参考** | [配置手册](/zh-CN/config/reference) | 45 分钟 |
+| **快速上手** | [快速入门](/start/quick-start) | 5 分钟 |
+| **完整指南** | [新手上路](/start/getting-started) | 30 分钟 |
+| **向导模式** | [向导详解](/start/wizard) | 20 分钟 |
+| **配置参考** | [配置手册](/config/reference) | 45 分钟 |
 
 ---
 
@@ -903,4 +903,4 @@ lsof -i :18789
 
 ---
 
-> **💡 提示**：如果本指南未能解决您的问题，请访问[故障排除](/zh-CN/help/troubleshooting)页面或提交 GitHub Issue。
+> **💡 提示**：如果本指南未能解决您的问题，请访问[故障排除](/help/troubleshooting)页面或提交 GitHub Issue。

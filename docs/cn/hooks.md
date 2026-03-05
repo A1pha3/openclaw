@@ -838,8 +838,8 @@ then:
 
 ## 📖 相关文档
 
-- [自动化](/zh-CN/automation)——Cron 和 Webhook 自动化
-- [消息系统](/zh-CN/concepts/messages)——消息处理详解
-- [工具系统](/zh-CN/tools)——可用工具列表
-- [插件开发](/zh-CN/developer/plugin-development)——开发 OpenClaw 插件
-- [配置参考](/zh-CN/config/reference)——配置选项详解
+- [自动化](/automation)——Cron 和 Webhook 自动化
+- [消息系统](/concepts/messages)——消息处理详解
+- [工具系统](/tools)——可用工具列表
+- [插件开发](/developer/plugin-development)——开发 OpenClaw 插件
+- [配置参考](/config/reference)——配置选项详解

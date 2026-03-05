@@ -764,19 +764,19 @@ openclaw logs --verbose
 
 | 级别 | 主题 | 资源 |
 |-----|------|-----|
-| ⭐ | 基础配置 | [配置概述](/zh-CN/config/index) |
-| ⭐⭐ | 配置参考 | [配置参考](/zh-CN/config/reference) |
-| ⭐⭐⭐ | 高级配置 | [安全配置](/zh-CN/config/security) |
-| ⭐⭐⭐⭐ | 企业部署 | [运维指南](/zh-CN/operators) |
+| ⭐ | 基础配置 | [配置概述](/config/index) |
+| ⭐⭐ | 配置参考 | [配置参考](/config/reference) |
+| ⭐⭐⭐ | 高级配置 | [安全配置](/config/security) |
+| ⭐⭐⭐⭐ | 企业部署 | [运维指南](/operators) |
 
 ---
 
 ## 相关文档
 
-- [配置概述](/zh-CN/config/index) - 配置系统介绍
-- [配置参考](/zh-CN/config/reference) - 完整配置选项
-- [CLI 参考](/zh-CN/cli) - 命令行工具
-- [故障排除](/zh-CN/help/troubleshooting) - 问题排查
+- [配置概述](/config/index) - 配置系统介绍
+- [配置参考](/config/reference) - 完整配置选项
+- [CLI 参考](/cli) - 命令行工具
+- [故障排除](/help/troubleshooting) - 问题排查
 
 ---
 

@@ -1,86 +1,307 @@
 ---
 read_when:
-  - 更新协议模式或代码生成
-summary: TypeBox 模式作为 Gateway 网关协议的唯一事实来源
-title: TypeBox
-x-i18n:
-  generated_at: "2026-02-03T07:47:23Z"
-  model: claude-opus-4-5
-  provider: pi
-  source_hash: 233800f4f5fabe8ed0e1b3d8aded2eca27252e08c9b0b24ea9c6293e9282c918
-  source_path: concepts/typebox.md
-  workflow: 15
+  - 需要了解 Gateway 网关协议定义
+  - 添加新的 WebSocket 方法或事件
+  - 理解运行时验证和代码生成机制
+summary: "TypeBox 协议完整指南：模式定义、运行时验证、代码生成和版本控制"
+title: "TypeBox 协议"
 ---
 
-# TypeBox 作为协议的事实来源
+# TypeBox 协议
 
-最后更新：2026-01-10
+## 🎯 学习目标
 
-TypeBox 是一个 TypeScript 优先的模式库。我们用它来定义 **Gateway 网关 WebSocket 协议**（握手、请求/响应、服务器事件）。这些模式驱动**运行时验证**、**JSON Schema 导出**和 macOS 应用的 **Swift 代码生成**。一个事实来源；其他一切都是生成的。
+完成本文档学习后，你将能够：
 
-如果你想了解更高层次的协议上下文，请从 [Gateway 网关架构](/concepts/architecture)开始。
+### 基础目标（必掌握）
 
-## 心智模型（30 秒）
+- [ ] 理解 TypeBox 作为协议事实来源的作用
+- [ ] 掌握 Gateway WebSocket 三种帧类型
+- [ ] 了解协议握手流程
+- [ ] 知道如何添加新的方法或事件
 
-每个 Gateway 网关 WS 消息都是以下三种帧之一：
+### 进阶目标（建议掌握）
 
-- **Request**：`{ type: "req", id, method, params }`
-- **Response**：`{ type: "res", id, ok, payload | error }`
-- **Event**：`{ type: "event", event, payload, seq?, stateVersion? }`
+- [ ] 实现端到端的方法添加
+- [ ] 处理协议版本兼容性
+- [ ] 理解 Swift 代码生成机制
+- [ ] 调试协议验证问题
 
-第一个帧**必须**是 `connect` 请求。之后，客户端可以调用方法（例如 `health`、`send`、`chat.send`）并订阅事件（例如 `presence`、`tick`、`agent`）。
+---
 
-连接流程（最小）：
+## 💡 为什么需要 TypeBox？
+
+### 类比：TypeBox 就像"建筑蓝图"
 
 ```
-Client                    Gateway
-  |---- req:connect -------->|
-  |<---- res:hello-ok --------|
-  |<---- event:tick ----------|
-  |---- req:health ---------->|
-  |<---- res:health ----------|
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    建筑蓝图类比                                           │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  现实场景：建筑施工                                                      │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  蓝图（单一来源）────► 所有施工方按同一标准建造                    │   │
+│  │                                                                 │   │
+│  │  好处：                                                          │   │
+│  │  • 只有一份真理                                                  │   │
+│  │  • 变更自动传播到所有方                                          │   │
+│  │  • 保证结构一致                                                  │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  OpenClaw 场景：Gateway 协议                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  TypeBox 模式 ──► TypeScript 类型                                │   │
+│  │          ├─► JSON Schema（验证）                                 │   │
+│  │          └─► Swift 模型（macOS 应用）                            │   │
+│  │                                                                 │   │
+│  │  好处：                                                          │   │
+│  │  • 定义一次，到处使用                                            │   │
+│  │  • 运行时自动验证                                                │   │
+│  │  • 跨语言类型安全                                                │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-常用方法 + 事件：
+### 核心价值
 
-| 类别 | 示例                                                      | 说明                            |
-| ---- | --------------------------------------------------------- | ------------------------------- |
-| 核心 | `connect`、`health`、`status`                             | `connect` 必须是第一个          |
-| 消息 | `send`、`poll`、`agent`、`agent.wait`                     | 有副作用的需要 `idempotencyKey` |
-| 聊天 | `chat.history`、`chat.send`、`chat.abort`、`chat.inject`  | WebChat 使用这些                |
-| 会话 | `sessions.list`、`sessions.patch`、`sessions.delete`      | 会话管理                        |
-| 节点 | `node.list`、`node.invoke`、`node.pair.*`                 | Gateway 网关 WS + 节点操作      |
-| 事件 | `tick`、`presence`、`agent`、`chat`、`health`、`shutdown` | 服务器推送                      |
+| 价值 | 说明 |
+|------|------|
+| **单一事实来源** | 一个模式定义，生成所有类型 |
+| **运行时验证** | AJV 自动验证所有帧 |
+| **跨语言支持** | 自动生成 Swift 类型 |
+| **向前兼容** | 未知帧类型保留原始数据 |
 
-权威列表在 `src/gateway/server.ts`（`METHODS`、`EVENTS`）中。
+---
 
-## 模式所在位置
+## 📦 协议帧类型
 
-- 源码：`src/gateway/protocol/schema.ts`
-- 运行时验证器（AJV）：`src/gateway/protocol/index.ts`
-- 服务器握手 + 方法分发：`src/gateway/server.ts`
-- 节点客户端：`src/gateway/client.ts`
-- 生成的 JSON Schema：`dist/protocol.schema.json`
-- 生成的 Swift 模型：`apps/macos/Sources/OpenClawProtocol/GatewayModels.swift`
+### 三种帧结构
 
-## 当前流程
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       Gateway WebSocket 帧类型                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. Request（请求帧）                                                    │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  {                                                              │   │
+│  │    type: "req",        # 帧类型                                 │   │
+│  │    id: "c1",           # 请求 ID（用于匹配响应）                  │   │
+│  │    method: "connect",  # 方法名                                 │   │
+│  │    params: { ... }     # 方法参数                               │   │
+│  │  }                                                              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  2. Response（响应帧）                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  {                                                              │   │
+│  │    type: "res",        # 帧类型                                 │   │
+│  │    id: "c1",           # 对应的请求 ID                          │   │
+│  │    ok: true,           # 成功标志                               │   │
+│  │    payload: { ... }    # 响应数据 | error: { ... } 错误信息     │   │
+│  │  }                                                              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  3. Event（事件帧）                                                      │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  {                                                              │   │
+│  │    type: "event",       # 帧类型                                │   │
+│  │    event: "tick",       # 事件名                                │   │
+│  │    payload: { ... },    # 事件数据                              │   │
+│  │    seq: 12,             # 序列号（可选）                        │   │
+│  │    stateVersion: { ... } # 状态版本（可选）                     │   │
+│  │  }                                                              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
-- `pnpm protocol:gen`
-  - 将 JSON Schema（draft‑07）写入 `dist/protocol.schema.json`
-- `pnpm protocol:gen:swift`
-  - 生成 Swift Gateway 网关模型
-- `pnpm protocol:check`
-  - 运行两个生成器并验证输出已提交
+### 连接流程
 
-## 模式在运行时的使用方式
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       Gateway 握手流程                                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Client                    Gateway                                       │
+│    │                           │                                        │
+│    │─── req:connect ───────────►│                                       │
+│    │   {                        │                                       │
+│    │     method: "connect",     │  验证:                               │
+│    │     params: {              │  • minProtocol/maxProtocol           │
+│    │       minProtocol: 2,      │  • client 信息                       │
+│    │       client: { ... }      │                                       │
+│    │     }                      │                                       │
+│    │   }                        │                                       │
+│    │                           │                                       │
+│    │◄── res:hello-ok ───────────┤                                       │
+│    │   {                        │                                       │
+│    │     payload: {             │  返回:                               │
+│    │       type: "hello-ok",    │  • 协议版本                          │
+│    │       protocol: 2,         │  • 支持的方法/事件                    │
+│    │       features: {          │  • 状态快照                          │
+│    │         methods: [...],    │  • 服务策略                          │
+│    │         events: [...]      │                                       │
+│    │       }                    │                                       │
+│    │     }                      │                                       │
+│    │   }                        │                                       │
+│    │                           │                                       │
+│    │◄── event:tick ─────────────┤  开始推送事件                         │
+│    │                           │                                       │
+│    │─── req:health ────────────►│                                       │
+│    │◄── res:health ─────────────┤                                       │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
-- **服务器端**：每个入站帧都用 AJV 验证。握手仅接受参数匹配 `ConnectParams` 的 `connect` 请求。
-- **客户端**：JS 客户端在使用之前验证事件和响应帧。
-- **方法表面**：Gateway 网关在 `hello-ok` 中公布支持的 `methods` 和 `events`。
+---
 
-## 示例帧
+## 🔧 常用方法和事件
 
-Connect（第一条消息）：
+### 方法分类
+
+| 类别 | 方法 | 说明 |
+|------|------|------|
+| **核心** | `connect`、`health`、`status` | 连接必须从 `connect` 开始 |
+| **消息** | `send`、`poll`、`agent`、`agent.wait` | 有副作用的需要 `idempotencyKey` |
+| **聊天** | `chat.history`、`chat.send`、`chat.abort` | WebChat 使用 |
+| **会话** | `sessions.list`、`sessions.patch`、`sessions.delete` | 会话管理 |
+| **节点** | `node.list`、`node.invoke`、`node.pair.*` | 节点操作 |
+
+### 事件类型
+
+| 事件 | 说明 | 触发时机 |
+|------|------|----------|
+| `tick` | 心跳事件 | 周期性发送（默认 30 秒） |
+| `presence` | 在线状态 | 客户端连接/断开 |
+| `agent` | 智能体事件 | 状态变化 |
+| `chat` | 聊天事件 | 消息更新 |
+| `health` | 健康状态 | 系统状态变化 |
+| `shutdown` | 关闭事件 | 服务器关闭 |
+
+---
+
+## 📁 模式文件位置
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       TypeBox 相关文件                                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  源码定义：                                                              │
+│  src/gateway/protocol/schema.ts ───► TypeBox 模式定义                     │
+│                                                                         │
+│  运行时验证：                                                            │
+│  src/gateway/protocol/index.ts ──► AJV 验证器                           │
+│                                                                         │
+│  服务器实现：                                                            │
+│  src/gateway/server.ts ──────────► 握手 + 方法分发                       │
+│                                                                         │
+│  客户端实现：                                                            │
+│  src/gateway/client.ts ──────────► 节点客户端                            │
+│                                                                         │
+│  生成产物：                                                              │
+│  dist/protocol.schema.json ──────► JSON Schema (draft-07)               │
+│  apps/macos/.../GatewayModels.swift ► Swift 模型                         │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔄 代码生成流程
+
+### 生成命令
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       协议生成流程                                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  pnpm protocol:gen                                                      │
+│     │                                                                   │
+│     ▼                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  1. 读取 src/gateway/protocol/schema.ts                         │   │
+│  │  2. 编译为 JSON Schema (draft-07)                               │   │
+│  │  3. 写入 dist/protocol.schema.json                              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│     │                                                                   │
+│     ▼                                                                   │
+│  pnpm protocol:gen:swift                                                │
+│     │                                                                   │
+│     ▼                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  1. 读取 protocol.schema.json                                   │   │
+│  │  2. 生成 Swift GatewayModels.swift                             │   │
+│  │  3. 写入 apps/macos/Sources/OpenClawProtocol/                   │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│     │                                                                   │
+│     ▼                                                                   │
+│  pnpm protocol:check                                                    │
+│     │                                                                   │
+│     ▼                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  运行两个生成器 + 验证输出已提交                                  │   │
+│  │  （用于 CI 检查）                                                │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 💻 运行时验证
+
+### 验证流程
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       运行时验证机制                                       │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  服务器端接收：                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  1. 接收 WebSocket 消息                                         │   │
+│  │  2. 解析 JSON                                                   │   │
+│  │  3. AJV 验证帧结构                                             │   │
+│  │  4. 验证方法参数                                                │   │
+│  │  5. 验证通过 → 执行方法                                        │   │
+│  │  6. 验证失败 → 返回错误                                        │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  客户端接收：                                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  1. 接收响应/事件                                               │   │
+│  │  2. AJV 验证帧结构                                             │   │
+│  │  3. 验证 payload                                              │   │
+│  │  4. 类型安全的处理                                             │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 方法表面
+
+Gateway 在 `hello-ok` 响应中公布支持的 `methods` 和 `events`：
+
+```json5
+{
+  payload: {
+    features: {
+      methods: ["health", "send", "chat.send", ...],
+      events: ["tick", "presence", "agent", ...]
+    }
+  }
+}
+```
+
+---
+
+## 📝 示例帧
+
+### Connect 请求（第一条消息）
 
 ```json
 {
@@ -102,7 +323,7 @@ Connect（第一条消息）：
 }
 ```
 
-Hello-ok 响应：
+### Hello-ok 响应
 
 ```json
 {
@@ -125,160 +346,331 @@ Hello-ok 响应：
 }
 ```
 
-请求 + 响应：
+### 简单请求/响应
 
 ```json
+// 请求
 { "type": "req", "id": "r1", "method": "health" }
-```
 
-```json
+// 响应
 { "type": "res", "id": "r1", "ok": true, "payload": { "ok": true } }
 ```
 
-事件：
+### 事件帧
 
 ```json
-{ "type": "event", "event": "tick", "payload": { "ts": 1730000000 }, "seq": 12 }
+{
+  "type": "event",
+  "event": "tick",
+  "payload": { "ts": 1730000000 },
+  "seq": 12
+}
 ```
 
-## 最小客户端（Node.js）
+---
 
-最小可用流程：connect + health。
+## 🛠️ 实践：添加新方法
 
-```ts
-import { WebSocket } from "ws";
+### 端到端示例
 
-const ws = new WebSocket("ws://127.0.0.1:18789");
+添加 `system.echo` 方法，返回 `{ ok: true, text }`：
 
-ws.on("open", () => {
-  ws.send(
-    JSON.stringify({
-      type: "req",
-      id: "c1",
-      method: "connect",
-      params: {
-        minProtocol: 3,
-        maxProtocol: 3,
-        client: {
-          id: "cli",
-          displayName: "example",
-          version: "dev",
-          platform: "node",
-          mode: "cli",
-        },
-      },
-    }),
-  );
-});
-
-ws.on("message", (data) => {
-  const msg = JSON.parse(String(data));
-  if (msg.type === "res" && msg.id === "c1" && msg.ok) {
-    ws.send(JSON.stringify({ type: "req", id: "h1", method: "health" }));
-  }
-  if (msg.type === "res" && msg.id === "h1") {
-    console.log("health:", msg.payload);
-    ws.close();
-  }
-});
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       添加新方法步骤                                       │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  步骤 1：定义 TypeBox 模式                                               │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  文件：src/gateway/protocol/schema.ts                           │   │
+│  │                                                                 │   │
+│  │  export const SystemEchoParamsSchema = Type.Object(             │   │
+│  │    { text: NonEmptyString },                                   │   │
+│  │    { additionalProperties: false },                            │   │
+│  │  );                                                            │   │
+│  │                                                                 │   │
+│  │  export const SystemEchoResultSchema = Type.Object(             │   │
+│  │    { ok: Type.Boolean(), text: NonEmptyString },               │   │
+│  │    { additionalProperties: false },                            │   │
+│  │  );                                                            │   │
+│  │                                                                 │   │
+│  │  // 添加到 ProtocolSchemas                                      │   │
+│  │  export const ProtocolSchemas = {                              │   │
+│  │    SystemEchoParams: SystemEchoParamsSchema,                   │   │
+│  │    SystemEchoResult: SystemEchoResultSchema,                   │   │
+│  │    // ...                                                      │   │
+│  │  }                                                             │   │
+│  │                                                                 │   │
+│  │  // 导出类型                                                    │   │
+│  │  export type SystemEchoParams = Static<typeof ...>;            │   │
+│  │  export type SystemEchoResult = Static<typeof ...>;            │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│     │                                                                   │
+│     ▼                                                                   │
+│  步骤 2：创建 AJV 验证器                                                 │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  文件：src/gateway/protocol/index.ts                            │   │
+│  │                                                                 │   │
+│  │  export const validateSystemEchoParams =                        │   │
+│  │    ajv.compile<SystemEchoParams>(SystemEchoParamsSchema);       │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│     │                                                                   │
+│     ▼                                                                   │
+│  步骤 3：实现服务器处理程序                                               │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  文件：src/gateway/server-methods/system.ts                     │   │
+│  │                                                                 │   │
+│  │  export const systemHandlers: GatewayRequestHandlers = {        │   │
+│  │    "system.echo": ({ params, respond }) => {                    │   │
+│  │      const text = String(params.text ?? "");                    │   │
+│  │      respond(true, { ok: true, text });                         │   │
+│  │    },                                                           │   │
+│  │  };                                                             │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│     │                                                                   │
+│     ▼                                                                   │
+│  步骤 4：注册方法                                                        │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  文件：src/gateway/server.ts                                    │   │
+│  │                                                                 │   │
+│  │  // 添加到 METHODS 列表                                         │   │
+│  │  export const METHODS = [                                      │   │
+│  │    // ...,                                                     │   │
+│  │    "system.echo",                                              │   │
+│  │  ] as const;                                                   │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│     │                                                                   │
+│     ▼                                                                   │
+│  步骤 5：重新生成并提交                                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  pnpm protocol:check                                           │   │
+│  │  git add dist/ apps/macos/                                     │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## 实践示例：端到端添加方法
+---
 
-示例：添加一个新的 `system.echo` 请求，返回 `{ ok: true, text }`。
+## 🍎 Swift 代码生成
 
-1. **模式（事实来源）**
+### 生成内容
 
-添加到 `src/gateway/protocol/schema.ts`：
-
-```ts
-export const SystemEchoParamsSchema = Type.Object(
-  { text: NonEmptyString },
-  { additionalProperties: false },
-);
-
-export const SystemEchoResultSchema = Type.Object(
-  { ok: Type.Boolean(), text: NonEmptyString },
-  { additionalProperties: false },
-);
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       Swift 生成器输出                                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  GatewayFrame 枚举：                                                     │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  enum GatewayFrame {                                           │   │
+│  │    case req(RequestFrame)                                       │   │
+│  │    case res(ResponseFrame)                                      │   │
+│  │    case event(EventFrame)                                       │   │
+│  │    case unknown(UnparsedFrame)    # 向前兼容                     │   │
+│  │  }                                                              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  强类型 Payload：                                                        │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  struct ConnectParams { ... }                                   │   │
+│  │  struct HealthResult { ... }                                    │   │
+│  │  struct TickEvent { ... }                                       │   │
+│  │  // 所有模式和结果都有对应 Swift 结构体                          │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  错误码和常量：                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  enum ErrorCode { ... }                                         │   │
+│  │  let GATEWAY_PROTOCOL_VERSION = 2                               │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-将两者添加到 `ProtocolSchemas` 并导出类型：
+### 向前兼容
 
-```ts
-  SystemEchoParams: SystemEchoParamsSchema,
-  SystemEchoResult: SystemEchoResultSchema,
+未知的帧类型保留为原始 payload，避免破坏旧客户端：
+
+```swift
+case unknown(UnparsedFrame)  // 新类型不会崩溃旧应用
 ```
 
-```ts
-export type SystemEchoParams = Static<typeof SystemEchoParamsSchema>;
-export type SystemEchoResult = Static<typeof SystemEchoResultSchema>;
+---
+
+## 🔒 版本控制与兼容性
+
+### 协议版本机制
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       协议版本控制                                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  客户端请求：                                                            │
+│  {                                                                      │
+│    minProtocol: 2,    # 支持的最低版本                                  │
+│    maxProtocol: 3     # 支持的最高版本                                  │
+│  }                                                                      │
+│                                                                         │
+│  服务器检查：                                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  if (serverVersion < clientMinProtocol) {                       │   │
+│  │    // 服务器太旧，拒绝连接                                      │   │
+│  │    return error("server too old");                              │   │
+│  │  }                                                              │   │
+│  │                                                                 │   │
+│  │  if (serverVersion > clientMaxProtocol) {                       │   │
+│  │    // 客户端太旧，拒绝连接                                      │   │
+│  │    return error("client too old");                              │   │
+│  │  }                                                              │   │
+│  │                                                                 │   │
+│  │  // 版本匹配，使用协商的版本                                     │   │
+│  │  negotiatedVersion = min(serverVersion, clientMaxProtocol)       │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-2. **验证**
+### 兼容性策略
 
-在 `src/gateway/protocol/index.ts` 中，导出一个 AJV 验证器：
+| 变更类型 | 影响 | 策略 |
+|---------|------|------|
+| 新增方法 | 无 | 旧客户端忽略 |
+| 新增事件 | 无 | 旧客户端忽略 |
+| 修改参数 | 破坏 | 增加协议版本 |
+| 删除方法 | 破坏 | 增加协议版本 |
 
-```ts
-export const validateSystemEchoParams = ajv.compile<SystemEchoParams>(SystemEchoParamsSchema);
+---
+
+## 📐 模式约定
+
+### 设计原则
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       TypeBox 模式设计原则                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. 严格 Payload                                                        │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  Type.Object({ ... }, { additionalProperties: false })          │   │
+│  │                                                                 │   │
+│  │  拒绝未知字段，确保数据清晰                                       │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  2. 非空字符串                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  const NonEmptyString = Type.RegExp(/^.+$/);                    │   │
+│  │                                                                 │   │
+│  │  用于 ID、方法名、事件名                                         │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  3. 鉴别器类型                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  type 字段作为鉴别器区分 req/res/event                           │   │
+│  │                                                                 │   │
+│  │  确保帧类型清晰可解析                                            │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  4. 幂等性键                                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  有副作用的方法需要 idempotencyKey                               │   │
+│  │                                                                 │   │
+│  │  示例：send, poll, agent, chat.send                             │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-3. **服务器行为**
+---
 
-在 `src/gateway/server-methods/system.ts` 中添加处理程序：
+## 🐛 故障排查
 
-```ts
-export const systemHandlers: GatewayRequestHandlers = {
-  "system.echo": ({ params, respond }) => {
-    const text = String(params.text ?? "");
-    respond(true, { ok: true, text });
-  },
-};
-```
+### 常见问题
 
-在 `src/gateway/server-methods.ts` 中注册（已合并 `systemHandlers`），然后将 `"system.echo"` 添加到 `src/gateway/server.ts` 中的 `METHODS`。
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+| 协议版本不匹配 | `minProtocol`/`maxProtocol` 错误 | 检查客户端版本配置 |
+| 验证失败 | 参数不符合模式 | 检查参数结构和类型 |
+| 方法不存在 | 未在 `METHODS` 中注册 | 添加到 `server.ts` 的 `METHODS` 列表 |
+| Swift 类型缺失 | 未运行代码生成 | 运行 `pnpm protocol:gen:swift` |
 
-4. **重新生成**
+### 调试命令
 
 ```bash
+# 重新生成协议
+pnpm protocol:gen
+
+# 验证协议输出
 pnpm protocol:check
+
+# 查看生成的 JSON Schema
+cat dist/protocol.schema.json
+
+# 测试协议验证
+# 在代码中添加日志查看 AJV 验证错误
 ```
 
-5. **测试 + 文档**
+### 验证失败处理
 
-在 `src/gateway/server.*.test.ts` 中添加服务器测试，并在文档中记录该方法。
+```typescript
+// AJV 验证错误示例
+{
+  "type": "req",
+  "id": "test",
+  "method": "system.echo",
+  "params": {
+    "text": ""  // ❌ NonEmptyString 不接受空字符串
+}
+```
 
-## Swift 代码生成行为
+修复：确保字符串非空或修改模式允许空字符串。
 
-Swift 生成器输出：
+---
 
-- 带有 `req`、`res`、`event` 和 `unknown` 情况的 `GatewayFrame` 枚举
-- 强类型的 payload 结构体/枚举
-- `ErrorCode` 值和 `GATEWAY_PROTOCOL_VERSION`
+## 🎯 最佳实践
 
-未知的帧类型保留为原始 payload 以实现向前兼容。
+### 添加方法时
 
-## 版本控制 + 兼容性
+1. **先定义模式** — 在 `schema.ts` 中定义
+2. **生成验证器** — 在 `protocol/index.ts` 中添加
+3. **实现处理程序** — 在对应的 `server-methods/*.ts` 中
+4. **注册方法** — 在 `server.ts` 的 `METHODS` 中
+5. **重新生成** — 运行 `pnpm protocol:check`
+6. **测试和文档** — 添加测试用例和文档
 
-- `PROTOCOL_VERSION` 在 `src/gateway/protocol/schema.ts` 中。
-- 客户端发送 `minProtocol` + `maxProtocol`；服务器拒绝不匹配的。
-- Swift 模型保留未知帧类型以避免破坏旧客户端。
+### 模式设计建议
 
-## 模式模式和约定
+| 实践 | 说明 |
+|------|------|
+| 严格模式 | 使用 `additionalProperties: false` |
+| 非空字符串 | ID 和名称使用 `NonEmptyString` |
+| 可选字段 | 使用 `Type.Optional(...)` |
+| 联合类型 | 使用 `Type.Union([...])` |
+| 数组验证 | 使用 `Type.Array(...)` |
 
-- 大多数对象使用 `additionalProperties: false` 以实现严格的 payload。
-- `NonEmptyString` 是 ID 和方法/事件名称的默认值。
-- 顶层 `GatewayFrame` 在 `type` 上使用**鉴别器**。
-- 有副作用的方法通常需要在 params 中包含 `idempotencyKey`（示例：`send`、`poll`、`agent`、`chat.send`）。
+---
 
-## 实时 schema JSON
+## 📚 相关文档
 
-生成的 JSON Schema 在仓库的 `dist/protocol.schema.json` 中。发布的原始文件通常可在以下位置获取：
+| 文档 | 链接 |
+|------|------|
+| [Gateway 架构](/cn/concepts/architecture) | 协议上下文 |
+| [节点连接](/cn/nodes) | 节点客户端 |
+| [配置参考](/cn/config/reference) | 完整配置 |
 
-- https://raw.githubusercontent.com/openclaw/openclaw/main/dist/protocol.schema.json
+---
 
-## 当你更改模式时
+## 🎯 知识点回顾
 
-1. 更新 TypeBox 模式。
-2. 运行 `pnpm protocol:check`。
-3. 提交重新生成的 schema + Swift 模型。
+| 技能 | 掌握程度 |
+|------|----------|
+| 理解三种帧类型 | ⭐⭐⭐⭐⭐ |
+| 添加新方法 | ⭐⭐⭐⭐ |
+| 运行时验证 | ⭐⭐⭐⭐ |
+| Swift 代码生成 | ⭐⭐⭐ |
+
+---
+
+> **💡 专家提示**：修改协议后始终运行 `pnpm protocol:check` — 确保 JSON Schema 和 Swift 模型同步提交，避免破坏跨语言兼容性！

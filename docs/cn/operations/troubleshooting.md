@@ -1277,8 +1277,8 @@ echo "请将此文件附加到您的 Issue 或支持请求中"
 
 | 文档 | 说明 |
 |------|------|
-| [运维手册](/zh-CN/operations/index) | 运维最佳实践和整体架构 |
-| [部署指南](/zh-CN/operations/deployment) | 详细部署步骤和配置 |
-| [监控指南](/zh-CN/operations/monitoring) | 监控配置和告警策略 |
-| [配置参考](/zh-CN/gateway/configuration) | 配置选项详细说明 |
-| [快速入门](/zh-CN/start/quick-start) | 重新开始安装流程 |
+| [运维手册](/operations/index) | 运维最佳实践和整体架构 |
+| [部署指南](/operations/deployment) | 详细部署步骤和配置 |
+| [监控指南](/operations/monitoring) | 监控配置和告警策略 |
+| [配置参考](/gateway/configuration) | 配置选项详细说明 |
+| [快速入门](/start/quick-start) | 重新开始安装流程 |

@@ -452,6 +452,6 @@ jobs:
 
 ## 相关文档
 
-- [开发指南](/zh-CN/developer)
-- [项目结构](/zh-CN/developer/project-structure)
-- [贡献指南](/zh-CN/developer/contributing)
+- [开发指南](/developer)
+- [项目结构](/developer/project-structure)
+- [贡献指南](/developer/contributing)

@@ -778,9 +778,9 @@ openclaw config get models.providers.custom.endpoint
 
 ### 核心文档
 
-- [配置概述](/zh-CN/config) - 配置系统详解
-- [配置参考](/zh-CN/config/reference) - 完整配置项
-- [故障排除](/zh-CN/help/troubleshooting) - 常见问题
+- [配置概述](/config) - 配置系统详解
+- [配置参考](/config/reference) - 完整配置项
+- [故障排除](/help/troubleshooting) - 常见问题
 
 ### 相关命令
 

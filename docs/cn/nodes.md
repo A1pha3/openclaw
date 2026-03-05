@@ -691,8 +691,8 @@ openclaw nodes disable <node-id>
 
 ## 📖 相关文档
 
-- [部署指南](/zh-CN/platforms)——各平台部署详情
-- [配置参考](/zh-CN/config/reference)——完整配置选项
-- [语音对话](/zh-CN/nodes/talk)——语音交互详情
-- [语音唤醒](/zh-CN/nodes/voicewake)——唤醒功能详情
-- [故障排除](/zh-CN/help/troubleshooting)——问题解决指南
+- [部署指南](/platforms)——各平台部署详情
+- [配置参考](/config/reference)——完整配置选项
+- [语音对话](/nodes/talk)——语音交互详情
+- [语音唤醒](/nodes/voicewake)——唤醒功能详情
+- [故障排除](/help/troubleshooting)——问题解决指南

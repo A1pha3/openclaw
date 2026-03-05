@@ -747,8 +747,8 @@ pnpm publish --tag beta
 
 ## 📖 相关文档
 
-- [项目结构](/zh-CN/developer/project-structure)——代码结构详解
-- [插件开发](/zh-CN/developer/plugin-development)——开发扩展插件
-- [测试指南](/zh-CN/developer/testing)——测试最佳实践
-- [贡献指南](/zh-CN/developer/contributing)——代码贡献规范
-- [API 文档](/zh-CN/reference)——API 参考
+- [项目结构](/developer/project-structure)——代码结构详解
+- [插件开发](/developer/plugin-development)——开发扩展插件
+- [测试指南](/developer/testing)——测试最佳实践
+- [贡献指南](/developer/contributing)——代码贡献规范
+- [API 文档](/reference)——API 参考

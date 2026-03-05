@@ -719,9 +719,9 @@ openclaw gateway restart
 
 ### 核心文档
 
-- [日志记录](/zh-CN/logging) - 日志系统详解
-- [诊断标志](/zh-CN/diagnostics/flags) - 定向调试日志
-- [开发模式](/zh-CN/developer) - 开发配置
+- [日志记录](/logging) - 日志系统详解
+- [诊断标志](/diagnostics/flags) - 定向调试日志
+- [开发模式](/developer) - 开发配置
 
 ### 相关命令速查
 

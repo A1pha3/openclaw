@@ -941,8 +941,8 @@ openclaw doctor --security
 
 ## 📖 相关文档
 
-- [系统架构](/zh-CN/concepts/architecture)——整体架构详解
-- [配置参考](/zh-CN/config/reference)——完整配置选项
-- [安全指南](/zh-CN/gateway/security)——安全最佳实践
-- [远程访问](/zh-CN/gateway/remote)——远程访问配置
-- [故障排除](/zh-CN/help/troubleshooting)——问题解决指南
+- [系统架构](/concepts/architecture)——整体架构详解
+- [配置参考](/config/reference)——完整配置选项
+- [安全指南](/gateway/security)——安全最佳实践
+- [远程访问](/gateway/remote)——远程访问配置
+- [故障排除](/help/troubleshooting)——问题解决指南

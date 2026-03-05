@@ -2,14 +2,14 @@
 
 ## Read When
 
-- 维护 `docs/zh-CN/**`
+- 维护 `docs/**`
 - 更新中文翻译流水线（glossary/TM/prompt）
 - 处理中文翻译反馈或回归
 
 ## Pipeline（docs-i18n）
 
 - 源文档：`docs/**/*.md`
-- 目标文档：`docs/zh-CN/**/*.md`
+- 目标文档：`docs/**/*.md`
 - 术语表：`docs/.i18n/glossary.zh-CN.json`
 - 翻译记忆库：`docs/.i18n/zh-CN.tm.jsonl`
 - 提示词规则：`scripts/docs-i18n/translator.go`

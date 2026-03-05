@@ -2,157 +2,233 @@
 read_when:
   - 你需要按提供商分类的模型设置参考
   - 你需要模型提供商的示例配置或 CLI 新手引导命令
-summary: 模型提供商概述，包含示例配置和 CLI 流程
-title: 模型提供商
-x-i18n:
-  generated_at: "2026-02-03T07:46:28Z"
-  model: claude-opus-4-5
-  provider: pi
-  source_hash: 14f73e5a9f9b7c6f017d59a54633942dba95a3eb50f8848b836cfe0b9f6d7719
-  source_path: concepts/model-providers.md
-  workflow: 15
+  - 你想配置自定义模型提供商
+summary: "模型提供商完整指南：内置提供商、自定义配置、认证方式、CLI 命令和最佳实践"
+title: "模型提供商"
 ---
 
 # 模型提供商
 
-本页介绍 **LLM/模型提供商**（不是 WhatsApp/Telegram 等聊天渠道）。
-关于模型选择规则，请参阅 [/concepts/models](/concepts/models)。
+## 🎯 学习目标
 
-## 快速规则
+完成本文档学习后，你将能够：
 
-- 模型引用使用 `provider/model` 格式（例如：`opencode/claude-opus-4-5`）。
-- 如果设置了 `agents.defaults.models`，它将成为允许列表。
-- CLI 辅助工具：`openclaw onboard`、`openclaw models list`、`openclaw models set <provider/model>`。
+### 基础目标（必掌握）
 
-## 内置提供商（pi-ai 目录）
+- [ ] 理解 OpenClaw 内置提供商的类型和特点
+- [ ] 掌握主要提供商的配置方法
+- [ ] 区分内置提供商和自定义提供商
+- [ ] 使用 CLI 命令配置模型认证
 
-OpenClaw 附带 pi-ai 目录。这些提供商**不需要** `models.providers` 配置；只需设置认证 + 选择模型。
+### 进阶目标（建议掌握）
 
-### OpenAI
+- [ ] 配置自定义模型提供商
+- [ ] 理解 OpenAI 兼容端点的配置
+- [ ] 处理多提供商和回退策略
+- [ ] 调试提供商认证问题
 
-- 提供商：`openai`
-- 认证：`OPENAI_API_KEY`
-- 示例模型：`openai/gpt-5.2`
-- CLI：`openclaw onboard --auth-choice openai-api-key`
+---
 
-```json5
-{
-  agents: { defaults: { model: { primary: "openai/gpt-5.2" } } },
-}
+## 💡 提供商类型
+
+### 内置 vs 自定义
+
 ```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    提供商类型                                           │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  内置提供商（pi-ai 目录）                                              │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  • 无需 models.providers 配置                                    │   │
+│  │  • 开箱即用                                                    │   │
+│  │  • 自动处理认证和模型                                        │   │
+│  │                                                                 │   │
+│  │  示例：                                                          │   │
+│  │  • anthropic（Anthropic 官方）                                   │   │
+│  │  • openai（OpenAI 官方）                                         │   │
+│  │  • openai-codex（OpenAI Code/Codex）                             │   │
+│  │  • google（Gemini）                                              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  自定义提供商（models.providers 配置）                                   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  • 需要 models.providers 或 models.json                           │   │
+│  │  • 支持 OpenAI 兼容端点                                        │   │
+│  │  • 可自定义 baseUrl、apiKey、models                              │   │
+│  │                                                                 │   │
+│  │  示例：                                                          │   │
+│  │  • moonshot（月之暗面 Kimi）                                       │   │
+│  │  • minimax（MiniMax AI）                                          │   │
+│  │  • ollama（本地运行时）                                          │   │
+│  │  • LM Studio（本地代理）                                        │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 模型引用格式
+
+```
+格式：provider/model
+
+示例：
+• anthropic/claude-sonnet-4-20250514
+• openai/gpt-4o
+• openrouter/moonshotai/kimi-k2
+• ollama/llama3.3
+
+注意：提供商标/别名规范化为小写
+z.ai/* → zai/*
+z-ai/* → zai/*
+```
+
+---
+
+## 🚀 快速开始
+
+### CLI 向导（推荐）
+
+```bash
+# 启动向导
+openclaw onboard
+
+# 选择认证方式
+openclaw onboard --auth-choice token           # API 密钥
+openclaw onboard --auth-choice openai-api-key    # OpenAI API 密钥
+openclaw onboard --auth-choice openai-codex      # OpenAI OAuth
+openclaw onboard --auth-choice opencode-zen      # OpenCode Zen
+```
+
+### 快速命令
+
+```bash
+# 列出可用模型
+openclaw models list
+
+# 设置默认模型
+openclaw models set anthropic/claude-sonnet-4-20250514
+
+# 查看状态
+openclaw models status
+```
+
+---
+
+## 🏢 内置提供商
 
 ### Anthropic
 
-- 提供商：`anthropic`
-- 认证：`ANTHROPIC_API_KEY` 或 `claude setup-token`
-- 示例模型：`anthropic/claude-opus-4-5`
-- CLI：`openclaw onboard --auth-choice token`（粘贴 setup-token）或 `openclaw models auth paste-token --provider anthropic`
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  提供商：anthropic                                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  认证方式：                                                              │
+│  • ANTHROPIC_API_KEY（API 密钥，推荐）                              │
+│  • claude setup-token（订阅令牌）                                   │
+│                                                                         │
+│  示例模型：                                                              │
+│  • anthropic/claude-sonnet-4-20250514                               │
+│  • anthropic/claude-opus-4-20250514                                │
+│  • anthropic/claude-haiku-3-5-20241022                              │
+│                                                                         │
+│  CLI 命令：                                                              │
+│  openclaw onboard --auth-choice token                                   │
+│  openclaw models auth paste-token --provider anthropic                │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
-```json5
-{
-  agents: { defaults: { model: { primary: "anthropic/claude-opus-4-5" } } },
-}
+### OpenAI
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  提供商：openai                                                       │
+├─────────────────────────────────────────────────────────────────────────┤
+│  认证方式：OPENAI_API_KEY                                            │
+│                                                                         │
+│  示例模型：                                                              │
+│  • openai/gpt-4o                                                     │
+│  • openai/gpt-4o-mini                                                │
+│  • openai/o1-preview                                               │
+│                                                                         │
+│  CLI 命令：                                                              │
+│  openclaw onboard --auth-choice openai-api-key                           │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### OpenAI Code (Codex)
 
-- 提供商：`openai-codex`
-- 认证：OAuth (ChatGPT)
-- 示例模型：`openai-codex/gpt-5.2`
-- CLI：`openclaw onboard --auth-choice openai-codex` 或 `openclaw models auth login --provider openai-codex`
-
-```json5
-{
-  agents: { defaults: { model: { primary: "openai-codex/gpt-5.2" } } },
-}
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  提供商：openai-codex                                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│  认证方式：OAuth (ChatGPT)                                            │
+│                                                                         │
+│  示例模型：                                                              │
+│  • openai-codex/gpt-5.2                                              │
+│                                                                         │
+│  CLI 命令：                                                              │
+│  openclaw onboard --auth-choice openai-codex                             │
+│  openclaw models auth login --provider openai-codex                      │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### OpenCode Zen
+### Google Gemini
 
-- 提供商：`opencode`
-- 认证：`OPENCODE_API_KEY`（或 `OPENCODE_ZEN_API_KEY`）
-- 示例模型：`opencode/claude-opus-4-5`
-- CLI：`openclaw onboard --auth-choice opencode-zen`
-
-```json5
-{
-  agents: { defaults: { model: { primary: "opencode/claude-opus-4-5" } } },
-}
 ```
-
-### Google Gemini（API 密钥）
-
-- 提供商：`google`
-- 认证：`GEMINI_API_KEY`
-- 示例模型：`google/gemini-3-pro-preview`
-- CLI：`openclaw onboard --auth-choice gemini-api-key`
-
-### Google Vertex、Antigravity 和 Gemini CLI
-
-- 提供商：`google-vertex`、`google-antigravity`、`google-gemini-cli`
-- 认证：Vertex 使用 gcloud ADC；Antigravity/Gemini CLI 使用各自的认证流程
-- Antigravity OAuth 作为捆绑插件提供（`google-antigravity-auth`，默认禁用）。
-  - 启用：`openclaw plugins enable google-antigravity-auth`
-  - 登录：`openclaw models auth login --provider google-antigravity --set-default`
-- Gemini CLI OAuth 作为捆绑插件提供（`google-gemini-cli-auth`，默认禁用）。
-  - 启用：`openclaw plugins enable google-gemini-cli-auth`
-  - 登录：`openclaw models auth login --provider google-gemini-cli --set-default`
-  - 注意：你**不需要**将客户端 ID 或密钥粘贴到 `openclaw.json` 中。CLI 登录流程将令牌存储在 Gateway 网关主机的认证配置文件中。
+┌─────────────────────────────────────────────────────────────────────────┐
+│  提供商：google                                                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│  认证方式：GEMINI_API_KEY                                             │
+│                                                                         │
+│  示例模型：                                                              │
+│  • google/gemini-2.5-pro-preview                                   │
+│  • google/gemini-2.0-flash-exp                                     │
+│                                                                         │
+│  CLI 命令：                                                              │
+│  openclaw onboard --auth-choice gemini-api-key                           │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 ### Z.AI (GLM)
 
-- 提供商：`zai`
-- 认证：`ZAI_API_KEY`
-- 示例模型：`zai/glm-4.7`
-- CLI：`openclaw onboard --auth-choice zai-api-key`
-  - 别名：`z.ai/*` 和 `z-ai/*` 规范化为 `zai/*`
-
-### Vercel AI Gateway
-
-- 提供商：`vercel-ai-gateway`
-- 认证：`AI_GATEWAY_API_KEY`
-- 示例模型：`vercel-ai-gateway/anthropic/claude-opus-4.5`
-- CLI：`openclaw onboard --auth-choice ai-gateway-api-key`
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  提供商：zai                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  认证方式：ZAI_API_KEY                                               │
+│                                                                         │
+│  示例模型：                                                              │
+│  • zai/glm-4-plus                                                  │
+│  • zai/glm-4-plus-0115                                             │
+│                                                                         │
+│  CLI 命令：                                                              │
+│  openclaw onboard --auth-choice zai-api-key                              │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 ### 其他内置提供商
 
-- OpenRouter：`openrouter`（`OPENROUTER_API_KEY`）
-- 示例模型：`openrouter/anthropic/claude-sonnet-4-5`
-- xAI：`xai`（`XAI_API_KEY`）
-- Groq：`groq`（`GROQ_API_KEY`）
-- Cerebras：`cerebras`（`CEREBRAS_API_KEY`）
-  - Cerebras 上的 GLM 模型使用 ID `zai-glm-4.7` 和 `zai-glm-4.6`。
-  - OpenAI 兼容的基础 URL：`https://api.cerebras.ai/v1`。
-- Mistral：`mistral`（`MISTRAL_API_KEY`）
-- GitHub Copilot：`github-copilot`（`COPILOT_GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_TOKEN`）
+| 提供商 | 认证 | 示例模型 |
+|--------|------|----------|
+| **openrouter** | `OPENROUTER_API_KEY` | `openrouter/anthropic/claude-sonnet-4-5` |
+| **xai** | `XAI_API_KEY` | `xai/grok-beta` |
+| **groq** | `GROQ_API_KEY` | `groq/llama-3.3-70b` |
+| **cerebras** | `CEREBRAS_API_KEY` | `cerebras/zai-glm-4.7` |
+| **mistral** | `MISTRAL_API_KEY` | `mistral/mistral-large` |
+| **github-copilot** | `COPILOT_GITHUB_TOKEN` | `github-copilot/gpt-4` |
+| **opencode** | `OPENCODE_API_KEY` | `opencode/claude-opus-4-5` |
 
-## 通过 `models.providers` 配置的提供商（自定义/基础 URL）
+---
 
-使用 `models.providers`（或 `models.json`）添加**自定义**提供商或 OpenAI/Anthropic 兼容的代理。
+## 🔧 自定义提供商
 
 ### Moonshot AI (Kimi)
-
-Moonshot 使用 OpenAI 兼容端点，因此将其配置为自定义提供商：
-
-- 提供商：`moonshot`
-- 认证：`MOONSHOT_API_KEY`
-- 示例模型：`moonshot/kimi-k2.5`
-
-Kimi K2 模型 ID：
-
-{/_ moonshot-kimi-k2-model-refs:start _/ && null}
-
-- `moonshot/kimi-k2.5`
-- `moonshot/kimi-k2-0905-preview`
-- `moonshot/kimi-k2-turbo-preview`
-- `moonshot/kimi-k2-thinking`
-- `moonshot/kimi-k2-thinking-turbo`
-  {/_ moonshot-kimi-k2-model-refs:end _/ && null}
 
 ```json5
 {
   agents: {
-    defaults: { model: { primary: "moonshot/kimi-k2.5" } },
+    defaults: { model: { primary: "moonshot/kimi-k2.5" } }
   },
   models: {
     mode: "merge",
@@ -161,119 +237,69 @@ Kimi K2 模型 ID：
         baseUrl: "https://api.moonshot.ai/v1",
         apiKey: "${MOONSHOT_API_KEY}",
         api: "openai-completions",
-        models: [{ id: "kimi-k2.5", name: "Kimi K2.5" }],
-      },
-    },
-  },
+        models: [{ id: "kimi-k2.5", name: "Kimi K2.5" }]
+      }
+    }
+  }
 }
 ```
 
 ### Kimi Coding
 
-Kimi Coding 使用 Moonshot AI 的 Anthropic 兼容端点：
-
-- 提供商：`kimi-coding`
-- 认证：`KIMI_API_KEY`
-- 示例模型：`kimi-coding/k2p5`
-
 ```json5
 {
   env: { KIMI_API_KEY: "sk-..." },
   agents: {
-    defaults: { model: { primary: "kimi-coding/k2p5" } },
-  },
-}
-```
-
-### Qwen OAuth（免费层级）
-
-Qwen 通过设备码流程提供对 Qwen Coder + Vision 的 OAuth 访问。
-启用捆绑插件，然后登录：
-
-```bash
-openclaw plugins enable qwen-portal-auth
-openclaw models auth login --provider qwen-portal --set-default
-```
-
-模型引用：
-
-- `qwen-portal/coder-model`
-- `qwen-portal/vision-model`
-
-参见 [/providers/qwen](/providers/qwen) 了解设置详情和注意事项。
-
-### Synthetic
-
-Synthetic 通过 `synthetic` 提供商提供 Anthropic 兼容模型：
-
-- 提供商：`synthetic`
-- 认证：`SYNTHETIC_API_KEY`
-- 示例模型：`synthetic/hf:MiniMaxAI/MiniMax-M2.1`
-- CLI：`openclaw onboard --auth-choice synthetic-api-key`
-
-```json5
-{
-  agents: {
-    defaults: { model: { primary: "synthetic/hf:MiniMaxAI/MiniMax-M2.1" } },
-  },
-  models: {
-    mode: "merge",
-    providers: {
-      synthetic: {
-        baseUrl: "https://api.synthetic.new/anthropic",
-        apiKey: "${SYNTHETIC_API_KEY}",
-        api: "anthropic-messages",
-        models: [{ id: "hf:MiniMaxAI/MiniMax-M2.1", name: "MiniMax M2.1" }],
-      },
-    },
-  },
+    defaults: { model: { primary: "kimi-coding/k2p5" } }
+  }
 }
 ```
 
 ### MiniMax
 
-MiniMax 通过 `models.providers` 配置，因为它使用自定义端点：
-
-- MiniMax（Anthropic 兼容）：`--auth-choice minimax-api`
-- 认证：`MINIMAX_API_KEY`
-
-参见 [/providers/minimax](/providers/minimax) 了解设置详情、模型选项和配置片段。
-
-### Ollama
-
-Ollama 是提供 OpenAI 兼容 API 的本地 LLM 运行时：
-
-- 提供商：`ollama`
-- 认证：无需（本地服务器）
-- 示例模型：`ollama/llama3.3`
-- 安装：https://ollama.ai
-
-```bash
-# Install Ollama, then pull a model:
-ollama pull llama3.3
-```
-
 ```json5
 {
-  agents: {
-    defaults: { model: { primary: "ollama/llama3.3" } },
-  },
+  models: {
+    mode: "merge",
+    providers: {
+      minimax: {
+        baseUrl: "https://api.minimax.chat/v1",
+        apiKey: "${MINIMAX_API_KEY}",
+        api: "openai-completions",
+        models: [
+          { id: "MiniMax-MX-7B-beta", name: "MiniMax MX 7B" }
+        ]
+      }
+    }
+  }
 }
 ```
 
-当 Ollama 在本地 `http://127.0.0.1:11434/v1` 运行时会自动检测。参见 [/providers/ollama](/providers/ollama) 了解模型推荐和自定义配置。
+### Ollama（本地）
 
-### 本地代理（LM Studio、vLLM、LiteLLM 等）
+```bash
+# 安装 Ollama
+# 访问 https://ollama.ai 下载
 
-示例（OpenAI 兼容）：
+# 拉取模型
+ollama pull llama3.3
+
+# 配置
+{
+  agents: {
+    defaults: { model: { primary: "ollama/llama3.3" } }
+  }
+}
+```
+
+### 本地代理（LM Studio、vLLM）
 
 ```json5
 {
   agents: {
     defaults: {
-      model: { primary: "lmstudio/minimax-m2.1-gs32" },
-      models: { "lmstudio/minimax-m2.1-gs32": { alias: "Minimax" } },
-    },
+      model: { primary: "lmstudio/minimax-m2.1-gs32" }
+    }
   },
   models: {
     providers: {
@@ -285,36 +311,227 @@ ollama pull llama3.3
           {
             id: "minimax-m2.1-gs32",
             name: "MiniMax M2.1",
-            reasoning: false,
-            input: ["text"],
-            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 200000,
-            maxTokens: 8192,
-          },
-        ],
-      },
-    },
-  },
+            maxTokens: 8192
+          }
+        ]
+      }
+    }
+  }
 }
 ```
 
-注意事项：
+---
 
-- 对于自定义提供商，`reasoning`、`input`、`cost`、`contextWindow` 和 `maxTokens` 是可选的。
-  省略时，OpenClaw 默认为：
-  - `reasoning: false`
-  - `input: ["text"]`
-  - `cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }`
-  - `contextWindow: 200000`
-  - `maxTokens: 8192`
-- 建议：设置与你的代理/模型限制匹配的显式值。
+## ⚙️ 配置参数说明
 
-## CLI 示例
+### 模型属性
+
+| 属性 | 默认值 | 说明 |
+|------|--------|------|
+| `reasoning` | `false` | 是否支持推理 |
+| `input` | `["text"]` | 支持的输入类型 |
+| `cost` | `0` | Token 成本 |
+| `contextWindow` | `200000` | 上下文窗口大小 |
+| `maxTokens` | `8192` | 最大输出 Token 数 |
+
+### API 类型
+
+| API | 说明 | 使用场景 |
+|-----|------|----------|
+| `openai-completions` | OpenAI 兼容补全 | 大多数模型 |
+| `anthropic-messages` | Anthropic 消息 API | Claude 模型 |
+| `anthropic-completions` | Anthropic 补全 API | 旧版 Claude |
+
+---
+
+## 🛠️ CLI 命令参考
+
+### 认证命令
 
 ```bash
-openclaw onboard --auth-choice opencode-zen
-openclaw models set opencode/claude-opus-4-5
-openclaw models list
+# 向导式认证
+openclaw onboard
+
+# API 密钥认证
+openclaw onboard --auth-choice <provider>
+
+# OAuth 登录
+openclaw models auth login --provider <provider>
+
+# setup-token 导入
+openclaw models auth setup-token --provider anthropic
+openclaw models auth paste-token --provider anthropic
 ```
 
-另请参阅：[/gateway/configuration](/gateway/configuration) 了解完整配置示例。
+### 模型管理
+
+```bash
+# 列出模型
+openclaw models list [--all] [--provider <name>]
+
+# 设置默认模型
+openclaw models set <provider/model>
+
+# 设置图像模型
+openclaw models set-image <provider/model>
+
+# 查看状态
+openclaw models status [--plain] [--json]
+```
+
+### 别名管理
+
+```bash
+# 添加别名
+openclaw models aliases add <alias> <provider/model>
+
+# 列出别名
+openclaw models aliases list
+
+# 删除别名
+openclaw models aliases remove <alias>
+```
+
+---
+
+## 🎯 提供商对比
+
+### 编程能力
+
+| 提供商 | 编程 | 工具使用 | 推荐场景 |
+|--------|------|----------|----------|
+| **GLM (z.ai)** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 代码开发 |
+| **Claude Sonnet** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 平衡性能 |
+| **GPT-4o** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 通用任务 |
+| **MiniMax** | ⭐⭐⭐ | ⭐⭐⭐ | 创意写作 |
+
+### 成本效益
+
+| 提供商 | 成本 | 性价比 | 适用场景 |
+|--------|------|--------|----------|
+| **Haiku** | 低 | ⭐⭐⭐⭐ | 快速任务 |
+| **Sonnet** | 中 | ⭐⭐⭐⭐ | 日常使用 |
+| **Opus** | 高 | ⭐⭐⭐ | 复杂任务 |
+| **OpenRouter 免费模型** | 免费 | ⭐⭐⭐ | 测试/备用 |
+
+---
+
+## 🐛 故障排查
+
+### 常见问题
+
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+| "Model not allowed" | 不在白名单 | 添加到 `agents.defaults.models` |
+| 认证失败 | API 密钥无效 | 检查密钥配置 |
+| 速率限制 | 超过配额 | 等待或使用回退 |
+| 网络错误 | 无法访问端点 | 检查 `baseUrl` |
+
+### 调试技巧
+
+```bash
+# 查看模型状态
+openclaw models status --verbose
+
+# 检查认证状态
+openclaw models status --check
+
+# 查看可用模型
+openclaw models list --all
+
+# 测试模型连接
+# 通过实际发送消息测试
+```
+
+---
+
+## 🎯 最佳实践
+
+### 选择建议
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    提供商选择指南                                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  代码开发（推荐）：                                                    │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  主要：zai/glm-4-plus                                          │   │
+│  │  回退：anthropic/claude-sonnet-4                                │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  通用任务（推荐）：                                                    │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  主要：anthropic/claude-sonnet-4                               │   │
+│  │  回退：openai/gpt-4o                                             │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  创意写作（推荐）：                                                    │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  主要：minimax/minimax-mini                                      │   │
+│  │  回退：zai/glm-4-plus                                          │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  本地开发：                                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  • ollama（本地运行时）                                          │   │
+│  │  • LM Studio/vLLM（本地代理）                                  │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 认证安全
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    认证安全最佳实践                                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  环境变量（推荐）：                                                        │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  export OPENAI_API_KEY="sk-..."                                 │   │
+│  │  export ANTHROPIC_API_KEY="sk-ant..."                            │   │
+│  │                                                                 │   │
+│  │  优势：                                                          │   │
+│  │  ✅ 不写入配置文件                                               │   │
+│  │  ✅ 防止意外提交                                                 │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  配置文件：                                                              │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  apiKey: "${ENV_VAR}"                                           │   │
+│  │                                                                 │   │
+│  │  注意事项：                                                        │   │
+│  │  • 将 openclaw.json 添加到 .gitignore                             │   │
+│  │  • 永远不要提交 API 密钥                                         │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📚 相关文档
+
+| 文档 | 链接 |
+|------|------|
+| [模型 CLI](/concepts/models) | 模型管理 |
+| [模型故障转移](/concepts/model-failover) | 故障转移 |
+| [配置参考](/config/reference) | 完整配置 |
+
+---
+
+## 🎯 知识点回顾
+
+| 技能 | 掌握程度 |
+|------|----------|
+| 配置内置提供商 | ⭐⭐⭐⭐⭐ |
+| 配置自定义提供商 | ⭐⭐⭐⭐ |
+| 选择合适提供商 | ⭐⭐⭐⭐ |
+| 调试认证问题 | ⭐⭐⭐ |
+
+---
+
+> **💡 专家提示**：使用 `openclaw models status --check` 可以定期检查认证状态，在密钥过期前获得警告！

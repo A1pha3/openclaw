@@ -832,9 +832,9 @@ openclaw logs --lines 500 | grep "blocked"
 
 | 主题 | 文档链接 | 预计时间 |
 |------|----------|----------|
-| **网关安全** | [Gateway 安全](/zh-CN/gateway/authentication) | 20 分钟 |
-| **CLI 命令** | [CLI 参考](/zh-CN/cli) | 30 分钟 |
-| **渠道配置** | [Channels](/zh-CN/channels/index) | 45 分钟 |
+| **网关安全** | [Gateway 安全](/gateway/authentication) | 20 分钟 |
+| **CLI 命令** | [CLI 参考](/cli) | 30 分钟 |
+| **渠道配置** | [Channels](/channels/index) | 45 分钟 |
 
 ---
 
@@ -868,7 +868,7 @@ openclaw logs --lines 500 | grep "blocked"
 
 - **官方文档**：[docs.openclaw.ai](https://docs.openclaw.ai)
 - **GitHub**：[github.com/openclaw/openclaw](https://github.com/openclaw/openclaw)
-- **安全指南**：[Security Guide](/zh-CN/gateway/security)
+- **安全指南**：[Security Guide](/gateway/security)
 
 ---
 

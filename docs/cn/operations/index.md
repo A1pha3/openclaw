@@ -1101,7 +1101,7 @@ openclaw service restart
 
 | 路径 | 目标文档 | 说明 |
 |------|---------|------|
-| 深入部署 | [部署指南](/zh-CN/operations/deployment) | 详细的部署步骤和配置选项 |
-| 监控体系 | [监控与日志](/zh-CN/operations/monitoring) | 完整的监控配置和告警策略 |
-| 故障处理 | [故障排除](/zh-CN/operations/troubleshooting) | 系统化的故障诊断方法 |
-| 架构设计 | [核心概念](/zh-CN/concepts/architecture) | 深入理解系统架构 |
+| 深入部署 | [部署指南](/operations/deployment) | 详细的部署步骤和配置选项 |
+| 监控体系 | [监控与日志](/operations/monitoring) | 完整的监控配置和告警策略 |
+| 故障处理 | [故障排除](/operations/troubleshooting) | 系统化的故障诊断方法 |
+| 架构设计 | [核心概念](/concepts/architecture) | 深入理解系统架构 |

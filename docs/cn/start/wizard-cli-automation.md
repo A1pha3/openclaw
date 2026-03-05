@@ -524,9 +524,9 @@ openclaw agents bind <agent-name> <channel>:<target>
 
 | 文档 | 链接 |
 |------|------|
-| **配置中心** | [CLI 配置向导](/zh-CN/start/wizard) |
-| **完整参考** | [CLI 配置完整参考](/zh-CN/start/wizard-cli-reference) |
-| **命令参考** | [`openclaw onboard`](/zh-CN/cli/onboard) |
+| **配置中心** | [CLI 配置向导](/start/wizard) |
+| **完整参考** | [CLI 配置完整参考](/start/wizard-cli-reference) |
+| **命令参考** | [`openclaw onboard`](/cli/onboard) |
 
 ---
 
@@ -534,9 +534,9 @@ openclaw agents bind <agent-name> <channel>:<target>
 
 | 学习路径 | 文档链接 | 预计时间 |
 |----------|----------|----------|
-| **多代理深入** | [代理管理](/zh-CN/cli/agents) | 20 分钟 |
-| **消息路由** | [路由配置](/zh-CN/concepts/routing) | 30 分钟 |
-| **生产部署** | [运维指南](/zh-CN/operations/index) | 45 分钟 |
+| **多代理深入** | [代理管理](/cli/agents) | 20 分钟 |
+| **消息路由** | [路由配置](/concepts/routing) | 30 分钟 |
+| **生产部署** | [运维指南](/operations/index) | 45 分钟 |
 
 ---
 

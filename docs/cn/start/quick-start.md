@@ -11,7 +11,7 @@ title: "快速入门"
 
 **目标**：在 5 分钟内完成安装、配置，并发送第一条 AI 消息。
 
-本指南专为**追求效率**的用户设计，采用最小化步骤，帮助您快速体验 OpenClaw 的核心功能。如果您希望深入理解每个步骤背后的原理，请参考[新手上路](/zh-CN/start/getting-started)完整指南。
+本指南专为**追求效率**的用户设计，采用最小化步骤，帮助您快速体验 OpenClaw 的核心功能。如果您希望深入理解每个步骤背后的原理，请参考[新手上路](/start/getting-started)完整指南。
 
 ---
 
@@ -327,7 +327,7 @@ openclaw config set channels.discord.token "YOUR_BOT_TOKEN"
 | iMessage | macOS 专用 | ⭐⭐⭐ |
 | Google Chat | OAuth | ⭐⭐ |
 
-详细配置请参考[渠道配置完整指南](/zh-CN/channels/index)。
+详细配置请参考[渠道配置完整指南](/channels/index)。
 
 ---
 
@@ -597,11 +597,11 @@ openclaw config set "agents.defaults.authProfiles.anthropic.apiKey" "sk-ant-api0
 
 | 学习路径 | 文档链接 | 预计时间 |
 |----------|----------|----------|
-| **深入理解架构** | [系统架构](/zh-CN/concepts/architecture) | 30 分钟 |
-| **完整安装指南** | [安装指南](/zh-CN/install) | 45 分钟 |
-| **向导模式详解** | [向导模式](/zh-CN/start/wizard) | 20 分钟 |
-| **核心概念** | [概念索引](/zh-CN/concepts/index) | 1 小时 |
-| **CLI 命令参考** | [CLI 文档](/zh-CN/cli/index) | 30 分钟 |
+| **深入理解架构** | [系统架构](/concepts/architecture) | 30 分钟 |
+| **完整安装指南** | [安装指南](/install) | 45 分钟 |
+| **向导模式详解** | [向导模式](/start/wizard) | 20 分钟 |
+| **核心概念** | [概念索引](/concepts/index) | 1 小时 |
+| **CLI 命令参考** | [CLI 文档](/cli/index) | 30 分钟 |
 
 ---
 

@@ -798,15 +798,15 @@ openclaw config get --all
 
 ### 核心文档
 
-- [配置参考](/zh-CN/config/reference) - 所有配置项的详细说明
-- [配置示例](/zh-CN/config/examples) - 常见场景的配置模板
-- [故障排除](/zh-CN/help/troubleshooting) - 常见问题解决方案
+- [配置参考](/config/reference) - 所有配置项的详细说明
+- [配置示例](/config/examples) - 常见场景的配置模板
+- [故障排除](/help/troubleshooting) - 常见问题解决方案
 
 ### 进阶阅读
 
-- [环境变量](/zh-CN/environment) - 环境变量配置详解
-- [日志配置](/zh-CN/logging) - 日志记录配置
-- [安全配置](/zh-CN/security) - 安全策略配置
+- [环境变量](/environment) - 环境变量配置详解
+- [日志配置](/logging) - 日志记录配置
+- [安全配置](/security) - 安全策略配置
 
 ### 相关命令
 

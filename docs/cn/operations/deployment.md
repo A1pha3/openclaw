@@ -9,7 +9,7 @@ title: 部署指南
 
 # 部署指南
 
-本指南详细说明如何在各种生产环境中部署 OpenClaw。在开始部署之前，请确保您已阅读并理解[运维手册](/zh-CN/operations/index)中的架构设计和运维原则。部署是运维工作的起点，正确的部署方案将为后续的稳定运行奠定坚实基础。
+本指南详细说明如何在各种生产环境中部署 OpenClaw。在开始部署之前，请确保您已阅读并理解[运维手册](/operations/index)中的架构设计和运维原则。部署是运维工作的起点，正确的部署方案将为后续的稳定运行奠定坚实基础。
 
 ## 学习目标
 
@@ -1097,7 +1097,7 @@ echo "=========================================="
 
 | 文档 | 说明 |
 |------|------|
-| [监控与日志](/zh-CN/operations/monitoring) | 配置完整的监控和告警体系 |
-| [故障排除](/zh-CN/operations/troubleshooting) | 常见问题诊断和解决方法 |
-| [运维手册](/zh-CN/operations/index) | 运维最佳实践和日常管理 |
-| [安全指南](/zh-CN/gateway/security) | 安全加固和合规要求 |
+| [监控与日志](/operations/monitoring) | 配置完整的监控和告警体系 |
+| [故障排除](/operations/troubleshooting) | 常见问题诊断和解决方法 |
+| [运维手册](/operations/index) | 运维最佳实践和日常管理 |
+| [安全指南](/gateway/security) | 安全加固和合规要求 |

@@ -9,7 +9,7 @@ title: 开发者手册
 
 # 开发者手册
 
-欢迎来到 OpenClaw 开发者手册。本文档旨在帮助开发者了解如何为 OpenClaw 贡献代码、开发插件或在其基础上构建应用。在开始开发工作之前，建议您先阅读[架构文档](/zh-CN/concepts/architecture)了解 OpenClaw 的整体设计理念和技术架构。OpenClaw 是一个开源的个人 AI 助手项目，我们欢迎各种形式的贡献，无论是代码改进、文档完善还是问题报告。
+欢迎来到 OpenClaw 开发者手册。本文档旨在帮助开发者了解如何为 OpenClaw 贡献代码、开发插件或在其基础上构建应用。在开始开发工作之前，建议您先阅读[架构文档](/concepts/architecture)了解 OpenClaw 的整体设计理念和技术架构。OpenClaw 是一个开源的个人 AI 助手项目，我们欢迎各种形式的贡献，无论是代码改进、文档完善还是问题报告。
 
 ## 学习目标
 
@@ -823,8 +823,8 @@ A:
 
 | 文档 | 说明 |
 |------|------|
-| [项目结构](/zh-CN/developer/project-structure) | 详细代码组织结构 |
-| [插件开发](/zh-CN/developer/plugin-development) | 创建自定义插件 |
-| [测试指南](/zh-CN/developer/testing) | 测试最佳实践 |
-| [贡献指南](/zh-CN/developer/contributing) | 贡献指南详细说明 |
-| [架构文档](/zh-CN/concepts/architecture) | 系统架构设计 |
+| [项目结构](/developer/project-structure) | 详细代码组织结构 |
+| [插件开发](/developer/plugin-development) | 创建自定义插件 |
+| [测试指南](/developer/testing) | 测试最佳实践 |
+| [贡献指南](/developer/contributing) | 贡献指南详细说明 |
+| [架构文档](/concepts/architecture) | 系统架构设计 |

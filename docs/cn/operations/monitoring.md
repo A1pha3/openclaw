@@ -1111,8 +1111,8 @@ done
 
 | 文档 | 说明 |
 |------|------|
-| [运维手册](/zh-CN/operations/index) | 运维最佳实践和整体架构 |
-| [部署指南](/zh-CN/operations/deployment) | 详细部署步骤和配置 |
-| [故障排除](/zh-CN/operations/troubleshooting) | 问题诊断和解决方法 |
-| [网关配置](/zh-CN/gateway/configuration) | 配置选项参考 |
-| [安全指南](/zh-CN/gateway/security) | 安全加固和合规要求 |
+| [运维手册](/operations/index) | 运维最佳实践和整体架构 |
+| [部署指南](/operations/deployment) | 详细部署步骤和配置 |
+| [故障排除](/operations/troubleshooting) | 问题诊断和解决方法 |
+| [网关配置](/gateway/configuration) | 配置选项参考 |
+| [安全指南](/gateway/security) | 安全加固和合规要求 |

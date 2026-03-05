@@ -1,115 +1,523 @@
 ---
 read_when:
   - 更改智能体运行时、工作区引导或会话行为时
-summary: 智能体运行时（嵌入式 pi-mono）、工作区契约和会话引导
-title: 智能体运行时
-x-i18n:
-  generated_at: "2026-02-03T10:04:53Z"
-  model: claude-opus-4-5
-  provider: pi
-  source_hash: 04b4e0bc6345d2afd9a93186e5d7a02a393ec97da2244e531703cb6a1c182325
-  source_path: concepts/agent.md
-  workflow: 15
+summary: "智能体运行时完整指南：pi-mono 集成、工作区契约、会话引导和内置工具"
+title: "智能体运行时"
 ---
 
 # 智能体运行时 🤖
 
-OpenClaw 运行一个源自 **pi-mono** 的嵌入式智能体运行时。
+## 🎯 学习目标
 
-## 工作区（必需）
+完成本文档学习后，你将能够：
 
-OpenClaw 使用单一智能体工作区目录（`agents.defaults.workspace`）作为智能体**唯一**的工作目录（`cwd`），用于工具和上下文。
+### 基础目标（必掌握）
 
-建议：使用 `openclaw setup` 在缺失时创建 `~/.openclaw/openclaw.json` 并初始化工作区文件。
+- [ ] 理解 OpenClaw 的智能体运行时架构
+- [ ] 掌握工作区文件的作用和配置
+- [ ] 了解引导文件的注入机制
+- [ ] 理解 Skills 的加载优先级
 
-完整工作区布局 + 备份指南：[智能体工作区](/concepts/agent-workspace)
+### 进阶目标（建议掌握）
 
-如果启用了 `agents.defaults.sandbox`，非主会话可以在 `agents.defaults.sandbox.workspaceRoot` 下使用按会话隔离的工作区覆盖此设置（参见 [Gateway 网关配置](/gateway/configuration)）。
-
-## 引导文件（注入）
-
-在 `agents.defaults.workspace` 内，OpenClaw 期望以下用户可编辑的文件：
-
-- `AGENTS.md` — 操作指令 + "记忆"
-- `SOUL.md` — 人设、边界、语气
-- `TOOLS.md` — 用户维护的工具说明（例如 `imsg`、`sag`、约定）
-- `BOOTSTRAP.md` — 一次性首次运行仪式（完成后删除）
-- `IDENTITY.md` — 智能体名称/风格/表情
-- `USER.md` — 用户档案 + 偏好称呼
-
-在新会话的第一轮，OpenClaw 将这些文件的内容直接注入智能体上下文。
-
-空文件会被跳过。大文件会被修剪和截断并添加标记，以保持提示词精简（阅读文件获取完整内容）。
-
-如果文件缺失，OpenClaw 会注入一行"文件缺失"标记（`openclaw setup` 将创建安全的默认模板）。
-
-`BOOTSTRAP.md` 仅在**全新工作区**（没有其他引导文件存在）时创建。如果你在完成仪式后删除它，后续重启不应重新创建。
-
-要完全禁用引导文件创建（用于预置工作区），请设置：
-
-```json5
-{ agent: { skipBootstrap: true } }
-```
-
-## 内置工具
-
-核心工具（read/exec/edit/write 及相关系统工具）始终可用，受工具策略约束。`apply_patch` 是可选的，由 `tools.exec.applyPatch` 控制。`TOOLS.md` **不**控制哪些工具存在；它是关于*你*希望如何使用它们的指导。
-
-## Skills
-
-OpenClaw 从三个位置加载 Skills（名称冲突时工作区优先）：
-
-- 内置（随安装包提供）
-- 托管/本地：`~/.openclaw/skills`
-- 工作区：`<workspace>/skills`
-
-Skills 可通过配置/环境变量控制（参见 [Gateway 网关配置](/gateway/configuration) 中的 `skills`）。
-
-## pi-mono 集成
-
-OpenClaw 复用 pi-mono 代码库的部分内容（模型/工具），但**会话管理、设备发现和工具连接由 OpenClaw 负责**。
-
-- 无 pi-coding 智能体运行时。
-- 不读取 `~/.pi/agent` 或 `<workspace>/.pi` 设置。
-
-## 会话
-
-会话记录以 JSONL 格式存储在：
-
-- `~/.openclaw/agents/<agentId>/sessions/<SessionId>.jsonl`
-
-会话 ID 是稳定的，由 OpenClaw 选择。
-**不**读取旧版 Pi/Tau 会话文件夹。
-
-## 流式传输中的引导
-
-当队列模式为 `steer` 时，入站消息会注入当前运行。
-队列在**每次工具调用后**检查；如果存在排队消息，当前助手消息的剩余工具调用将被跳过（工具结果显示错误"Skipped due to queued user message."），然后在下一个助手响应前注入排队的用户消息。
-
-当队列模式为 `followup` 或 `collect` 时，入站消息会保留到当前轮次结束，然后使用排队的载荷开始新的智能体轮次。参见 [队列](/concepts/queue) 了解模式 + 防抖/上限行为。
-
-分块流式传输在助手块完成后立即发送；默认为**关闭**（`agents.defaults.blockStreamingDefault: "off"`）。
-通过 `agents.defaults.blockStreamingBreak` 调整边界（`text_end` 与 `message_end`；默认为 text_end）。
-使用 `agents.defaults.blockStreamingChunk` 控制软块分块（默认 800–1200 字符；优先段落分隔，其次换行；最后是句子）。
-使用 `agents.defaults.blockStreamingCoalesce` 合并流式块以减少单行刷屏（发送前基于空闲的合并）。非 Telegram 渠道需要显式设置 `*.blockStreaming: true` 以启用分块回复。
-工具启动时发出详细工具摘要（无防抖）；Control UI 在可用时通过智能体事件流式传输工具输出。
-更多详情：[流式传输 + 分块](/concepts/streaming)。
-
-## 模型引用
-
-配置中的模型引用（例如 `agents.defaults.model` 和 `agents.defaults.models`）通过在**第一个** `/` 处分割来解析。
-
-- 配置模型时使用 `provider/model`。
-- 如果模型 ID 本身包含 `/`（OpenRouter 风格），请包含提供商前缀（例如：`openrouter/moonshotai/kimi-k2`）。
-- 如果省略提供商，OpenClaw 将输入视为别名或**默认提供商**的模型（仅在模型 ID 中没有 `/` 时有效）。
-
-## 配置（最小）
-
-至少需要设置：
-
-- `agents.defaults.workspace`
-- `channels.whatsapp.allowFrom`（强烈建议）
+- [ ] 配置多智能体路由
+- [ ] 理解沙箱隔离模式
+- [ ] 掌握流式传输和分块机制
+- [ ] 了解 pi-mono 集成细节
 
 ---
 
-_下一篇：[群聊](/channels/group-messages)_ 🦞
+## 💡 架构概览
+
+### 运行时组件
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        OpenClaw 智能体运行时架构                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                      OpenClaw 层                                  │   │
+│  │  ┌──────────────────────────────────────────────────────────────┐  │   │
+│  │  │  • 会话管理                                                  │  │   │
+│  │  │  • 设备发现                                                  │  │   │
+│  │  │  • 工具连接                                                  │  │   │
+│  │  │  • 渠道管理                                                  │  │   │
+│  │  └──────────────────────────────────────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                              │                                            │
+│                              ▼                                            │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                   嵌入式 pi-mono 运行时                             │   │
+│  │  ┌──────────────────────────────────────────────────────────────┐  │   │
+│  │  │  • 模型调用                                                │  │   │
+│  │  │  • 工具执行                                                │  │   │
+│  │  │  • 流式传输                                                │  │   │
+│  │  └──────────────────────────────────────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│  ⚠️ 重要：不使用 pi-coding 运行时，不读取 ~/.pi/ 或 <workspace>/.pi      │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📁 工作区（Workspace）
+
+### 类比：工作区是智能体的"办公室"
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    工作区类比                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  智能体的工作区就像员工的办公室：                                      │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  办公室                                                              │   │
+│  │  ├── AGENTS.md（工作手册）                                        │   │
+│  │  ├── SOUL.md（人设和风格）                                        │   │
+│  │  ├── TOOLS.md（工具使用说明）                                    │   │
+│  │  ├── USER.md（了解你的客户）                                    │   │
+│  │  └── skills/（专业技能）                                        │   │
+│  │                                                                 │   │
+│  │  ✓ 统一的工作环境                                                │   │
+│  │  ✓ 所有工具随手可得                                             │   │
+│  │  ✓ 清晰的职责边界                                                │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 默认位置
+
+| 配置 | 默认值 | 说明 |
+|------|--------|------|
+| **基础工作区** | `~/.openclaw/workspace` | 单一工作区 |
+| **Profile 工作区** | `~/.openclaw/workspace-<profile>` | 多环境隔离 |
+
+### 配置工作区
+
+```json5
+{
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+    },
+  },
+}
+```
+
+### 初始化工作区
+
+```bash
+# 自动创建工作区并填充引导文件
+openclaw setup
+
+# 指定工作区路径
+openclaw setup --workspace ~/my-workspace
+```
+
+### 禁用引导文件
+
+```json5
+{
+  agents: {
+    skipBootstrap: true,
+  },
+}
+```
+
+---
+
+## 📄 引导文件（Bootstrap Files）
+
+### 文件映射
+
+| 文件 | 作用 | 加载时机 |
+|------|------|----------|
+| **AGENTS.md** | 操作指南 + 记忆 | 每个会话 |
+| **SOUL.md** | 人设、边界、语气 | 每个会话 |
+| **TOOLS.md** | 工具使用说明 | 参考 |
+| **IDENTITY.md** | 名称/风格/表情 | 引导仪式 |
+| **USER.md** | 用户档案 | 每个会话 |
+| **BOOTSTRAP.md** | 一次性首次运行 | 仅新工作区 |
+
+### 文件内容示例
+
+**AGENTS.md** - 操作指南
+
+```markdown
+# 操作指南
+
+你是一个有帮助的 AI 助手。
+
+## 核心规则
+1. 始终友好礼貌
+2. 不确定时询问用户
+3. 使用 Markdown 格式回复
+
+## 记忆
+- 用户喜欢简洁的回答
+- 优先使用中文回复
+```
+
+**SOUL.md** - 人设定义
+
+```markdown
+# 人设
+
+你是一个专业但友好的技术助手。
+
+## 风格
+- 精确但不冷酷
+- 专业但不卖弄
+- 简洁但不省略关键信息
+
+## 边界
+- 不提供非法建议
+- 不执行危险操作
+```
+
+**TOOLS.md** - 工具说明
+
+```markdown
+# 工具使用指南
+
+## 文件操作
+- 使用 `read` 查看文件
+- 使用 `write` 创建/修改文件
+- 使用 `edit` 进行精确编辑
+
+## 注意事项
+- 修改前先读取文件内容
+- 使用绝对路径避免歧义
+```
+
+### 文件加载规则
+
+| 规则 | 说明 |
+|------|------|
+| **空文件** | 跳过加载 |
+| **大文件** | 修剪并截断 |
+| **缺失文件** | 注入"文件缺失"标记 |
+| **BOOTSTRAP.md** | 仅在新工作区创建 |
+
+---
+
+## 🛠️ 内置工具
+
+### 核心工具
+
+| 工具 | 说明 | 可用性 |
+|------|------|--------|
+| **read** | 读取文件 | 始终可用 |
+| **write** | 写入文件 | 始终可用 |
+| **exec** | 执行命令 | 受工具策略约束 |
+| **edit** | 编辑文件 | 始终可用 |
+| **apply_patch** | 应用补丁 | 可选 |
+
+### 工具策略
+
+```json5
+{
+  tools: {
+    // 全局工具策略
+    exec: {
+      allow: ["ls", "cat", "echo"],
+      deny: ["rm", "sudo"],
+    },
+    // 每个智能体策略
+  },
+  agents: {
+    list: [
+      {
+        id: "restricted",
+        tools: {
+          allow: ["read", "edit"],
+          deny: ["write", "exec"],
+        },
+      },
+    ],
+  },
+}
+```
+
+---
+
+## 🔌 Skills 系统
+
+### 加载优先级
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       Skills 加载优先级                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  优先级 1（最高）：工作区 Skills                                       │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  <workspace>/skills/                                             │   │
+│  │  • 工作区特定的 Skills                                         │   │
+│  │  • 名称冲突时覆盖其他                                         │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                              ↓                                        │
+│  优先级 2：托管/本地 Skills                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  ~/.openclaw/skills/                                             │   │
+│  │  • 本地托管的 Skills                                           │   │
+│  │  • 手动安装或管理                                              │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                              ↓                                        │
+│  优先级 3（最低）：内置 Skills                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │  <installation>/skills/                                          │   │
+│  │  • 随安装包提供                                               │   │
+│  │  • 基础功能集                                                 │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Skills 配置
+
+```json5
+{
+  skills: {
+    install: {
+      nodeManager: "npm",  // npm | pnpm
+      autoInstall: true,
+    },
+  },
+}
+```
+
+---
+
+## 🎭 pi-mono 集成
+
+### 集成范围
+
+| 组件 | 来源 | 说明 |
+|------|------|------|
+| **模型调用** | pi-mono | AI 模型推理 |
+| **工具执行** | pi-mono | 工具调用框架 |
+| **流式传输** | pi-mono | 增量响应流 |
+
+### OpenClaw 负责部分
+
+| 组件 | 说明 |
+|------|------|
+| **会话管理** | OpenClaw 管理，不使用 pi-coding |
+| **设备发现** | OpenClaw 实现 |
+| **工具连接** | OpenClaw 连接工具 |
+
+### 不使用的内容
+
+- ❌ pi-coding 智能体运行时
+- ❌ `~/.pi/agent` 配置
+- ❌ `<workspace>/.pi` 设置
+
+---
+
+## 💾 会话存储
+
+### 存储位置
+
+```
+~/.openclaw/agents/<agentId>/sessions/
+├── sessions.json                          # 会话索引
+└── <SessionId>.jsonl                     # 会话记录
+```
+
+### 会话 ID 格式
+
+```
+agent:<agentId>:<channel>:<type>:<id>
+```
+
+**示例**：
+- `agent:main:whatsapp:dm:+1555...` - WhatsApp 私聊
+- `agent:main:telegram:group:-1001...` - Telegram 群组
+
+---
+
+## 📡 流式传输与分块
+
+### 流式传输控制
+
+| 配置 | 默认值 | 说明 |
+|------|--------|------|
+| **blockStreamingDefault** | `"off"` | 默认关闭分块 |
+| **blockStreamingBreak** | `"text_end"` | 分块边界 |
+| **blockStreamingChunk** | 800-1200 字符 | 软块分大小 |
+
+### 配置示例
+
+```json5
+{
+  agents: {
+    defaults: {
+      // 启用分块流式传输
+      blockStreamingDefault: "on",
+
+      // 在消息结束时分块
+      blockStreamingBreak: "message_end",
+
+      // 块大小（字符数）
+      blockStreamingChunk: 1000,
+
+      // 合并流式块以减少刷屏
+      blockStreamingCoalesce: true,
+    },
+  },
+}
+```
+
+### 分块渠道
+
+| 渠道 | 需要显式启用 |
+|------|----------------|
+| Telegram | ✅ 设置 `*.blockStreaming: true` |
+| 其他 | 按需配置 |
+
+---
+
+## 🔍 模型引用
+
+### 格式解析
+
+```
+<provider>/<model>
+```
+
+**示例**：
+- `anthropic/claude-sonnet-4-20250514`
+- `openai/gpt-4o`
+- `openrouter/moonshotai/kimi-k2`
+
+### 配置示例
+
+```json5
+{
+  agents: {
+    defaults: {
+      // 标准格式
+      model: "anthropic/claude-sonnet-4-20250514",
+
+      // 回退配置
+      model: {
+        primary: "anthropic/claude-sonnet-4-20250514",
+        fallbacks: [
+          "openai/gpt-4o",
+          "anthropic/claude-haiku-3-5-20241022",
+        ],
+      },
+    },
+  },
+}
+```
+
+---
+
+## 🧩 多智能体路由
+
+### 工作区隔离
+
+```json5
+{
+  agents: {
+    list: [
+      {
+        id: "personal",
+        workspace: "~/.openclaw/workspace-personal",
+      },
+      {
+        id: "work",
+        workspace: "~/.openclaw/workspace-work",
+      },
+    ],
+  },
+}
+```
+
+### 路由配置
+
+```json5
+{
+  bindings: [
+    {
+      agentId: "personal",
+      match: {
+        channel: "whatsapp",
+        accountId: "personal",
+      },
+    },
+    {
+      agentId: "work",
+      match: {
+        channel: "whatsapp",
+        accountId: "business",
+      },
+    },
+  ],
+}
+```
+
+---
+
+## 🎯 最佳实践
+
+### 最小配置
+
+```json5
+{
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+      model: "anthropic/claude-sonnet-4-20250514",
+    },
+  },
+  channels: {
+    whatsapp: {
+      allowFrom: ["+15555550123"],  // 强烈建议配置
+    },
+  },
+}
+```
+
+### 工作区备份
+
+```bash
+# 将工作区放入 Git 仓库
+cd ~/.openclaw/workspace
+git init
+git add AGENTS.md SOUL.md TOOLS.md IDENTITY.md USER.md
+git commit -m "Initial agent workspace"
+```
+
+---
+
+## 📚 相关文档
+
+| 文档 | 链接 |
+|------|------|
+| [智能体工作区](/concepts/agent-workspace) | 工作区布局和备份 |
+| [智能体循环](/concepts/agent-loop) | 运行流程 |
+| [系统提示](/concepts/system-prompt) | 提示组装 |
+| [Skills](/tools/skills) | Skills 系统 |
+
+---
+
+## 🎯 知识点回顾
+
+| 技能 | 掌握程度 |
+|------|----------|
+| 配置智能体工作区 | ⭐⭐⭐⭐⭐ |
+| 管理引导文件 | ⭐⭐⭐⭐ |
+| 配置 Skills | ⭐⭐⭐ |
+| 理解流式传输 | ⭐⭐⭐ |
+
+---
+
+> **💡 专家提示**：使用 `openclaw setup` 可以重新创建缺失的引导文件而不覆盖现有内容！

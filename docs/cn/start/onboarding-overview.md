@@ -96,8 +96,8 @@ openclaw onboard
 
 **相关文档**：
 
-- [CLI 配置向导详解](/zh-CN/start/wizard)
-- [`openclaw onboard` 命令参考](/zh-CN/cli/onboard)
+- [CLI 配置向导详解](/start/wizard)
+- [`openclaw onboard` 命令参考](/cli/onboard)
 
 ### macOS App 配置
 
@@ -121,7 +121,7 @@ openclaw onboard
 
 **相关文档**：
 
-- [macOS App 配置指南](/zh-CN/start/onboarding)
+- [macOS App 配置指南](/start/onboarding)
 
 ---
 
@@ -274,10 +274,10 @@ openclaw health
 
 | 学习路径 | 文档链接 | 预计时间 |
 |----------|----------|----------|
-| **深入 CLI 配置** | [CLI 配置向导详解](/zh-CN/start/wizard) | 20 分钟 |
-| **macOS App 配置** | [macOS App 配置](/zh-CN/start/onboarding) | 15 分钟 |
-| **命令行完整参考** | [CLI 文档](/zh-CN/cli/index) | 30 分钟 |
-| **配置选项详解** | [配置参考](/zh-CN/config/reference) | 45 分钟 |
+| **深入 CLI 配置** | [CLI 配置向导详解](/start/wizard) | 20 分钟 |
+| **macOS App 配置** | [macOS App 配置](/start/onboarding) | 15 分钟 |
+| **命令行完整参考** | [CLI 文档](/cli/index) | 30 分钟 |
+| **配置选项详解** | [配置参考](/config/reference) | 45 分钟 |
 
 ---
 

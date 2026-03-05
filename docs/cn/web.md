@@ -714,9 +714,9 @@ curl http://127.0.0.1:18789/api/config \
 
 ### 核心文档
 
-- [网络配置](/zh-CN/network) - 网络架构详解
-- [安全指南](/zh-CN/gateway/security) - 安全最佳实践
-- [部署指南](/zh-CN/operations/deployment) - 部署配置
+- [网络配置](/network) - 网络架构详解
+- [安全指南](/gateway/security) - 安全最佳实践
+- [部署指南](/operations/deployment) - 部署配置
 
 ### 相关命令
 

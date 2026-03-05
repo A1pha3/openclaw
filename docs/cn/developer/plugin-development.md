@@ -516,6 +516,6 @@ async execute(params: MyToolParams, context: ToolExecuteContext) {
 
 ## 下一步
 
-- [测试指南](/zh-CN/developer/testing) - 测试最佳实践
-- [开发者手册](/zh-CN/developer/index) - 开发环境搭建
-- [项目结构](/zh-CN/developer/project-structure) - 代码组织结构
+- [测试指南](/developer/testing) - 测试最佳实践
+- [开发者手册](/developer/index) - 开发环境搭建
+- [项目结构](/developer/project-structure) - 代码组织结构

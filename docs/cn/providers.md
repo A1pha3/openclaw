@@ -712,7 +712,7 @@ openclaw config set models.budget.monthlyLimit 100
 
 ## 📖 相关文档
 
-- [配置参考](/zh-CN/config/reference)——完整配置选项
-- [模型配置](/zh-CN/concepts/models)——模型概念详解
-- [故障排除](/zh-CN/help/troubleshooting)——问题解决指南
-- [成本优化](/zh-CN/concepts/models#成本优化)——高级成本管理
+- [配置参考](/config/reference)——完整配置选项
+- [模型配置](/concepts/models)——模型概念详解
+- [故障排除](/help/troubleshooting)——问题解决指南
+- [成本优化](/concepts/models#成本优化)——高级成本管理

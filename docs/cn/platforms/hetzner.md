@@ -31,7 +31,7 @@ Hetzner 价格可能会变化；选择最小的 Debian/Ubuntu VPS，如果遇到
 
 本指南假设你在 Hetzner 上使用 Ubuntu 或 Debian。
 如果你使用其他 Linux VPS，请相应调整软件包。
-有关通用 Docker 流程，请参阅 [Docker](/zh-CN/install/docker)。
+有关通用 Docker 流程，请参阅 [Docker](/install/docker)。
 
 ---
 
@@ -179,7 +179,7 @@ services:
       - "127.0.0.1:${OPENCLAW_GATEWAY_PORT}:18789"
 
       # 可选：仅当你针对此 VPS 运行 iOS/Android 节点且需要 Canvas 主机时。
-      # 如果你公开暴露此端口，请阅读 /zh-CN/gateway/security 并相应地配置防火墙。
+      # 如果你公开暴露此端口，请阅读 /gateway/security 并相应地配置防火墙。
       # - "18793:18793"
     command:
       [

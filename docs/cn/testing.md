@@ -880,8 +880,8 @@ htop  # 确保有足够内存
 
 ### 核心文档
 
-- [调试指南](/zh-CN/debugging) - 调试工具详解
-- [日志记录](/zh-CN/logging) - 日志分析
+- [调试指南](/debugging) - 调试工具详解
+- [日志记录](/logging) - 日志分析
 - [Vitest 文档](https://vitest.dev/)
 
 ### 相关命令速查
